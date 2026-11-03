@@ -12,6 +12,7 @@
         "next": [
             "Common_AtHome",
             "[JumpBack]Common_QuitDialog",
+            "Common_Home_ReturnPrompt",
             "Common_Home_FromDungeonList",
             "Common_Home_FromResults",
             "Common_Home_FromJournal",
@@ -28,6 +29,19 @@
             { "recognition": "OCR", "expected": "^Home$", "roi": [250, 1235, 220, 45] },
             { "recognition": "TemplateMatch", "template": "Affection/menu_button.png", "roi": [560, 880, 160, 240] }
         ]
+    },
+
+    // "Confirm / Return to Home?" (e.g. back on the world map): press OK.
+    "Common_Home_ReturnPrompt": {
+        "recognition": "And",
+        "all_of": [
+            { "recognition": "OCR", "expected": "Return\\s?to\\s?Home", "roi": [100, 540, 520, 90] },
+            { "recognition": "OCR", "expected": "^OK$", "roi": [370, 700, 250, 75] }
+        ],
+        "box_index": 1,
+        "action": "Click",
+        "post_delay": 2000, // the trip home loads for a moment
+        "next": ["Common_GoHome"]
     },
 
     "Common_Home_FromDungeonList": {
