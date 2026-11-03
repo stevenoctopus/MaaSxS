@@ -58,15 +58,26 @@
             "cases": [
                 {
                     "name": "Once",
-                    "description": "Play one run, then claim the damage-track rewards."
+                    "description": "Play one run, then claim (daily)."
                 },
                 {
-                    "name": "Until kill",
-                    "description": "Rematch until a run's Team DMG reaches the top reward (boss killed), then claim.",
+                    "name": "All gifts",
+                    "description": "Read today's damage track, then run until today's highest damage reaches the last gift box, then claim.",
                     "pipeline_override": {
                         "Crucible_Farm": {
                             "custom_action_param": {
-                                "until_kill": true
+                                "mode": "all_gifts"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "All rewards",
+                    "description": "Read today's damage track, then run until today's highest damage reaches the last reward, then claim.",
+                    "pipeline_override": {
+                        "Crucible_Farm": {
+                            "custom_action_param": {
+                                "mode": "all"
                             }
                         }
                     }
