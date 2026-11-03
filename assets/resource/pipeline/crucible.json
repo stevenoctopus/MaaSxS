@@ -5,14 +5,18 @@
     // damage track, then claims.
 
     // Entry: get to the Crucible menu from any screen.
+    // Every top-level step has on_error -> Common_Retry: if anything fails,
+    // go Home and start the task over, once.
     "Crucible": {
         "next": [
             "Crucible_OnMenu",
+            "Crucible_OnOtherTab",
             "Crucible_OnDailyEvents",
             "Crucible_OnJournal",
             "Crucible_OnHome",
             "[JumpBack]Common_GoHome"
-        ]
+        ],
+        "on_error": ["Common_Retry"]
     },
     "Crucible_OnHome": {
         "recognition": "And",
@@ -22,35 +26,55 @@
         ],
         "action": "Click",
         "target": [175, 1180, 80, 70], // Journal tab
-        "next": ["Crucible_OnJournal"]
+        "next": ["Crucible_OnJournal"],
+        "on_error": ["Common_Retry"]
     },
     "Crucible_OnJournal": {
         "recognition": "OCR",
         "expected": "^Daily\\s?Events$",
         "roi": [400, 740, 320, 70],
         "action": "Click",
-        "next": ["Crucible_OnDailyEvents"]
+        "next": ["Crucible_OnDailyEvents"],
+        "on_error": ["Common_Retry"]
     },
     "Crucible_OnDailyEvents": {
         "recognition": "OCR",
         "expected": "Crucible\\s?of\\s?Hieromon",
         "roi": [0, 315, 450, 80],
         "action": "Click",
-        "next": ["Crucible_OnMenu"]
+        "next": ["Crucible_OnMenu", "Crucible_OnOtherTab"],
+        "on_error": ["Common_Retry"]
     },
-    // The Crucible menu (title at the top). The mode option sets the param.
+    // The Crucible menu: title at the top and the Match button (the title
+    // also shows on the Rankings and Goals tabs). The mode option sets the param.
     "Crucible_OnMenu": {
         "focus": { "Node.Action.Starting": "On the Crucible menu" },
+        "recognition": "And",
+        "all_of": [
+            { "recognition": "OCR", "expected": "Crucible\\s?of\\s?Hieromon", "roi": [20, 20, 420, 60] },
+            { "recognition": "OCR", "expected": "^Match$", "roi": [370, 1050, 340, 95] }
+        ],
+        "next": ["Crucible_Farm"],
+        "on_error": ["Common_Retry"]
+    },
+    // Rankings or Goals tab: switch to the Crucible tab (bottom bar).
+    "Crucible_OnOtherTab": {
         "recognition": "OCR",
         "expected": "Crucible\\s?of\\s?Hieromon",
         "roi": [20, 20, 420, 60],
-        "next": ["Crucible_Farm"]
+        "action": "Click",
+        "target": [160, 1185, 170, 60],
+        "post_delay": 1500,
+        "next": ["Crucible_OnMenu"],
+        "on_error": ["Common_Retry"]
     },
     "Crucible_Farm": {
         "action": "Custom",
         "custom_action": "CrucibleFarm",
-        "custom_action_param": { "mode": "once" } // once | all_gifts | all
+        "custom_action_param": { "mode": "once" }, // once | all_gifts | all
+        "on_error": ["Common_Retry"]
     },
+
 
     // ---------------------------------------------------------------
     // One run, from the Crucible menu back to the Crucible menu.

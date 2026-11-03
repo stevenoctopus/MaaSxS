@@ -9,6 +9,14 @@
         "focus": { "Node.Action.Starting": "" }
     },
 
+    // Retry for any task: put "on_error": ["Common_Retry"] on a task's
+    // top-level steps. If one fails, the agent (agent/common.py) goes Home
+    // and runs the task's entry again with the same options, once.
+    "Common_Retry": {
+        "action": "Custom",
+        "custom_action": "RetryFromHome"
+    },
+
     // ---------------------------------------------------------------
     // Go to the Home tab from any screen.
     // Known screens get a direct step; anything else gets Android back
