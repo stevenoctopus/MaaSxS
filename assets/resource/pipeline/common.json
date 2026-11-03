@@ -1,0 +1,91 @@
+{
+    // Shared routines. Call them from a task's `next` with the [JumpBack]
+    // prefix, e.g. "[JumpBack]Common_GoHome": the routine runs to its end,
+    // then the calling node checks its `next` list again.
+
+    // ---------------------------------------------------------------
+    // Go to the Home tab from any screen.
+    // Known screens get a direct step; anything else gets Android back
+    // (on_error after 5s of recognising nothing), then we look again.
+    // Back on Home opens "Quit the game?", which Common_QuitDialog cancels.
+    "Common_GoHome": {
+        "next": [
+            "Common_AtHome",
+            "[JumpBack]Common_QuitDialog",
+            "Common_Home_FromDungeonList",
+            "Common_Home_FromResults",
+            "Common_Home_FromJournal",
+            "Common_Home_WaitBattle"
+        ],
+        "timeout": 5000,
+        "on_error": ["Common_Home_PressBack"]
+    },
+
+    // Home tab: "Home" label in the tab bar and the cube menu button. Done.
+    "Common_AtHome": {
+        "recognition": "And",
+        "all_of": [
+            { "recognition": "OCR", "expected": "^Home$", "roi": [250, 1235, 220, 45] },
+            { "recognition": "TemplateMatch", "template": "Affection/menu_button.png", "roi": [560, 880, 160, 240] }
+        ]
+    },
+
+    "Common_Home_FromDungeonList": {
+        "recognition": "OCR",
+        "expected": "Daily\\s?Reward\\s?Attempts",
+        "roi": [200, 20, 320, 60],
+        "action": "Click",
+        "target": [30, 1185, 90, 70], // back arrow, bottom left
+        "next": ["Common_GoHome"]
+    },
+
+    "Common_Home_FromResults": {
+        "recognition": "OCR",
+        "expected": "^Drops$",
+        "roi": [0, 840, 250, 80],
+        "action": "Click",
+        "target": [30, 1185, 90, 70], // back arrow, bottom left
+        "post_delay": 1500,
+        "next": ["Common_GoHome"]
+    },
+
+    // Journal tab: switch to the Home tab (house icon, bottom middle).
+    "Common_Home_FromJournal": {
+        "recognition": "OCR",
+        "expected": "Free\\s?Attempts",
+        "roi": [0, 180, 300, 60],
+        "action": "Click",
+        "target": [320, 1175, 90, 80],
+        "next": ["Common_GoHome"]
+    },
+
+    // A dungeon battle can't be left: wait for it to finish.
+    "Common_Home_WaitBattle": {
+        "recognition": "OCR",
+        "expected": "Round\\s?\\d+/\\d+",
+        "roi": [200, 10, 320, 50],
+        "post_delay": 5000,
+        "next": ["Common_GoHome"]
+    },
+
+    // Unknown screen (popup, menu, sub-page): Android back, then look again.
+    // max_hit stops an endless loop on a screen back can't leave.
+    "Common_Home_PressBack": {
+        "action": "ClickKey",
+        "key": 4,
+        "post_delay": 1500,
+        "max_hit": 20,
+        "next": ["Common_GoHome"]
+    },
+
+    // The game's quit prompt: always cancel. Use as "[JumpBack]Common_QuitDialog".
+    "Common_QuitDialog": {
+        "recognition": "And",
+        "all_of": [
+            { "recognition": "OCR", "expected": "Quit the game", "roi": [100, 400, 520, 400] },
+            { "recognition": "OCR", "expected": "^Cancel$", "roi": [100, 650, 260, 130] }
+        ],
+        "box_index": 1,
+        "action": "Click"
+    }
+}
