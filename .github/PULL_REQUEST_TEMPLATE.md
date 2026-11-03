@@ -1,21 +1,17 @@
 # Pull Request
 
-提交前请阅读 [PR 规范](../docs/zh_cn/develop/pull_request_guidelines.md)。
+## Related issue
 
-## 关联 Issue
+<!-- Closes #123 / Fixes #123 / Related #123. No issue? Say what the change is for. -->
 
-<!-- Closes #123 / Fixes #123 / Related #123；没有 Issue 时请说明需求来源。 -->
+## Summary
 
-## 变更摘要
+<!-- 2-5 bullets on what changed. -->
 
-<!-- 用 2～5 条 bullet 说明改了什么。 -->
+## Testing
 
-## 验证
+<!-- What you ran and what happened, e.g. which task, from which screen, on which emulator. -->
 
-<!-- 请写清楚执行了什么验证、结果如何。不要只写“已测试”。 -->
+## Screenshots / logs
 
-- [ ] 我已阅读并遵守 [PR 规范](../docs/zh_cn/develop/pull_request_guidelines.md)
-
-## 截图 / 日志 / 说明
-
-<!-- 涉及界面、资源识别、工作流失败或 Bug 修复时，请提供截图、日志、Actions 链接或复现步骤。 -->
+<!-- For recognition changes, bug fixes or workflow failures: screenshots, logs, Actions links or repro steps. -->

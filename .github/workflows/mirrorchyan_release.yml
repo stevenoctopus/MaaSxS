@@ -1,5 +1,5 @@
-# Mirror酱为第三方分发服务，新项目默认关闭
-# 若有需要请联系 Mirror酱 开通，直接自行开启是无法使用的
+# MirrorChyan is a third-party download mirror, off by default for new projects
+# It only works once MirrorChyan has enabled the project; turning it on here alone does nothing
 # https://mirrorchyan.com/
 
 name: mirrorchyan_release
@@ -16,8 +16,8 @@ on:
 jobs:
   mirrorchyan:
     runs-on: macos-latest
-    # Mirror酱为第三方分发服务，新项目默认关闭
-    # 若有需要请联系 Mirror酱 开通，直接自行开启是无法使用的
+    # MirrorChyan is a third-party download mirror, off by default for new projects
+    # It only works once MirrorChyan has enabled the project; turning it on here alone does nothing
     # https://mirrorchyan.com/
     if: false
     # if: ${{ github.repository_owner == 'MaaXYZ' }}
