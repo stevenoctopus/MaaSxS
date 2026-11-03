@@ -3,6 +3,12 @@
     // prefix, e.g. "[JumpBack]Common_GoHome": the routine runs to its end,
     // then the calling node checks its `next` list again.
 
+    // Shows a message in the GUI log. The agent runs this with its text as
+    // the focus (agent/gui.py), so agent messages appear in the GUI too.
+    "Common_Log": {
+        "focus": { "Node.Action.Starting": "" }
+    },
+
     // ---------------------------------------------------------------
     // Go to the Home tab from any screen.
     // Known screens get a direct step; anything else gets Android back
@@ -26,6 +32,7 @@
 
     // Home tab: "Home" label in the tab bar and the cube menu button. Done.
     "Common_AtHome": {
+        "focus": { "Node.Action.Starting": "On Home" },
         "recognition": "And",
         "all_of": [
             { "recognition": "OCR", "expected": "^Home$", "roi": [250, 1235, 220, 45] },
@@ -98,6 +105,7 @@
 
     // A dungeon battle can't be left: wait for it to finish.
     "Common_Home_WaitBattle": {
+        "focus": { "Node.Action.Starting": "A battle is running: waiting for it to end" },
         "recognition": "OCR",
         "expected": "Round\\s?\\d+/\\d+",
         "roi": [200, 10, 320, 50],
@@ -108,6 +116,7 @@
     // Unknown screen (popup, menu, sub-page): Android back, then look again.
     // max_hit stops an endless loop on a screen back can't leave.
     "Common_Home_PressBack": {
+        "focus": { "Node.Action.Starting": "Unknown screen: pressing back" },
         "action": "ClickKey",
         "key": 4,
         "post_delay": 1500,

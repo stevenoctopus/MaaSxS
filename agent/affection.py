@@ -16,11 +16,18 @@ from maa.agent.agent_server import AgentServer
 from maa.context import Context
 from maa.custom_action import CustomAction
 
+from gui import say
+
 TOTAL_RE = re.compile(r"(\d+)\s*/\s*(\d+)")
+
+_context = None  # set when the action starts, so log() can reach the GUI
 
 
 def log(msg):
-    print(f"[Affection] {msg}", flush=True)
+    if _context is None:
+        print(f"[Affection] {msg}", flush=True)
+    else:
+        say(_context, "Affection", msg)
 
 
 def check_affection(context: Context):
@@ -57,6 +64,8 @@ def run_dungeons(context: Context, count: int) -> int:
 @AgentServer.custom_action("AffectionFarm")
 class AffectionFarm(CustomAction):
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
+        global _context
+        _context = context
         param = json.loads(argv.custom_action_param or "{}") or {}
         per_run = int(param.get("per_run", 7))
 
