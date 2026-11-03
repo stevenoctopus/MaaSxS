@@ -5,8 +5,8 @@ Flow:
      to the Daily Dungeon list.
   2. runs = ceil((CAP - N) / per_run)
   3. Run DailyDungeon_Run that many times.
-  4. Check once more; if still short (e.g. a run gave nothing), top up with
-     the extra runs needed. Then stop.
+  4. Check again; if still short, work out the runs needed and repeat until
+     the cap is reached. Stops if a whole batch earned no affection.
 """
 import json
 import math
@@ -60,17 +60,22 @@ class AffectionFarm(CustomAction):
         param = json.loads(argv.custom_action_param or "{}") or {}
         per_run = int(param.get("per_run", 7))
 
-        for attempt in ("initial", "recheck"):
+        previous = None
+        while True:
             total = check_affection(context)
             if total is None:
                 return False
             current, cap = total
             runs = math.ceil(max(0, cap - current) / per_run)
-            log(f"{attempt}: {current}/{cap}, {runs} run(s) needed")
+            log(f"{current}/{cap}, {runs} run(s) needed")
             if runs == 0:
                 log("weekly cap reached")
                 return True
+            # A whole batch of runs that earned nothing means something is
+            # wrong (e.g. affection not counting); stop instead of looping.
+            if previous is not None and current <= previous:
+                log("no affection gained since the last check, stopping")
+                return False
+            previous = current
             if run_dungeons(context, runs) < runs:
                 return False
-        log("done (after one recheck)")
-        return True
