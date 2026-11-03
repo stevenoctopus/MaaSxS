@@ -1,0 +1,2 @@
+# Keep in step with MAAFW_VERSION in .github/workflows/install.yml
+maafw==5.15.0
