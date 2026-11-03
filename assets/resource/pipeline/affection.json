@@ -35,6 +35,7 @@
     // Affection Tokens popup: always press Claim (harmless when nothing is
     // pending), then read the total.
     "Affection_Claim": {
+        "focus": { "Node.Action.Starting": "Claiming affection tokens" },
         "recognition": "And",
         "all_of": [
             {
@@ -171,6 +172,7 @@
     },
     // Back on the list: done.
     "Affection_Ret_DungeonList": {
+        "focus": { "Node.Action.Starting": "Back on the Daily Dungeon list" },
         "recognition": "OCR",
         "expected": "Daily\\s?Reward\\s?Attempts",
         "roi": [200, 20, 320, 60]

@@ -20,12 +20,19 @@ from maa.agent.agent_server import AgentServer
 from maa.context import Context
 from maa.custom_action import CustomAction
 
+from gui import say
+
 VALUE_RE = re.compile(r"^(\d+(?:\.\d+)?)([KMB]?)$")
 SCALE = {"": 1, "K": 1e3, "M": 1e6, "B": 1e9}
 
+_context = None  # set when the action starts, so log() can reach the GUI
+
 
 def log(msg):
-    print(f"[Crucible] {msg}", flush=True)
+    if _context is None:
+        print(f"[Crucible] {msg}", flush=True)
+    else:
+        say(_context, "Crucible", msg)
 
 
 def parse_value(text):
@@ -139,6 +146,8 @@ def find_target(context: Context, mode):
 @AgentServer.custom_action("CrucibleFarm")
 class CrucibleFarm(CustomAction):
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
+        global _context
+        _context = context
         param = json.loads(argv.custom_action_param or "{}") or {}
         mode = param.get("mode", "once")
 

@@ -40,6 +40,7 @@
     },
     // The Crucible menu (title at the top). The mode option sets the param.
     "Crucible_OnMenu": {
+        "focus": { "Node.Action.Starting": "On the Crucible menu" },
         "recognition": "OCR",
         "expected": "Crucible\\s?of\\s?Hieromon",
         "roi": [20, 20, 420, 60],
@@ -59,6 +60,7 @@
         "next": ["Crucible_Match"]
     },
     "Crucible_Match": {
+        "focus": { "Node.Action.Starting": "Queueing for a match" },
         "recognition": "OCR",
         "expected": "^Match$",
         "roi": [370, 1050, 340, 95],
@@ -68,6 +70,7 @@
         "next": ["Crucible_Accept", "Crucible_MaybeDropped"]
     },
     "Crucible_Accept": {
+        "focus": { "Node.Action.Starting": "Match found: accepting" },
         "recognition": "OCR",
         "expected": "^Accept$",
         "roi": [360, 1060, 340, 85],
@@ -78,6 +81,7 @@
     // Match showing again: dropped from the queue, or just the brief flash
     // while the battle loads. Wait, then look again before pressing Match.
     "Crucible_MaybeDropped": {
+        "focus": { "Node.Action.Starting": "Back on Match: waiting, then re-queueing if dropped" },
         "recognition": "OCR",
         "expected": "^Match$",
         "roi": [370, 1050, 340, 95],
@@ -86,6 +90,7 @@
         "next": ["Crucible_Ready", "Crucible_InRun", "Crucible_Accept", "Crucible_Match"]
     },
     "Crucible_Ready": {
+        "focus": { "Node.Action.Starting": "Ready" },
         "recognition": "OCR",
         "expected": "^Ready$",
         "roi": [200, 900, 320, 110],
@@ -95,6 +100,7 @@
     },
     // The fight: "Round x/10" at the top. Wait for the results.
     "Crucible_InRun": {
+        "focus": { "Node.Action.Starting": "Battle in progress" },
         "recognition": "OCR",
         "expected": "Round\\s?\\d+/\\d+",
         "roi": [200, 10, 320, 50],
@@ -103,6 +109,7 @@
     },
     // Results: "Battle Ended", Team DMG, "Tap to Continue".
     "Crucible_Results": {
+        "focus": { "Node.Action.Starting": "Battle ended" },
         "recognition": "OCR",
         "expected": "Tap\\s?to\\s?Continue",
         "roi": [150, 1170, 420, 70],
@@ -130,6 +137,7 @@
         "next": ["Crucible_BackOnMenu", "Crucible_TapContinue"]
     },
     "Crucible_BackOnMenu": {
+        "focus": { "Node.Action.Starting": "Back on the Crucible menu" },
         "recognition": "OCR",
         "expected": "Crucible\\s?of\\s?Hieromon",
         "roi": [20, 20, 420, 60]
