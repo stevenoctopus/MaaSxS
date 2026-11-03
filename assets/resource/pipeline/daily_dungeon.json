@@ -121,6 +121,8 @@
     },
 
     // Results ("Drops" heading). For now: no loot claim, just tap back.
+    // The tap is sometimes swallowed while the chests animate, so if the
+    // results are still showing, tap back again.
     "DailyDungeon_Results": {
         "recognition": "OCR",
         "expected": "^Drops$",
@@ -128,8 +130,9 @@
         "pre_delay": 1500, // let the results animation finish
         "action": "Click",
         "target": [30, 1185, 90, 70], // back arrow, bottom left
+        "post_delay": 1500,
         "timeout": 30000,
-        "next": ["DailyDungeon_BackOnList"]
+        "next": ["DailyDungeon_BackOnList", "DailyDungeon_Results"]
     },
 
     // Back on the Daily Dungeon list: the run is complete.
