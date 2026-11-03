@@ -1,105 +1,144 @@
 {
-    // 本文件主要定义了通用 UI 的行为和显示内容
-    // 可参考文档和示例添加更多您需要的功能
-    // 文档：https://maafw.xyz/docs/3.3-ProjectInterfaceV2
-    // 示例：https://github.com/MaaXYZ/MaaFramework/blob/main/sample/interface.json
+    // Defines what the GUI (MFAAvalonia) shows: tasks, options, controller, agent.
+    // Docs: https://maafw.xyz/docs/3.3-ProjectInterfaceV2
     "interface_version": 2,
-    "name": "MaaXXX",
-    "description": "这是一个使用 MaaFramework 创建的新项目。",
-    "contact": "QQ群: 123456789",
+    "name": "MaaSxS",
+    "description": "Sword x Staff automation, built on MaaFramework. The emulator must run at 720x1280.",
     "license": "MIT",
-    "welcome": "首次使用！欢迎使用 MAA!",
-    // 填写项目地址和版本号可实现自动更新功能
-    "github": "https://github.com/MaaXYZ/MaaPracticeBoilerplate",
-    "version": "1.0.0",
-    // Mirror酱为第三方分发服务，新项目默认关闭
-    // 若有需要请联系 Mirror酱 开通，直接自行开启是无法使用的
-    // "mirrorchyan_rid": "MaaXXX",
-    // "mirrorchyan_multiplatform": true,
+    "welcome": "Set your emulator to 720x1280 (portrait) before starting.",
+    // Project URL and version enable the GUI's update check.
+    "github": "https://github.com/stevenoctopus/MaaSxS",
+    "version": "0.1.0",
     "controller": [
         {
-            "name": "安卓端",
+            "name": "Android",
             "type": "Adb",
-            "display_short_side": 720 // 默认缩放分辨率的短边长度
-        },
-        {
-            "name": "桌面端",
-            "type": "Win32",
-            "win32": {
-                "class_regex": ".*",
-                "window_regex": "Visual Studio",
-                // 截图及控制方式，请根据项目实际情况修改
-                // 文档: https://maafw.xyz/docs/2.4-ControlMethods
-                "screencap": "PrintWindow", // 截图方式
-                "mouse": "PostMessageWithCursorPos", // 鼠标控制方式
-                "keyboard": "PostMessageWithCursorPos" // 键盘控制方式
-            }
+            "display_short_side": 720
         }
     ],
     "resource": [
         {
-            "name": "官服",
+            "name": "Global",
             "path": [
                 "./resource"
-            ]
-        },
-        {
-            "name": "B 服",
-            "path": [
-                "./resource"
-                // "./resource_bilibili"
             ]
         }
     ],
-    // 可选的 agent 示例
-    // "agent": {
-    //     "child_exec": "python",
-    //     "child_args": [
-    //         "./agent/main.py"
-    //     ]
-    // },
+    "agent": {
+        "child_exec": "python",
+        "child_args": [
+            "./agent/main.py"
+        ]
+    },
     "task": [
         {
-            "name": "普通任务",
-            "entry": "MyTask1"
-        },
-        {
-            "name": "选项任务",
-            "entry": "MyTask2",
+            "name": "DailyDungeon",
+            "label": "Daily Dungeon",
+            "entry": "DailyDungeon",
             "option": [
-                "任务选项1"
+                "Mode",
+                "Dungeon",
+                "Difficulty"
             ]
         },
         {
-            "name": "参数任务",
-            "entry": "MyTask3",
-            "option": [
-                "任务选项1"
-            ],
-            "pipeline_override": {}
-        },
-        {
-            "name": "自定义识别与动作示例",
-            "entry": "FindSmallestNumber"
+            "name": "AffectionCheck",
+            "label": "Check Affection",
+            "entry": "Affection_Check"
         }
     ],
     "option": {
-        "任务选项1": {
+        "Mode": {
             "type": "select",
+            "label": "Mode",
+            "default_case": "Single run",
             "cases": [
                 {
-                    "name": "文本1",
+                    "name": "Single run",
+                    "description": "Play one run, then stop."
+                },
+                {
+                    "name": "Affection",
+                    "description": "Check this week's affection, run until the weekly cap (+7 per run), recheck once and top up.",
                     "pipeline_override": {
-                        "OcrTask": {
-                            "text": "文本1"
+                        "DailyDungeon": {
+                            "next": [
+                                "DailyDungeon_AffectionFarm"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "Dungeon": {
+            "type": "select",
+            "label": "Dungeon",
+            "default_case": "Riftwatch Fortress",
+            "cases": [
+                {
+                    "name": "Riftwatch Fortress",
+                    "pipeline_override": {
+                        "DailyDungeon_SelectCard": {
+                            "expected": "Riftwatch\\s?Fortress"
                         }
                     }
                 },
                 {
-                    "name": "文本2",
+                    "name": "Court of Purification",
                     "pipeline_override": {
-                        "OcrTask": {
-                            "text": "文本2"
+                        "DailyDungeon_SelectCard": {
+                            "expected": "Court\\s?of\\s?Purification"
+                        }
+                    }
+                }
+            ]
+        },
+        "Difficulty": {
+            "type": "select",
+            "label": "Difficulty",
+            "default_case": "Hard",
+            "cases": [
+                {
+                    "name": "Normal",
+                    "pipeline_override": {
+                        "DailyDungeon_SelectDifficulty": {
+                            "expected": "^Normal$"
+                        },
+                        "DailyDungeon_DifficultySelected": {
+                            "expected": "Normal$"
+                        }
+                    }
+                },
+                {
+                    "name": "Hard",
+                    "pipeline_override": {
+                        "DailyDungeon_SelectDifficulty": {
+                            "expected": "^Hard$"
+                        },
+                        "DailyDungeon_DifficultySelected": {
+                            "expected": "Hard$"
+                        }
+                    }
+                },
+                {
+                    "name": "Nightmare",
+                    "pipeline_override": {
+                        "DailyDungeon_SelectDifficulty": {
+                            "expected": "^Nightmare$"
+                        },
+                        "DailyDungeon_DifficultySelected": {
+                            "expected": "Nightmare$"
+                        }
+                    }
+                },
+                {
+                    "name": "Purgatory",
+                    "pipeline_override": {
+                        "DailyDungeon_SelectDifficulty": {
+                            "expected": "^Purgatory$"
+                        },
+                        "DailyDungeon_DifficultySelected": {
+                            "expected": "Purgatory$"
                         }
                     }
                 }

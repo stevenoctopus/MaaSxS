@@ -1,43 +1,57 @@
-<!-- markdownlint-disable MD033 MD041 -->
-<p align="center">
-  <img alt="LOGO" src="https://cdn.jsdelivr.net/gh/MaaAssistantArknights/design@main/v1/icons/maa-logo_512x512.png" width="256" height="256" />
-</p>
+# MaaSxS
 
-<div align="center">
+Automation for the mobile game **Sword x Staff**, built on
+[MaaFramework](https://github.com/MaaXYZ/MaaFramework) from the
+[MaaPracticeBoilerplate](https://github.com/MaaXYZ/MaaPracticeBoilerplate) template.
+The GUI is [MFAAvalonia](https://github.com/SweetSmellFox/MFAAvalonia).
 
-# MaaPracticeBoilerplate
+## Requirements
 
-</div>
+- **The emulator must run at 720x1280 (portrait).** Every screen region and
+  template image is made at that resolution, so other resolutions will misclick.
+- ADB debugging enabled in the emulator (tested with LDPlayer 9).
+- Python 3 with `maafw` (`pip install maafw`). The GUI starts `agent/main.py` with it.
 
-本仓库为 [MaaFramework](https://github.com/MaaXYZ/MaaFramework) 所提供的项目模板，开发者可基于此模板直接创建自己的 MaaXXX 项目。
+## Tasks
 
-> **MaaFramework** 是基于图像识别技术、运用 [MAA](https://github.com/MaaAssistantArknights/MaaAssistantArknights) 开发经验去芜存菁、完全重写的新一代自动化黑盒测试框架。
-> 低代码的同时仍拥有高扩展性，旨在打造一款丰富、领先、且实用的开源库，助力开发者轻松编写出更好的黑盒测试程序，并推广普及。
+| Task | Options | Starts on | Does |
+|---|---|---|---|
+| Daily Dungeon | Mode, Dungeon, Difficulty | Daily Dungeon list | **Single run**: Match, Accept, Ready, wait out the floors, leave results, back on the list. **Affection**: read this week's affection, run until the cap (+7 per run), recheck once and top up. |
+| Check Affection | - | Daily Dungeon list, Journal or Home | Friends > Affection Tokens, claim, read the weekly total, return to the Daily Dungeon list. |
 
-## 即刻开始
+Only dungeons visible and unlocked on the list without scrolling are supported so far.
+For testing use **Court of Purification on Nightmare**: its queue is much faster.
 
-**请不要直接克隆本仓库！你应该通过模板创建自己的项目！**  
+## Development
 
-请阅读 [如何开发](./docs/zh_cn/develop/how_to_develop.md)。
+```
+git clone --recursive git@github.com:stevenoctopus/MaaSxS.git
+python -m pip install maafw -r tools/requirements.txt
+python tools/configure.py          # copies the OCR model from MaaCommonAssets
+```
 
-向本模板仓库提交改动前，请阅读 [PR 规范](./docs/zh_cn/develop/pull_request_guidelines.md)。
+- `assets/interface.json`: tasks and options shown in the GUI.
+- `assets/resource/pipeline/`: the screen-by-screen logic.
+- `agent/`: Python custom actions (loops, reading numbers), registered with `@AgentServer.custom_action`.
 
-## 生态共建
+Dev tools:
 
-MAA 正计划建设为一类项目，而非舟的单一软件。
+| Command | What it does |
+|---|---|
+| `python tools/run.py <task> [--opt "Option=Case"] [--override <json>]` | runs a task without the GUI. The agent is started through AgentClient, the same way the GUI does it |
+| `python tools/screenshot.py [name]` | saves `debug/screenshots/<name>.png` at 720p |
+| `python tools/ocr_dump.py live` or `<png> [x y w h]` | prints everything OCR reads, with boxes |
+| `python tools/watch.py <session> [--seconds N] [--until REGEX]` | records every screen change with OCR text, for mapping new screens |
 
-若您的项目依赖于 MaaFramework，我们欢迎您将它命名为 MaaXXX, MXA, MAX 等等。当然，这是许可而不是限制，您也可以自由选择其他与 MAA 无关的名字，完全取决于您自己的想法！
+The game font sometimes merges words ("Riftwatch Fortress" reads as
+`RiftwatchFortress`), so OCR patterns use `\s?` where a space may be lost.
 
-同时，我们也非常欢迎您提出 PR，在 [社区项目列表](https://github.com/MaaXYZ/MaaFramework#%E7%A4%BE%E5%8C%BA%E9%A1%B9%E7%9B%AE) 中添加上您的项目！
+### Local GUI build
 
-## 常见问题
+1. Extract the MaaFramework release (`MAA-win-x86_64-*.zip`) into `deps/`.
+2. Extract the MFAAvalonia release into `install/`, without its `runtimes/` folder.
+3. `cd tools; python install.py v0.1.0 win x86_64`
+4. Run `install/MFAAvalonia.exe`.
 
-请阅读 [常见问题](./docs/zh_cn/develop/faq.md)。
-
-## 鸣谢
-
-本项目由 **[MaaFramework](https://github.com/MaaXYZ/MaaFramework)** 强力驱动！
-
-感谢以下开发者对本项目作出的贡献（下面链接改成你自己的项目地址）:
-
-[![Contributors](https://contrib.rocks/image?repo=MaaXYZ/MaaFramework&max=1000)](https://github.com/MaaXYZ/MaaFramework/graphs/contributors)
+Pushing a `v*` tag does all of this in CI and publishes a release.
+MFAAvalonia is unsigned, so Windows Smart App Control blocks it.

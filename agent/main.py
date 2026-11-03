@@ -3,8 +3,7 @@ import sys
 from maa.agent.agent_server import AgentServer
 from maa.toolkit import Toolkit
 
-import my_action
-import my_reco
+import affection  # noqa: F401  (registers its custom actions on import)
 
 
 def main():

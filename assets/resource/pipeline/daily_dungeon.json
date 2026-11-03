@@ -1,0 +1,141 @@
+{
+    // Entry point of the Daily Dungeon task. The "Mode" option decides what
+    // happens: one run (default), or Affection mode via the agent.
+    "DailyDungeon": {
+        "next": ["DailyDungeon_Run"]
+    },
+
+    // One complete run, starting and ending on the Daily Dungeon list.
+    // The agent calls this repeatedly in the farming modes.
+    "DailyDungeon_Run": {
+        "next": ["DailyDungeon_SelectCard"]
+    },
+
+    // Affection mode: check the weekly total, run until the cap, recheck
+    // once and top up. Logic lives in agent/affection.py.
+    "DailyDungeon_AffectionFarm": {
+        "action": "Custom",
+        "custom_action": "AffectionFarm",
+        "custom_action_param": { "per_run": 7 }
+    },
+
+    // Daily Dungeon list: find the chosen dungeon's title by OCR and tap it.
+    // `expected` is set by the "Dungeon" option in interface.json.
+    // The ROI skips the page header and the bottom tab bar.
+    "DailyDungeon_SelectCard": {
+        "recognition": "OCR",
+        "expected": "Riftwatch\\s?Fortress", // OCR often drops the space in the title font
+        "roi": [0, 110, 720, 1040],
+        "action": "Click",
+        "next": ["DailyDungeon_SelectDifficulty"]
+    },
+
+    // Dungeon detail: tap the chosen difficulty tab in the bottom bar.
+    // Tapping an already-selected tab is harmless, so no need to check first.
+    // `expected` is set by the "Difficulty" option.
+    "DailyDungeon_SelectDifficulty": {
+        "recognition": "OCR",
+        "expected": "^Hard$",
+        "roi": [150, 1180, 570, 80],
+        "action": "Click",
+        "next": ["DailyDungeon_DifficultySelected"]
+    },
+
+    // Confirm: the detail title reads "<Dungeon> - <Difficulty>".
+    "DailyDungeon_DifficultySelected": {
+        "recognition": "OCR",
+        "expected": "Hard$",
+        "roi": [100, 180, 520, 65],
+        "next": ["DailyDungeon_Match"]
+    },
+
+    // Start matchmaking. While queued the button reads "Cancel".
+    // `timeout` covers the queue: how long to wait for the accept prompt.
+    "DailyDungeon_Match": {
+        "recognition": "OCR",
+        "expected": "^Match$",
+        "roi": [370, 1050, 340, 95],
+        "action": "Click",
+        "post_delay": 1500, // let the button switch to "Cancel"
+        "timeout": 600000,
+        "next": ["DailyDungeon_Accept", "DailyDungeon_MaybeDropped"]
+    },
+
+    // "Enter <Dungeon> - <Difficulty>" prompt with a 20s countdown.
+    // If someone else declines, the game usually re-queues us: we stay here
+    // (Accept is in its own next list) until the next prompt.
+    "DailyDungeon_Accept": {
+        "recognition": "OCR",
+        "expected": "^Accept$",
+        "roi": [360, 1060, 340, 85],
+        "action": "Click",
+        "timeout": 600000,
+        // The game auto-readies after a few seconds, so the battle may start
+        // before we see the Ready button.
+        "next": [
+            "DailyDungeon_Ready",
+            "DailyDungeon_InRun",
+            "DailyDungeon_Accept",
+            "DailyDungeon_MaybeDropped"
+        ]
+    },
+
+    // "Match" is showing again on the detail screen. Either we were dropped
+    // from the queue, or everyone accepted and the detail screen is briefly
+    // shown while the dungeon loads. Wait, then look again: battle setup
+    // means it was loading; Match still there means we really were dropped.
+    "DailyDungeon_MaybeDropped": {
+        "recognition": "OCR",
+        "expected": "^Match$",
+        "roi": [370, 1050, 340, 95],
+        "post_delay": 10000,
+        "timeout": 600000,
+        "next": [
+            "DailyDungeon_Ready",
+            "DailyDungeon_InRun",
+            "DailyDungeon_Accept",
+            "DailyDungeon_Match"
+        ]
+    },
+
+    // Battle setup: the big yellow Ready button under "Auto-ready in Ns".
+    // The ROI keeps out the small "Ready" labels over each player's head.
+    "DailyDungeon_Ready": {
+        "recognition": "OCR",
+        "expected": "^Ready$",
+        "roi": [200, 900, 320, 110],
+        "action": "Click",
+        "timeout": 90000, // "Battle starts in 60s" countdown
+        "next": ["DailyDungeon_InRun"]
+    },
+
+    // A battle is running ("Round 1/30" at the top). The run is ~5 floors
+    // with room maps between them; the map votes itself after ~10s, so we
+    // just wait here for the results screen.
+    "DailyDungeon_InRun": {
+        "recognition": "OCR",
+        "expected": "Round\\s?\\d+/\\d+",
+        "roi": [200, 10, 320, 50],
+        "timeout": 300000,
+        "next": ["DailyDungeon_Results"]
+    },
+
+    // Results ("Drops" heading). For now: no loot claim, just tap back.
+    "DailyDungeon_Results": {
+        "recognition": "OCR",
+        "expected": "^Drops$",
+        "roi": [0, 840, 250, 80],
+        "pre_delay": 1500, // let the results animation finish
+        "action": "Click",
+        "target": [30, 1185, 90, 70], // back arrow, bottom left
+        "timeout": 30000,
+        "next": ["DailyDungeon_BackOnList"]
+    },
+
+    // Back on the Daily Dungeon list: the run is complete.
+    "DailyDungeon_BackOnList": {
+        "recognition": "OCR",
+        "expected": "Daily\\s?Reward\\s?Attempts",
+        "roi": [200, 20, 320, 60]
+    }
+}
