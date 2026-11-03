@@ -108,7 +108,7 @@
 
     "Affection_Return": {
         "next": [
-            "Common_QuitDialog",
+            "[JumpBack]Common_QuitDialog",
             "Affection_Ret_DungeonList",
             "Affection_Ret_Journal",
             "Affection_Ret_Home",
@@ -163,18 +163,6 @@
         "recognition": "OCR",
         "expected": "Daily\\s?Reward\\s?Attempts",
         "roi": [200, 20, 320, 60]
-    },
-
-    // Safety net: the game's quit prompt. Always cancel.
-    "Common_QuitDialog": {
-        "recognition": "And",
-        "all_of": [
-            { "recognition": "OCR", "expected": "Quit the game", "roi": [100, 400, 520, 400] },
-            { "recognition": "OCR", "expected": "^Cancel$", "roi": [100, 650, 260, 130] }
-        ],
-        "box_index": 1,
-        "action": "Click",
-        "next": ["Affection_Return"]
     },
 
     // Daily Dungeon list: back out to the Journal.
