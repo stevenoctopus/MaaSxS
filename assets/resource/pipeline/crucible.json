@@ -1,0 +1,175 @@
+{
+    // Crucible of Hieromon (Journal > Daily Events). The agent action
+    // CrucibleFarm (agent/crucible.py) runs Crucible_Run once, or until a run
+    // kills the boss, then claims the damage-track rewards.
+
+    // Entry: get to the Crucible menu from any screen.
+    "Crucible": {
+        "next": [
+            "Crucible_OnMenu",
+            "Crucible_OnDailyEvents",
+            "Crucible_OnJournal",
+            "Crucible_OnHome",
+            "[JumpBack]Common_GoHome"
+        ]
+    },
+    "Crucible_OnHome": {
+        "recognition": "And",
+        "all_of": [
+            { "recognition": "OCR", "expected": "^Home$", "roi": [250, 1235, 220, 45] },
+            { "recognition": "TemplateMatch", "template": "Affection/menu_button.png", "roi": [560, 880, 160, 240] }
+        ],
+        "action": "Click",
+        "target": [175, 1180, 80, 70], // Journal tab
+        "next": ["Crucible_OnJournal"]
+    },
+    "Crucible_OnJournal": {
+        "recognition": "OCR",
+        "expected": "^Daily\\s?Events$",
+        "roi": [400, 740, 320, 70],
+        "action": "Click",
+        "next": ["Crucible_OnDailyEvents"]
+    },
+    "Crucible_OnDailyEvents": {
+        "recognition": "OCR",
+        "expected": "Crucible\\s?of\\s?Hieromon",
+        "roi": [0, 315, 450, 80],
+        "action": "Click",
+        "next": ["Crucible_OnMenu"]
+    },
+    // The Crucible menu (title at the top). The mode option sets the param.
+    "Crucible_OnMenu": {
+        "recognition": "OCR",
+        "expected": "Crucible\\s?of\\s?Hieromon",
+        "roi": [20, 20, 420, 60],
+        "next": ["Crucible_Farm"]
+    },
+    "Crucible_Farm": {
+        "action": "Custom",
+        "custom_action": "CrucibleFarm",
+        "custom_action_param": { "until_kill": false }
+    },
+
+    // ---------------------------------------------------------------
+    // One run, from the Crucible menu back to the Crucible menu.
+    // Same queue flow as Daily Dungeon: Match, Accept (the game re-queues by
+    // itself if someone declines), Match again if we get dropped, Ready.
+    "Crucible_Run": {
+        "next": ["Crucible_Match"]
+    },
+    "Crucible_Match": {
+        "recognition": "OCR",
+        "expected": "^Match$",
+        "roi": [370, 1050, 340, 95],
+        "action": "Click",
+        "post_delay": 1500,
+        "timeout": 600000,
+        "next": ["Crucible_Accept", "Crucible_MaybeDropped"]
+    },
+    "Crucible_Accept": {
+        "recognition": "OCR",
+        "expected": "^Accept$",
+        "roi": [360, 1060, 340, 85],
+        "action": "Click",
+        "timeout": 600000,
+        "next": ["Crucible_Ready", "Crucible_InRun", "Crucible_Accept", "Crucible_MaybeDropped"]
+    },
+    // Match showing again: dropped from the queue, or just the brief flash
+    // while the battle loads. Wait, then look again before pressing Match.
+    "Crucible_MaybeDropped": {
+        "recognition": "OCR",
+        "expected": "^Match$",
+        "roi": [370, 1050, 340, 95],
+        "post_delay": 10000,
+        "timeout": 600000,
+        "next": ["Crucible_Ready", "Crucible_InRun", "Crucible_Accept", "Crucible_Match"]
+    },
+    "Crucible_Ready": {
+        "recognition": "OCR",
+        "expected": "^Ready$",
+        "roi": [200, 900, 320, 110],
+        "action": "Click",
+        "timeout": 90000,
+        "next": ["Crucible_InRun"]
+    },
+    // The fight: "Round x/10" at the top. Wait for the results.
+    "Crucible_InRun": {
+        "recognition": "OCR",
+        "expected": "Round\\s?\\d+/\\d+",
+        "roi": [200, 10, 320, 50],
+        "timeout": 300000,
+        "next": ["Crucible_Results"]
+    },
+    // Results: "Battle Ended", Team DMG, "Tap to Continue".
+    "Crucible_Results": {
+        "recognition": "OCR",
+        "expected": "Tap\\s?to\\s?Continue",
+        "roi": [150, 1170, 420, 70],
+        "pre_delay": 1500, // let the numbers settle
+        "timeout": 600000,
+        "next": ["Crucible_TeamDmg"]
+    },
+    // Team DMG (e.g. "5.51B"). The agent reads this node's text.
+    "Crucible_TeamDmg": {
+        "recognition": "OCR",
+        "expected": "^\\d+(\\.\\d+)?[KMB]?$",
+        "roi": [45, 728, 280, 50],
+        "action": "Click",
+        "target": [150, 1170, 420, 70], // Tap to Continue
+        "post_delay": 1500,
+        "next": ["Crucible_BackOnMenu", "Crucible_TapContinue"]
+    },
+    // The tap didn't take: tap again.
+    "Crucible_TapContinue": {
+        "recognition": "OCR",
+        "expected": "Tap\\s?to\\s?Continue",
+        "roi": [150, 1170, 420, 70],
+        "action": "Click",
+        "post_delay": 1500,
+        "next": ["Crucible_BackOnMenu", "Crucible_TapContinue"]
+    },
+    "Crucible_BackOnMenu": {
+        "recognition": "OCR",
+        "expected": "Crucible\\s?of\\s?Hieromon",
+        "roi": [20, 20, 420, 60]
+    },
+
+    // ---------------------------------------------------------------
+    // Damage-track helpers used by the agent.
+    "Crucible_HighestToday": { // "Highest DMG Today" value, raw digits
+        "recognition": "OCR",
+        "expected": "^\\d+$",
+        "roi": [150, 815, 420, 55]
+    },
+    "Crucible_TrackValues": { // reward thresholds under the gifts, e.g. "11.3B"
+        "recognition": "OCR",
+        "expected": "^\\d+(\\.\\d+)?[KMB]$",
+        "roi": [20, 955, 680, 45]
+    },
+    "Crucible_TrackRight": {
+        "action": "Swipe",
+        "begin": [620, 920, 10, 10],
+        "end": [80, 920, 10, 10],
+        "duration": 600,
+        "post_delay": 1500
+    },
+    "Crucible_TrackLeft": {
+        "action": "Swipe",
+        "begin": [80, 920, 10, 10],
+        "end": [620, 920, 10, 10],
+        "duration": 600,
+        "post_delay": 1500
+    },
+    // Close whatever claiming opened (rewards popup): back until the menu shows.
+    "Crucible_CloseToMenu": {
+        "next": ["Crucible_BackOnMenu", "Crucible_CloseToMenu_Back"]
+    },
+    "Crucible_CloseToMenu_Back": {
+        "action": "ClickKey",
+        "key": 4,
+        "pre_delay": 1000,
+        "post_delay": 1500,
+        "max_hit": 5,
+        "next": ["Crucible_BackOnMenu", "Crucible_CloseToMenu_Back"]
+    }
+}
