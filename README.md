@@ -42,8 +42,12 @@ If Windows stops it:
   The only way around that is to turn Smart App Control off (Windows Security >
   App & browser control > Smart App Control settings). Note that Windows
   won't let you turn it back on afterwards without resetting Windows.
-- **.NET is missing**: install the
-  [.NET 10 Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) for x64.
+- **It doesn't start, or says .NET is missing**: the GUI needs the .NET 10
+  Desktop Runtime and the Visual C++ Redistributable, which many PCs already
+  have. Right-click `DependencySetup_win.bat` in the MaaSxS folder > *Run as
+  administrator* to install both, then restart the PC.
+
+Everything else (MaaFramework, Python, the game logic) is inside the zip.
 
 ### 3. Run it
 

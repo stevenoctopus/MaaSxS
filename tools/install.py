@@ -197,7 +197,11 @@ def install_python():
 
 def install_gui_defaults():
     """Start MFAAvalonia in English. Only written when missing, so an
-    existing install keeps its settings."""
+    existing install keeps its settings. Also give MFAAvalonia's runtime
+    installer (VC++ and .NET Desktop Runtime) an English file name."""
+    for setup in install_path.glob("DependencySetup_*_win.bat"):
+        setup.replace(install_path / "DependencySetup_win.bat")
+
     config = install_path / "config" / "config.json"
     if config.exists():
         return
