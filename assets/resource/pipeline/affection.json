@@ -6,8 +6,19 @@
     // Affection_Where is a hub: it recognises which screen we're on and takes
     // the next step, so the task works from anywhere along that route.
 
+    // Start: same as Affection_Where, plus Common_GoHome for screens off the
+    // route. Only the first step has that fallback: later steps can catch a
+    // screen mid-animation, and a trip home there would undo progress.
     "Affection_Check": {
-        "next": ["Affection_Where"]
+        "next": [
+            "Affection_Claim",
+            "Affection_FriendsPage",
+            "Affection_MenuOpen",
+            "Affection_Home",
+            "Affection_Journal",
+            "Affection_DungeonList",
+            "[JumpBack]Common_GoHome"
+        ]
     },
 
     "Affection_Where": {

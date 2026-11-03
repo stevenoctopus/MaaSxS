@@ -56,7 +56,9 @@
                     "name": "Affection",
                     "description": "Check this week's affection, run the dungeons needed to reach the weekly cap (+7 per run), then check again and repeat until capped.",
                     "pipeline_override": {
-                        "DailyDungeon_OnList": {
+                        // Skip the walk to the list: the affection check
+                        // starts from any screen and ends on the list.
+                        "DailyDungeon": {
                             "next": [
                                 "DailyDungeon_AffectionFarm"
                             ]

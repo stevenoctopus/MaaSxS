@@ -16,6 +16,7 @@
             "Common_Home_FromDungeonList",
             "Common_Home_FromResults",
             "Common_Home_FromJournal",
+            "Common_Home_TabBar",
             "Common_Home_WaitBattle"
         ],
         "timeout": 5000,
@@ -70,6 +71,17 @@
         "roi": [0, 180, 300, 60],
         "action": "Click",
         "target": [320, 1175, 90, 80],
+        "next": ["Common_GoHome"]
+    },
+
+    // Any other main tab (Guild, character, portal...): the tab bar shows the
+    // house icon in the middle, so tap it. Back on a main tab would only
+    // open "Quit the game?".
+    "Common_Home_TabBar": {
+        "recognition": "TemplateMatch",
+        "template": "Common/home_tab.png",
+        "roi": [280, 1140, 160, 140],
+        "action": "Click",
         "next": ["Common_GoHome"]
     },
 
