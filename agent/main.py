@@ -1,4 +1,9 @@
 import sys
+from pathlib import Path
+
+# The embedded Python in Windows releases does not add the script's folder
+# to sys.path, so do it here for `import affection`.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from maa.agent.agent_server import AgentServer
 from maa.toolkit import Toolkit

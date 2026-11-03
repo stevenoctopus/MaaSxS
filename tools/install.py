@@ -138,7 +138,60 @@ def install_agent():
         working_dir / "agent",
         install_path / "agent",
         dirs_exist_ok=True,
+        ignore=shutil.ignore_patterns("__pycache__"),
     )
+
+
+# Windows builds ship an embedded Python so users need nothing installed.
+EMBED_PYTHON = "3.12.10"
+
+
+def install_python():
+    if os_name != "win":
+        return  # macOS/Linux use the system python3 (see interface.json agent)
+
+    import subprocess
+    import urllib.request
+    import zipfile
+
+    embed_arch = "amd64" if arch == "x86_64" else "arm64"
+    pip_platform = "win_amd64" if arch == "x86_64" else "win_arm64"
+    py_dir = install_path / "python"
+
+    if not (py_dir / "python.exe").exists():
+        url = (f"https://www.python.org/ftp/python/{EMBED_PYTHON}/"
+               f"python-{EMBED_PYTHON}-embed-{embed_arch}.zip")
+        archive = working_dir / "deps" / Path(url).name
+        if not archive.exists():
+            print(f"Downloading {url}")
+            urllib.request.urlretrieve(url, archive)
+        with zipfile.ZipFile(archive) as z:
+            z.extractall(py_dir)
+
+    # The embedded Python only searches the paths in its ._pth file.
+    site_packages = py_dir / "Lib" / "site-packages"
+    pth = next(py_dir.glob("python*._pth"))
+    lines = pth.read_text(encoding="utf-8").splitlines()
+    if "Lib/site-packages" not in lines:
+        lines.insert(1, "Lib/site-packages")
+        pth.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    major_minor = "".join(EMBED_PYTHON.split(".")[:2])
+    subprocess.check_call([
+        sys.executable, "-m", "pip", "install", "--upgrade",
+        "--target", str(site_packages),
+        "--platform", pip_platform,
+        "--python-version", major_minor,
+        "--only-binary=:all:",
+        "-r", str(working_dir / "agent" / "requirements.txt"),
+    ])
+
+    # Point the GUI at the bundled interpreter.
+    with open(install_path / "interface.json", "r", encoding="utf-8") as f:
+        interface = jsonc.load(f)
+    interface["agent"]["child_exec"] = "./python/python.exe"
+    with open(install_path / "interface.json", "w", encoding="utf-8") as f:
+        jsonc.dump(interface, f, ensure_ascii=False, indent=4)
 
 
 if __name__ == "__main__":
@@ -146,5 +199,6 @@ if __name__ == "__main__":
     install_resource()
     install_chores()
     install_agent()
+    install_python()
 
     print(f"Install to {install_path} successfully.")

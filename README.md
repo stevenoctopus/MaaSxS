@@ -10,7 +10,8 @@ The GUI is [MFAAvalonia](https://github.com/SweetSmellFox/MFAAvalonia).
 - **The emulator must run at 720x1280 (portrait).** Every screen region and
   template image is made at that resolution, so other resolutions will misclick.
 - ADB debugging enabled in the emulator (tested with LDPlayer 9).
-- Python 3 with `maafw` (`pip install maafw`). The GUI starts `agent/main.py` with it.
+- Windows releases include their own Python for the agent, so nothing else is
+  needed. On macOS/Linux, install Python 3 and `pip install -r agent/requirements.txt`.
 
 ## Tasks
 
@@ -50,8 +51,12 @@ The game font sometimes merges words ("Riftwatch Fortress" reads as
 
 1. Extract the MaaFramework release (`MAA-win-x86_64-*.zip`) into `deps/`.
 2. Extract the MFAAvalonia release into `install/`, without its `runtimes/` folder.
-3. `cd tools; python install.py v0.1.0 win x86_64`
+3. `cd tools; python install.py v0.1.0 win x86_64` (close the GUI first: it locks its DLLs).
+   On Windows this also puts an embedded Python 3.12 with `maafw` in `install/python/`
+   and points the agent at it.
 4. Run `install/MFAAvalonia.exe`.
 
 Pushing a `v*` tag does all of this in CI and publishes a release.
+Keep `MAAFW_VERSION` in `.github/workflows/install.yml` and `maafw` in
+`agent/requirements.txt` on the same version.
 MFAAvalonia is unsigned, so Windows Smart App Control blocks it.
