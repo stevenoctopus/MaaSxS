@@ -2,6 +2,7 @@
 
     python tools/run.py DailyDungeon
     python tools/run.py DailyDungeon --opt "Dungeon=Court of Purification" --opt Difficulty=Nightmare
+    python tools/run.py Affection_Check     # any pipeline node works as an entry
 
 Options not given use their default_case, like the GUI does. The agent
 (agent/main.py) is started as a separate process through AgentClient, the
@@ -76,7 +77,9 @@ def main():
     interface = jsonc.loads((ASSETS / "interface.json").read_text(encoding="utf-8"))
     task = next((t for t in interface["task"] if t["name"] == args.task), None)
     if task is None:
-        sys.exit(f"No task {args.task!r} in interface.json")
+        # Not a GUI task: run it as a pipeline node (internal tasks like Affection_Check).
+        print(f"{args.task!r} is not in interface.json; running it as a pipeline entry")
+        task = {"name": args.task, "entry": args.task}
     chosen = dict(o.split("=", 1) for o in args.opt)
     override = build_override(interface, task, chosen)
     if args.override:

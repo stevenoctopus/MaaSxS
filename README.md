@@ -17,8 +17,10 @@ The GUI is [MFAAvalonia](https://github.com/SweetSmellFox/MFAAvalonia).
 
 | Task | Options | Starts on | Does |
 |---|---|---|---|
-| Daily Dungeon | Mode, Dungeon, Difficulty | Daily Dungeon list | **Single run**: Match, Accept, Ready, wait out the floors, leave results, back on the list. **Affection**: read this week's affection, run until the cap (+7 per run), recheck once and top up. |
-| Check Affection | - | Daily Dungeon list, Journal or Home | Friends > Affection Tokens, claim, read the weekly total, return to the Daily Dungeon list. |
+| Daily Dungeon | Mode, Dungeon, Difficulty | Daily Dungeon list | **Single run**: Match, Accept, Ready, wait out the floors, leave results, back on the list. **Affection**: read this week's affection (Friends > Affection Tokens, claim), run the dungeons needed for the cap (+7 per run), check again and repeat until capped. Stops if a whole batch earns nothing. |
+
+`Affection_Check` (read the weekly total and return to the list) is an internal
+step, not a GUI task. Test it with `python tools/run.py Affection_Check`.
 
 Only dungeons visible and unlocked on the list without scrolling are supported so far.
 For testing use **Court of Purification on Nightmare**: its queue is much faster.

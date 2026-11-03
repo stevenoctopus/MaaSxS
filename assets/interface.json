@@ -40,11 +40,6 @@
                 "Dungeon",
                 "Difficulty"
             ]
-        },
-        {
-            "name": "AffectionCheck",
-            "label": "Check Affection",
-            "entry": "Affection_Check"
         }
     ],
     "option": {
@@ -59,7 +54,7 @@
                 },
                 {
                     "name": "Affection",
-                    "description": "Check this week's affection, run until the weekly cap (+7 per run), recheck once and top up.",
+                    "description": "Check this week's affection, run the dungeons needed to reach the weekly cap (+7 per run), then check again and repeat until capped.",
                     "pipeline_override": {
                         "DailyDungeon": {
                             "next": [
