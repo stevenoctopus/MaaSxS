@@ -1,7 +1,8 @@
 {
     // Shared routines. Call them from a task's `next` with the [JumpBack]
-    // prefix, e.g. "[JumpBack]Common_GoHome": the routine runs to its end,
+    // prefix, e.g. "[JumpBack]Common_ToTabBar": the routine runs to its end,
     // then the calling node checks its `next` list again.
+    // Screen checks (Screen_*) are in screens.json.
 
     // Shows a message in the GUI log. The agent runs this with its text as
     // the focus (agent/gui.py), so agent messages appear in the GUI too.
@@ -18,99 +19,127 @@
     },
 
     // ---------------------------------------------------------------
-    // Go to the Home tab from any screen, including after a crash or
-    // disconnect (game closed, or back at its start-up Notice / title).
-    // Known screens get a direct step. After 5s of recognising nothing we
-    // launch the game (no-op if it's already in front), look again, and if
-    // still nothing press Android back.
-    // Back on Home opens "Quit the game?", which Common_QuitDialog cancels.
-    "Common_GoHome": {
+    // Get to any screen with the bottom tab bar (Home, Journal, Guild, ...)
+    // from anywhere, including after a crash or disconnect.
+    // Known screens get a direct step, each of which starts this over.
+    // Unknown screen: Android back, twice; still unknown, the game is
+    // probably not in front (crashed), so start it (no-op if it's already
+    // in front) and look again.
+    // The four next lists below are the same list; keep them in step.
+    "Common_ToTabBar": {
         "next": [
-            "Common_AtHome",
             "[JumpBack]Common_QuitDialog",
-            "Common_Home_ReturnPrompt",
-            "Common_Launch_Notice",
-            "Common_Launch_TapToPlay",
-            "Common_Launch_Loading",
-            "Common_Home_FromDungeonList",
-            "Common_Home_FromResults",
-            "Common_Home_FromTapToContinue",
-            "Common_Home_FromJournal",
-            "Common_Home_TabBar",
-            "Common_Home_WaitBattle"
+            "Common_TabBar_Done",
+            "Common_TabBar_ReturnPrompt",
+            "Common_TabBar_Notice",
+            "Common_TabBar_TapToPlay",
+            "Common_TabBar_Loading",
+            "Common_TabBar_DungeonList",
+            "Common_TabBar_DungeonResults",
+            "Common_TabBar_TapToContinue",
+            "Common_TabBar_BackOut",
+            "Common_TabBar_Battle"
         ],
-        "timeout": 5000,
-        "on_error": ["Common_Home_StartGame"]
+        "timeout": 3000,
+        "on_error": ["Common_TabBar_Back1"]
     },
-
-    // Unknown screen: make sure the game is the app in front (it may have
-    // crashed to the emulator's home screen), then look again.
-    "Common_Home_StartGame": {
+    "Common_TabBar_Back1": {
+        "focus": { "Node.Action.Starting": "Unknown screen: pressing back" },
+        "action": "ClickKey",
+        "key": 4,
+        "post_delay": 1500,
+        "next": [
+            "[JumpBack]Common_QuitDialog",
+            "Common_TabBar_Done",
+            "Common_TabBar_ReturnPrompt",
+            "Common_TabBar_Notice",
+            "Common_TabBar_TapToPlay",
+            "Common_TabBar_Loading",
+            "Common_TabBar_DungeonList",
+            "Common_TabBar_DungeonResults",
+            "Common_TabBar_TapToContinue",
+            "Common_TabBar_BackOut",
+            "Common_TabBar_Battle"
+        ],
+        "timeout": 3000,
+        "on_error": ["Common_TabBar_Back2"]
+    },
+    "Common_TabBar_Back2": {
+        "action": "ClickKey",
+        "key": 4,
+        "post_delay": 1500,
+        "next": [
+            "[JumpBack]Common_QuitDialog",
+            "Common_TabBar_Done",
+            "Common_TabBar_ReturnPrompt",
+            "Common_TabBar_Notice",
+            "Common_TabBar_TapToPlay",
+            "Common_TabBar_Loading",
+            "Common_TabBar_DungeonList",
+            "Common_TabBar_DungeonResults",
+            "Common_TabBar_TapToContinue",
+            "Common_TabBar_BackOut",
+            "Common_TabBar_Battle"
+        ],
+        "timeout": 3000,
+        "on_error": ["Common_TabBar_StartGame"]
+    },
+    // max_hit stops an endless loop if the game never shows a known screen.
+    "Common_TabBar_StartGame": {
+        "focus": { "Node.Action.Starting": "Game not in front: starting it" },
         "action": "StartApp",
         "package": "com.zjcs.android.us",
         "post_delay": 3000,
+        "max_hit": 10,
         "next": [
-            "Common_AtHome",
             "[JumpBack]Common_QuitDialog",
-            "Common_Home_ReturnPrompt",
-            "Common_Launch_Notice",
-            "Common_Launch_TapToPlay",
-            "Common_Launch_Loading",
-            "Common_Home_FromDungeonList",
-            "Common_Home_FromResults",
-            "Common_Home_FromTapToContinue",
-            "Common_Home_FromJournal",
-            "Common_Home_TabBar",
-            "Common_Home_WaitBattle"
+            "Common_TabBar_Done",
+            "Common_TabBar_ReturnPrompt",
+            "Common_TabBar_Notice",
+            "Common_TabBar_TapToPlay",
+            "Common_TabBar_Loading",
+            "Common_TabBar_DungeonList",
+            "Common_TabBar_DungeonResults",
+            "Common_TabBar_TapToContinue",
+            "Common_TabBar_BackOut",
+            "Common_TabBar_Battle"
         ],
         "timeout": 20000, // the game's splash screen can take a while
-        "on_error": ["Common_Home_PressBack"]
+        "on_error": ["Common_TabBar_Back1"]
+    },
+
+    "Common_TabBar_Done": {
+        "recognition": "And",
+        "all_of": ["Screen_TabBar"]
     },
 
     // --- Game start-up (after a crash, disconnect or fresh launch) ---
-    // Notice popup (Notice / System / News, "Don't show again today"): back arrow.
-    "Common_Launch_Notice": {
+    "Common_TabBar_Notice": { // close the Notice popup (back arrow)
         "focus": { "Node.Action.Starting": "Game start-up: closing the Notice" },
         "recognition": "And",
-        "all_of": [
-            { "recognition": "OCR", "expected": "^Notice$", "roi": [240, 55, 240, 80] },
-            { "recognition": "OCR", "expected": "show\\s?again", "roi": [180, 1090, 400, 60] }
-        ],
+        "all_of": ["Screen_Notice"],
         "action": "Click",
         "target": [30, 1185, 90, 70],
         "post_delay": 2000,
-        "next": ["Common_GoHome"]
+        "next": ["Common_ToTabBar"]
     },
-    // Title screen: "Tap to Play".
-    "Common_Launch_TapToPlay": {
+    "Common_TabBar_TapToPlay": {
         "focus": { "Node.Action.Starting": "Game start-up: Tap to Play" },
-        "recognition": "OCR",
-        "expected": "^Tap\\s?to\\s?Play$",
-        "roi": [180, 990, 360, 120],
+        "recognition": "And",
+        "all_of": ["Screen_TapToPlay"],
         "action": "Click",
         "post_delay": 5000,
-        "next": ["Common_GoHome"]
+        "next": ["Common_ToTabBar"]
     },
-    // "Logging in..." / "Loading...": wait.
-    "Common_Launch_Loading": {
-        "recognition": "OCR",
-        "expected": "^(Logging\\s?in|Loading)",
-        "post_delay": 3000,
-        "next": ["Common_GoHome"]
-    },
-
-    // Home tab: "Home" label in the tab bar and the cube menu button. Done.
-    "Common_AtHome": {
-        "focus": { "Node.Action.Starting": "On Home" },
+    "Common_TabBar_Loading": { // wait
         "recognition": "And",
-        "all_of": [
-            { "recognition": "OCR", "expected": "^Home$", "roi": [250, 1235, 220, 45] },
-            { "recognition": "TemplateMatch", "template": "Affection/menu_button.png", "roi": [560, 880, 160, 240] }
-        ]
+        "all_of": ["Screen_Loading"],
+        "post_delay": 3000,
+        "next": ["Common_ToTabBar"]
     },
 
     // "Confirm / Return to Home?" (e.g. back on the world map): press OK.
-    "Common_Home_ReturnPrompt": {
+    "Common_TabBar_ReturnPrompt": {
         "recognition": "And",
         "all_of": [
             { "recognition": "OCR", "expected": "Return\\s?to\\s?Home", "roi": [100, 540, 520, 90] },
@@ -119,81 +148,57 @@
         "box_index": 1,
         "action": "Click",
         "post_delay": 2000, // the trip home loads for a moment
-        "next": ["Common_GoHome"]
+        "next": ["Common_ToTabBar"]
     },
-
-    "Common_Home_FromDungeonList": {
-        "recognition": "OCR",
-        "expected": "Daily\\s?Reward\\s?Attempts",
-        "roi": [200, 20, 320, 60],
+    "Common_TabBar_DungeonList": { // back arrow, bottom left
+        "recognition": "And",
+        "all_of": ["Screen_DungeonList"],
         "action": "Click",
-        "target": [30, 1185, 90, 70], // back arrow, bottom left
-        "next": ["Common_GoHome"]
+        "target": [30, 1185, 90, 70],
+        "next": ["Common_ToTabBar"]
     },
-
-    "Common_Home_FromResults": {
-        "recognition": "OCR",
-        "expected": "^Drops$",
-        "roi": [0, 840, 250, 80],
+    "Common_TabBar_DungeonResults": { // back arrow
+        "recognition": "And",
+        "all_of": ["Screen_DungeonResults"],
         "action": "Click",
-        "target": [30, 1185, 90, 70], // back arrow, bottom left
+        "target": [30, 1185, 90, 70],
         "post_delay": 1500,
-        "next": ["Common_GoHome"]
+        "next": ["Common_ToTabBar"]
     },
-
-    // Crucible results ("Tap to Continue"): tap through.
-    "Common_Home_FromTapToContinue": {
-        "recognition": "OCR",
-        "expected": "Tap\\s?to\\s?Continue",
-        "roi": [150, 1170, 420, 70],
+    "Common_TabBar_TapToContinue": { // Crucible results: tap through
+        "recognition": "And",
+        "all_of": ["Screen_TapToContinue"],
         "action": "Click",
         "post_delay": 1500,
-        "next": ["Common_GoHome"]
+        "next": ["Common_ToTabBar"]
     },
-
-    // Journal tab: switch to the Home tab (house icon, bottom middle).
-    "Common_Home_FromJournal": {
-        "recognition": "OCR",
-        "expected": "Free\\s?Attempts",
-        "roi": [0, 180, 300, 60],
-        "action": "Click",
-        "target": [320, 1175, 90, 80],
-        "next": ["Common_GoHome"]
-    },
-
-    // Any other main tab (Guild, character, portal...): the tab bar shows the
-    // house icon in the middle, so tap it. Back on a main tab would only
-    // open "Quit the game?".
-    "Common_Home_TabBar": {
-        "recognition": "TemplateMatch",
-        "template": "Common/home_tab.png",
-        "roi": [280, 1140, 160, 140],
-        "action": "Click",
-        "next": ["Common_GoHome"]
-    },
-
-    // A dungeon battle can't be left: wait for it to finish.
-    "Common_Home_WaitBattle": {
-        "focus": { "Node.Action.Starting": "A battle is running: waiting for it to end" },
-        "recognition": "OCR",
-        "expected": "Round\\s?\\d+/\\d+",
-        "roi": [200, 10, 320, 50],
-        "post_delay": 5000,
-        "next": ["Common_GoHome"]
-    },
-
-    // Unknown screen (popup, menu, sub-page): Android back, then look again.
-    // max_hit stops an endless loop on a screen back can't leave.
-    "Common_Home_PressBack": {
-        "focus": { "Node.Action.Starting": "Unknown screen: pressing back" },
+    // Sub-pages where Android back is safe: menu, Friends, Affection popup,
+    // Crucible pages, Daily Events.
+    "Common_TabBar_BackOut": {
+        "recognition": "Or",
+        "any_of": [
+            "Screen_AffectionPopup",
+            "Screen_FriendsPage",
+            "Screen_MainMenu",
+            "Screen_CrucibleTitle",
+            "Screen_DailyEvents"
+        ],
         "action": "ClickKey",
         "key": 4,
-        "post_delay": 1500,
-        "max_hit": 20,
-        "next": ["Common_GoHome"]
+        "post_delay": 1000,
+        "next": ["Common_ToTabBar"]
+    },
+    // A battle can't be left: wait for it to finish.
+    "Common_TabBar_Battle": {
+        "focus": { "Node.Action.Starting": "A battle is running: waiting for it to end" },
+        "recognition": "And",
+        "all_of": ["Screen_Battle"],
+        "post_delay": 5000,
+        "next": ["Common_ToTabBar"]
     },
 
-    // The game's quit prompt: always cancel. Use as "[JumpBack]Common_QuitDialog".
+    // The game's quit prompt (back on a main tab): always cancel.
+    // Use as "[JumpBack]Common_QuitDialog".
     "Common_QuitDialog": {
         "recognition": "And",
         "all_of": [
@@ -202,5 +207,74 @@
         ],
         "box_index": 1,
         "action": "Click"
+    },
+
+    // ---------------------------------------------------------------
+    // Go to the Home tab: get to the tab bar, then tap the house icon.
+    "Common_GoHome": {
+        "next": ["[JumpBack]Common_QuitDialog", "Common_AtHome", "Common_Home_TapHouse", "[JumpBack]Common_ToTabBar"]
+    },
+    "Common_AtHome": {
+        "focus": { "Node.Action.Starting": "On Home" },
+        "recognition": "And",
+        "all_of": ["Screen_Home"]
+    },
+    "Common_Home_TapHouse": { // house icon, bottom middle
+        "recognition": "And",
+        "all_of": ["Screen_TabBar"],
+        "action": "Click",
+        "target": [320, 1175, 90, 80],
+        "next": ["Common_AtHome"]
+    },
+
+    // ---------------------------------------------------------------
+    // Matchmaking, shared by Daily Dungeon and Crucible: from a screen with
+    // the Match button until the battle starts. Use as "[JumpBack]Common_Queue".
+    // Match, Accept (the game re-queues by itself if someone declines),
+    // Match again if we get dropped, Ready.
+    "Common_Queue": {
+        "next": ["Common_Queue_Match"]
+    },
+    "Common_Queue_Match": {
+        "focus": { "Node.Action.Starting": "Queueing for a match" },
+        "recognition": "And",
+        "all_of": ["Screen_MatchButton"],
+        "action": "Click",
+        "post_delay": 1500, // let the button switch to "Cancel"
+        "timeout": 600000, // the queue: how long to wait for the accept prompt
+        "next": ["Common_Queue_Accept", "Common_Queue_MaybeDropped"]
+    },
+    "Common_Queue_Accept": {
+        "focus": { "Node.Action.Starting": "Match found: accepting" },
+        "recognition": "And",
+        "all_of": ["Screen_AcceptButton"],
+        "action": "Click",
+        "timeout": 600000,
+        // The game auto-readies after a few seconds, so the battle may start
+        // before we see the Ready button.
+        "next": ["Common_Queue_Ready", "Common_Queue_InBattle", "Common_Queue_Accept", "Common_Queue_MaybeDropped"]
+    },
+    // Match showing again: dropped from the queue, or just the brief flash
+    // while the battle loads. Wait, then look again before pressing Match.
+    "Common_Queue_MaybeDropped": {
+        "focus": { "Node.Action.Starting": "Back on Match: waiting, then re-queueing if dropped" },
+        "recognition": "And",
+        "all_of": ["Screen_MatchButton"],
+        "post_delay": 10000,
+        "timeout": 600000,
+        "next": ["Common_Queue_Ready", "Common_Queue_InBattle", "Common_Queue_Accept", "Common_Queue_Match"]
+    },
+    "Common_Queue_Ready": {
+        "focus": { "Node.Action.Starting": "Ready" },
+        "recognition": "And",
+        "all_of": ["Screen_ReadyButton"],
+        "action": "Click",
+        "timeout": 90000, // "Battle starts in 60s" countdown
+        "next": ["Common_Queue_InBattle"]
+    },
+    "Common_Queue_InBattle": { // done: the battle has started
+        "focus": { "Node.Action.Starting": "Battle in progress" },
+        "recognition": "And",
+        "all_of": ["Screen_Battle"]
     }
 }

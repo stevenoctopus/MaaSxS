@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import json
 import shutil
 import sys
 
@@ -30,7 +31,7 @@ arch = sys.argv[3]
 
 
 def get_dotnet_platform_tag():
-    """自动检测当前平台并返回对应的dotnet平台标签"""
+    """Detect the current platform and return its .NET platform tag"""
     if os_name == "win" and arch == "x86_64":
         platform_tag = "win-x64"
     elif os_name == "win" and arch == "aarch64":
@@ -57,7 +58,7 @@ def get_dotnet_platform_tag():
 def install_deps():
     if not (working_dir / "deps" / "bin").exists():
         print('Please download the MaaFramework to "deps" first.')
-        print('请先下载 MaaFramework 到 "deps"。')
+        print('Download MaaFramework into "deps" first.')
         sys.exit(1)
 
     if os_name == "android":
@@ -194,11 +195,22 @@ def install_python():
         jsonc.dump(interface, f, ensure_ascii=False, indent=4)
 
 
+def install_gui_defaults():
+    """Start MFAAvalonia in English. Only written when missing, so an
+    existing install keeps its settings."""
+    config = install_path / "config" / "config.json"
+    if config.exists():
+        return
+    config.parent.mkdir(parents=True, exist_ok=True)
+    config.write_text(json.dumps({"CurrentLanguage": "en-US"}, indent=2), encoding="utf-8")
+
+
 if __name__ == "__main__":
     install_deps()
     install_resource()
     install_chores()
     install_agent()
     install_python()
+    install_gui_defaults()
 
     print(f"Install to {install_path} successfully.")

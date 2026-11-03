@@ -1,4 +1,4 @@
-"""Small shared actions."""
+"""Shared actions and helpers."""
 import json
 
 from maa.agent.agent_server import AgentServer
@@ -8,6 +8,11 @@ from maa.custom_action import CustomAction
 from gui import say
 
 
+def ok(detail) -> bool:
+    """True if a run_task result succeeded."""
+    return bool(detail and detail.status.succeeded)
+
+
 @AgentServer.custom_action("RunTask")
 class RunTask(CustomAction):
     """Run a pipeline entry as one step: the node fails if the entry fails,
@@ -15,10 +20,7 @@ class RunTask(CustomAction):
 
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
         entry = (json.loads(argv.custom_action_param or "{}") or {}).get("entry")
-        if not entry:
-            return False
-        detail = context.run_task(entry)
-        return bool(detail and detail.status.succeeded)
+        return bool(entry) and ok(context.run_task(entry))
 
 
 _retrying = False
@@ -42,11 +44,9 @@ class RetryFromHome(CustomAction):
         _retrying = True
         try:
             say(context, "Retry", f"something went wrong: going Home and starting {entry} over")
-            home = context.run_task("Common_GoHome")
-            if not (home and home.status.succeeded):
+            if not ok(context.run_task("Common_GoHome")):
                 say(context, "Retry", "could not get Home, stopping")
                 return False
-            result = context.run_task(entry)
-            return bool(result and result.status.succeeded)
+            return ok(context.run_task(entry))
         finally:
             _retrying = False

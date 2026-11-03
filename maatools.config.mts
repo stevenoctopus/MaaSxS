@@ -6,7 +6,7 @@ const config: FullConfig = {
   interfacePath: 'assets/interface.json',
   check: {
     override: {
-      // 忽略 mpe-config 带来的报错
+      // ignore errors caused by mpe-config
       // ignore warning caused by mpe-config
       // 'mpe-config': 'ignore'
     }
