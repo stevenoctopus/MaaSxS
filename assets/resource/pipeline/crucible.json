@@ -1,7 +1,8 @@
 {
     // Crucible of Hieromon (Journal > Daily Events). The agent action
-    // CrucibleFarm (agent/crucible.py) runs Crucible_Run once, or until a run
-    // kills the boss, then claims the damage-track rewards.
+    // CrucibleFarm (agent/crucible.py) runs Crucible_Run once, or until
+    // today's highest damage reaches the last gift box / last reward on the
+    // damage track, then claims.
 
     // Entry: get to the Crucible menu from any screen.
     "Crucible": {
@@ -47,7 +48,7 @@
     "Crucible_Farm": {
         "action": "Custom",
         "custom_action": "CrucibleFarm",
-        "custom_action_param": { "until_kill": false }
+        "custom_action_param": { "mode": "once" } // once | all_gifts | all
     },
 
     // ---------------------------------------------------------------
@@ -146,12 +147,26 @@
         "expected": "^\\d+(\\.\\d+)?[KMB]$",
         "roi": [20, 955, 680, 45]
     },
+    // Unclaimed gift box icon (blue gift). The agent sets the roi to the spot
+    // above each reward label. Claimed rewards show a checkmark instead.
+    "Crucible_GiftIcon": {
+        "recognition": "TemplateMatch",
+        "template": "Crucible/gift.png"
+    },
     "Crucible_TrackRight": {
         "action": "Swipe",
         "begin": [620, 920, 10, 10],
         "end": [80, 920, 10, 10],
         "duration": 600,
         "post_delay": 1500
+    },
+    // Half a screen back towards the start, for scanning from the right end.
+    "Crucible_TrackStep": {
+        "action": "Swipe",
+        "begin": [220, 920, 10, 10],
+        "end": [500, 920, 10, 10],
+        "duration": 800,
+        "post_delay": 1200
     },
     "Crucible_TrackLeft": {
         "action": "Swipe",
