@@ -32,8 +32,8 @@
         "next": ["DailyDungeon_OnList"]
     },
 
-    // On the Daily Dungeon list. The "Mode" option decides what happens
-    // next: one run (default), or Affection mode via the agent.
+    // On the Daily Dungeon list: start the run. (Affection mode overrides
+    // DailyDungeon itself and goes straight to DailyDungeon_AffectionFarm.)
     "DailyDungeon_OnList": {
         "recognition": "OCR",
         "expected": "Daily\\s?Reward\\s?Attempts",
