@@ -115,6 +115,43 @@
                 }
             ]
         },
+        // Shown under Daily Dungeon's Daily mode. A run below the grade
+        // leaves without claiming (the reward attempt is kept) and runs again.
+        "DungeonGrade": {
+            "type": "select",
+            "label": "Claim grade",
+            "default_case": "S",
+            "cases": [
+                {
+                    "name": "S",
+                    "description": "Only claim S runs.",
+                    "pipeline_override": {
+                        "DailyDungeon_GoodGrade": { "expected": "^S$" },
+                        "DailyDungeon_LowGrade": { "expected": "^[ABC]$" }
+                    }
+                },
+                {
+                    "name": "A or higher",
+                    "description": "Claim S and A runs.",
+                    "pipeline_override": {
+                        "DailyDungeon_GoodGrade": { "expected": "^[SA]$" },
+                        "DailyDungeon_LowGrade": { "expected": "^[BC]$" }
+                    }
+                },
+                {
+                    "name": "B or higher",
+                    "description": "Claim S, A and B runs.",
+                    "pipeline_override": {
+                        "DailyDungeon_GoodGrade": { "expected": "^[SAB]$" },
+                        "DailyDungeon_LowGrade": { "expected": "^C$" }
+                    }
+                },
+                {
+                    "name": "Any",
+                    "description": "Claim every run."
+                }
+            ]
+        },
         "ConquestRuns": {
             "type": "select",
             "label": "Runs",
@@ -225,7 +262,8 @@
                     "name": "Daily",
                     "description": "Buy extra reward attempts (optional), then run and claim rewards until no reward attempts are left.",
                     "option": [
-                        "DungeonBuy"
+                        "DungeonBuy",
+                        "DungeonGrade"
                     ]
                 }
             ]
