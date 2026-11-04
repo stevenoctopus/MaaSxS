@@ -1,8 +1,9 @@
 """Daily Dungeon, Daily mode: buy extra reward attempts (Dawnium), then run
 and claim until no reward attempts are left.
 
-Starts and ends on the Daily Dungeon list. Each DailyDungeon_Run claims its
-rewards on the results screen while attempts are left (pipeline).
+Starts and ends on the Daily Dungeon list. By default a run leaves its results
+without claiming (Affection mode); CLAIM switches the results screen to
+claiming (see daily_dungeon.json).
 """
 import json
 import time
@@ -13,6 +14,10 @@ from maa.custom_action import CustomAction
 
 from common import ok, read_fraction
 from gui import say
+
+
+CLAIM = {"DailyDungeon_Results": {"next": [
+    "DailyDungeon_Claim", "DailyDungeon_LeaveResults", "DailyDungeon_UnclaimedPrompt"]}}
 
 
 def log(context: Context, msg: str):
@@ -84,7 +89,7 @@ class DungeonDaily(CustomAction):
                 return False
             run += 1
             log(context, f"run {run}")
-            detail = context.run_task("DailyDungeon_Run")
+            detail = context.run_task("DailyDungeon_Run", pipeline_override=CLAIM)
             if not ok(detail):
                 log(context, f"run {run} failed")
                 return False

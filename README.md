@@ -68,7 +68,7 @@ to start the emulator.
 
 | Task | Options | What it does |
 |---|---|---|
-| Daily Dungeon | Mode, Dungeon, Difficulty | Claims the rewards after each run while reward attempts are left. **Single run**: one run of the chosen dungeon and difficulty. **Daily**: buys extra reward attempts with Dawnium (*Buy extra attempts*: 0, 1 or 2, default 2, never past the game's daily limit), then runs and claims until no reward attempts are left. **Affection**: reads this week's affection (claiming any tokens waiting), runs the dungeons needed to reach the weekly cap (+7 per run), checks again, and repeats until capped. Stops if a whole batch earns nothing. |
+| Daily Dungeon | Mode, Dungeon, Difficulty | Runs the chosen dungeon and difficulty. **Daily** (default): buys extra reward attempts with Dawnium (*Buy extra attempts*: 0, 1 or 2, default 2, never past the game's daily limit), then runs and claims the rewards until no reward attempts are left. **Affection**: reads this week's affection (claiming any tokens waiting), runs the dungeons needed to reach the weekly cap (+7 per run), checks again, and repeats until capped. Never claims dungeon rewards, so your reward attempts are kept. Stops if a whole batch earns nothing. |
 | Crucible of Hieromon | Mode | **Once**: one run, then claim rewards (the daily). **All gifts**: reads today's damage track, runs until your highest damage today reaches the last gift box, then claims. **All rewards**: the same, up to the last reward. |
 | Conquest | Runs | **Once** (the daily quest) or **Twice**. Never more than the attempts left today. |
 | Claim daily quests | | Opens the daily quest list and claims every finished quest. Runs last, so it picks up what the other tasks completed. |
