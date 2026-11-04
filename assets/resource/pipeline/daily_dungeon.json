@@ -1,8 +1,8 @@
 {
     // Daily Dungeon task. Top-level steps have on_error -> Common_Retry: if
     // anything fails, go Home and start the task over, once.
-    // (Affection mode overrides DailyDungeon's next with
-    // DailyDungeon_AffectionFarm; see interface.json.)
+    // This is Daily mode; Affection mode overrides DailyDungeon's next with
+    // DailyDungeon_AffectionFarm (see interface.json).
     "DailyDungeon": {
         "next": ["DailyDungeon_OnList", "[JumpBack]DailyDungeon_ToList"],
         "on_error": ["Common_Retry"]
@@ -11,19 +11,11 @@
         "focus": { "Node.Action.Starting": "On the Daily Dungeon list" },
         "recognition": "And",
         "all_of": ["Screen_DungeonList"],
-        "next": ["DailyDungeon_SingleRun"],
-        "on_error": ["Common_Retry"]
-    },
-    // One DailyDungeon_Run as a single step, so a failure anywhere in the
-    // run reaches on_error.
-    "DailyDungeon_SingleRun": {
-        "action": "Custom",
-        "custom_action": "RunTask",
-        "custom_action_param": { "entry": "DailyDungeon_Run" },
+        "next": ["DailyDungeon_DailyFarm"],
         "on_error": ["Common_Retry"]
     },
     // Affection mode: check the weekly total, run until the cap, recheck and
-    // top up. Logic lives in agent/affection.py.
+    // top up, never claiming rewards. Logic lives in agent/affection.py.
     "DailyDungeon_AffectionFarm": {
         "action": "Custom",
         "custom_action": "AffectionFarm",
@@ -72,7 +64,7 @@
 
     // ---------------------------------------------------------------
     // One complete run, starting and ending on the Daily Dungeon list.
-    // The agent calls this repeatedly in Affection mode.
+    // The agents (affection.py, daily_dungeon.py) call this once per run.
     "DailyDungeon_Run": {
         "next": ["DailyDungeon_SelectCard"]
     },
@@ -110,18 +102,49 @@
         "timeout": 300000,
         "next": ["DailyDungeon_Results"]
     },
-    // Results ("Drops"). Claim the rewards if a reward attempt is left, then
-    // tap back. Leaving is only allowed once the button reads "Claimed" or no
-    // attempts are left: the Claim button appears a moment after "Drops", and
-    // leaving early forfeits the rewards.
+    // Results ("Drops"). By default (Affection mode): leave without claiming.
+    // Daily mode runs with DailyDungeon_ClaimOverride (agent/daily_dungeon.py),
+    // which claims instead.
     "DailyDungeon_Results": {
         "focus": { "Node.Action.Starting": "Battle ended" },
         "recognition": "And",
         "all_of": ["Screen_DungeonResults"],
         "pre_delay": 1500,
         "timeout": 30000,
-        "next": ["DailyDungeon_Claim", "DailyDungeon_LeaveResults", "DailyDungeon_UnclaimedPrompt"]
+        "next": ["DailyDungeon_Leave"]
     },
+    // Tap back. With reward attempts left this asks "rewards not claimed.
+    // Exit the dungeon?", answered by DailyDungeon_UnclaimedExit. The tap is
+    // sometimes swallowed while the chests animate, so if the results are
+    // still showing, tap again.
+    "DailyDungeon_Leave": {
+        "recognition": "And",
+        "all_of": ["Screen_DungeonResults"],
+        "action": "Click",
+        "target": [30, 1185, 90, 70], // back arrow, bottom left
+        "post_delay": 1500,
+        "timeout": 30000,
+        "next": ["DailyDungeon_BackOnList", "DailyDungeon_UnclaimedExit", "DailyDungeon_Leave"]
+    },
+    "DailyDungeon_UnclaimedExit": { // exit without claiming: OK
+        "focus": { "Node.Action.Starting": "Leaving without claiming the rewards" },
+        "recognition": "And",
+        "all_of": [
+            { "recognition": "OCR", "expected": "not\\s?claimed", "roi": [100, 500, 520, 120] },
+            { "recognition": "OCR", "expected": "^OK$", "roi": [370, 700, 250, 75] }
+        ],
+        "box_index": 1,
+        "action": "Click",
+        "post_delay": 1500,
+        "timeout": 30000,
+        "next": ["DailyDungeon_BackOnList", "DailyDungeon_UnclaimedExit", "DailyDungeon_Leave"]
+    },
+
+    // Daily mode's results: the agent sets DailyDungeon_Results' next to
+    // [Claim, LeaveResults, UnclaimedPrompt]. Claim the rewards if a reward
+    // attempt is left, then tap back. Leaving is only allowed once the button
+    // reads "Claimed" or no attempts are left: the Claim button appears a
+    // moment after "Drops", and leaving early would forfeit the rewards.
     "DailyDungeon_Claim": {
         "focus": { "Node.Action.Starting": "Claiming the rewards (uses 1 reward attempt)" },
         "recognition": "And",
@@ -167,8 +190,8 @@
         "timeout": 30000,
         "next": ["DailyDungeon_BackOnList", "DailyDungeon_LeaveResults", "DailyDungeon_UnclaimedPrompt"]
     },
-    // "Daily Dungeon rewards not claimed. Exit the dungeon?": never exit,
-    // go back and claim.
+    // "Daily Dungeon rewards not claimed. Exit the dungeon?": in Daily mode
+    // never exit, go back and claim.
     "DailyDungeon_UnclaimedPrompt": {
         "recognition": "And",
         "all_of": [

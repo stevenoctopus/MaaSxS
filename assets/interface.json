@@ -165,15 +165,11 @@
         "Mode": {
             "type": "select",
             "label": "Mode",
-            "default_case": "Single run",
+            "default_case": "Daily",
             "cases": [
                 {
-                    "name": "Single run",
-                    "description": "Play one run (claiming its rewards if a reward attempt is left), then stop."
-                },
-                {
                     "name": "Affection",
-                    "description": "Check this week's affection, run the dungeons needed to reach the weekly cap (+7 per run), then check again and repeat until capped.",
+                    "description": "Check this week's affection, run the dungeons needed to reach the weekly cap (+7 per run), then check again and repeat until capped. Never claims dungeon rewards, so reward attempts are kept.",
                     "pipeline_override": {
                         // Skip the walk to the list: the affection check
                         // starts from any screen and ends on the list.
@@ -189,14 +185,7 @@
                     "description": "Buy extra reward attempts (optional), then run and claim rewards until no reward attempts are left.",
                     "option": [
                         "DungeonBuy"
-                    ],
-                    "pipeline_override": {
-                        "DailyDungeon_OnList": {
-                            "next": [
-                                "DailyDungeon_DailyFarm"
-                            ]
-                        }
-                    }
+                    ]
                 }
             ]
         },
