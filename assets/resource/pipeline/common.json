@@ -173,7 +173,9 @@
         "next": ["Common_ToTabBar"]
     },
     // Sub-pages where Android back is safe: menu, Friends, Affection popup,
-    // Crucible pages, Daily Events.
+    // Crucible pages, Daily Events, Guild Events, Conquest, quests, and solo
+    // battle setup (which already shows "Round 0/50", so it must come before
+    // Common_TabBar_Battle).
     "Common_TabBar_BackOut": {
         "recognition": "Or",
         "any_of": [
@@ -181,7 +183,11 @@
             "Screen_FriendsPage",
             "Screen_MainMenu",
             "Screen_CrucibleTitle",
-            "Screen_DailyEvents"
+            "Screen_DailyEvents",
+            "Screen_GuildEvents",
+            "Screen_ConquestPage",
+            "Screen_QuestList",
+            "Screen_StartBattle"
         ],
         "action": "ClickKey",
         "key": 4,
@@ -225,6 +231,24 @@
         "action": "Click",
         "target": [320, 1175, 90, 80],
         "next": ["Common_AtHome"]
+    },
+
+    // ---------------------------------------------------------------
+    // Open the menu (cube button on Home: Friends, Quest, ...).
+    // Use as "[JumpBack]Common_OpenMenu".
+    "Common_OpenMenu": {
+        "next": ["Common_OpenMenu_Done", "Common_OpenMenu_Home", "[JumpBack]Common_GoHome"]
+    },
+    "Common_OpenMenu_Done": {
+        "recognition": "And",
+        "all_of": ["Screen_MainMenu"]
+    },
+    "Common_OpenMenu_Home": {
+        "recognition": "And",
+        "all_of": ["Screen_HomeLabel", "Screen_HomeMenuButton"],
+        "box_index": 1, // click the menu button
+        "action": "Click",
+        "next": ["Common_OpenMenu_Done"]
     },
 
     // ---------------------------------------------------------------

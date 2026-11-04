@@ -10,6 +10,7 @@ from maa.toolkit import Toolkit
 
 import affection  # noqa: F401  (registers its custom actions on import)
 import crucible  # noqa: F401
+import conquest  # noqa: F401
 import common  # noqa: F401
 
 

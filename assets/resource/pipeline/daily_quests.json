@@ -1,0 +1,54 @@
+{
+    // Claim daily quest rewards: menu > Quest > Daily tab, then press every
+    // Claim button. Claimed quests move to the bottom and claimable ones
+    // stay on top, so no scrolling is needed.
+    // Top-level steps have on_error -> Common_Retry.
+    "DailyQuests": {
+        "next": ["DailyQuests_OnList", "[JumpBack]DailyQuests_ToList"],
+        "on_error": ["Common_Retry"]
+    },
+    // Quest list: make sure the Daily tab is selected.
+    "DailyQuests_OnList": {
+        "focus": { "Node.Action.Starting": "On the quest list" },
+        "recognition": "And",
+        "all_of": ["Screen_QuestList"],
+        "action": "Click",
+        "target": [160, 1185, 100, 65], // Daily tab
+        "post_delay": 1000,
+        "next": ["DailyQuests_Claim", "DailyQuests_Done"],
+        "on_error": ["Common_Retry"]
+    },
+    "DailyQuests_Claim": {
+        "focus": { "Node.Action.Starting": "Claiming a quest reward" },
+        "recognition": "OCR",
+        "expected": "^Claim$",
+        "roi": [440, 120, 280, 1040],
+        "action": "Click",
+        "post_delay": 1500,
+        "next": ["DailyQuests_Claim", "DailyQuests_Done"],
+        "on_error": ["Common_Retry"]
+    },
+    // No Claim button left.
+    "DailyQuests_Done": {
+        "focus": { "Node.Action.Starting": "Daily quest rewards claimed" },
+        "recognition": "And",
+        "all_of": ["Screen_QuestList"]
+    },
+
+    // ---------------------------------------------------------------
+    // Get to the quest list from any screen: menu > Quest.
+    "DailyQuests_ToList": {
+        "next": ["DailyQuests_ToList_Done", "DailyQuests_ToList_Menu", "[JumpBack]Common_OpenMenu"]
+    },
+    "DailyQuests_ToList_Done": {
+        "recognition": "And",
+        "all_of": ["Screen_QuestList"]
+    },
+    "DailyQuests_ToList_Menu": { // Quest button in the menu
+        "recognition": "OCR",
+        "expected": "^Quest$",
+        "roi": [190, 680, 190, 80],
+        "action": "Click",
+        "next": ["DailyQuests_ToList_Done"]
+    }
+}
