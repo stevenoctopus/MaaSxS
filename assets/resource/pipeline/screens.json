@@ -105,10 +105,41 @@
         "expected": "^Drops$",
         "roi": [0, 840, 250, 80]
     },
-    "Screen_TapToContinue": { // Crucible results
+    "Screen_TapToContinue": { // Crucible and Conquest results
         "recognition": "OCR",
         "expected": "Tap\\s?to\\s?Continue",
         "roi": [150, 1170, 420, 70]
+    },
+    // Solo battle setup (Conquest). It already shows "Round 0/50" at the
+    // top, so check for this before treating a screen as a running battle.
+    "Screen_StartBattle": {
+        "recognition": "OCR",
+        "expected": "^Start\\s?Battle$",
+        "roi": [220, 915, 280, 80]
+    },
+
+    // --- Guild tab ---
+    "Screen_GuildPage": { // "Guild" under the selected tab icon
+        "recognition": "OCR",
+        "expected": "^Guild$",
+        "roi": [420, 1232, 160, 48]
+    },
+    "Screen_GuildEvents": { // Gate of Expedition: Guild Clash, Conquest
+        "recognition": "OCR",
+        "expected": "^Guild\\s?Events$",
+        "roi": [20, 20, 260, 60]
+    },
+    "Screen_ConquestPage": { // "Daily Challenge Attempts: N/2"
+        "recognition": "OCR",
+        "expected": "Daily\\s?Challenge\\s?Attempts",
+        "roi": [200, 25, 330, 50]
+    },
+
+    // --- Quests (menu > Quest) ---
+    "Screen_QuestList": { // "Daily Quest" / "Weekly Quest" title
+        "recognition": "OCR",
+        "expected": "Quest$",
+        "roi": [20, 20, 280, 60]
     },
 
     // --- Game start-up ---

@@ -1,33 +1,24 @@
 {
-    // Affection check (used by Daily Dungeon's Affection mode): go to
-    // Home > menu > Friends > Affection Tokens, claim anything pending, read
+    // Affection check (used by Daily Dungeon's Affection mode): menu >
+    // Friends > Affection Tokens, claim anything pending, read
     // "Affection Tokens Earned This Week: N/1000", then go to the Daily
     // Dungeon list. The agent (agent/affection.py) reads N from Affection_Read.
 
-    // Start from any screen: off the route, Common_GoHome takes us Home.
+    // Start from any screen: off the route, Common_OpenMenu opens the menu.
     // Only the first step has that fallback: later steps can catch a screen
-    // mid-animation, and a trip home there would undo progress.
+    // mid-animation, and starting over there would undo progress.
     "Affection_Check": {
         "next": [
             "Affection_Claim",
             "Affection_FriendsPage",
             "Affection_MenuOpen",
-            "Affection_Home",
-            "[JumpBack]Common_GoHome"
+            "[JumpBack]Common_OpenMenu"
         ]
     },
     "Affection_Where": {
-        "next": ["Affection_Claim", "Affection_FriendsPage", "Affection_MenuOpen", "Affection_Home"]
+        "next": ["Affection_Claim", "Affection_FriendsPage", "Affection_MenuOpen"]
     },
 
-    // Home tab: open the menu (cube icon, right side).
-    "Affection_Home": {
-        "recognition": "And",
-        "all_of": ["Screen_HomeLabel", "Screen_HomeMenuButton"],
-        "box_index": 1, // click the menu button
-        "action": "Click",
-        "next": ["Affection_Where"]
-    },
     // Menu open: tap Friends.
     "Affection_MenuOpen": {
         "recognition": "And",

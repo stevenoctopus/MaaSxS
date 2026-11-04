@@ -1,0 +1,127 @@
+{
+    // Conquest (Guild tab > Gate of Expedition > Conquest). The agent action
+    // ConquestFarm (agent/conquest.py) reads "Daily Challenge Attempts: N/2"
+    // and runs Conquest_Run up to the chosen number of times.
+    // Top-level steps have on_error -> Common_Retry: if anything fails, go
+    // Home and start the task over, once.
+    "Conquest": {
+        "next": ["Conquest_OnPage", "[JumpBack]Conquest_ToPage"],
+        "on_error": ["Common_Retry"]
+    },
+    "Conquest_OnPage": {
+        "focus": { "Node.Action.Starting": "On the Conquest page" },
+        "recognition": "And",
+        "all_of": ["Screen_ConquestPage"],
+        "next": ["Conquest_Farm"],
+        "on_error": ["Common_Retry"]
+    },
+    // The "Runs" option sets the param.
+    "Conquest_Farm": {
+        "action": "Custom",
+        "custom_action": "ConquestFarm",
+        "custom_action_param": { "runs": 1 },
+        "on_error": ["Common_Retry"]
+    },
+
+    // ---------------------------------------------------------------
+    // Get to the Conquest page from any screen: tab bar > Guild tab > Gate
+    // of Expedition > Conquest. Use as "[JumpBack]Conquest_ToPage".
+    "Conquest_ToPage": {
+        "next": [
+            "Conquest_ToPage_Done",
+            "Conquest_ToPage_Results",
+            "Conquest_ToPage_GuildEvents",
+            "Conquest_ToPage_Guild",
+            "Conquest_ToPage_TabBar",
+            "[JumpBack]Common_ToTabBar"
+        ]
+    },
+    "Conquest_ToPage_Done": {
+        "recognition": "And",
+        "all_of": ["Screen_ConquestPage"]
+    },
+    // Conquest results (e.g. after a crash relaunch): tap through.
+    "Conquest_ToPage_Results": {
+        "recognition": "And",
+        "all_of": ["Screen_TapToContinue"],
+        "action": "Click",
+        "post_delay": 1500,
+        "next": ["Conquest_ToPage_Done", "Conquest_ToPage_Results"]
+    },
+    "Conquest_ToPage_GuildEvents": { // Conquest tile
+        "recognition": "And",
+        "all_of": ["Screen_GuildEvents"],
+        "action": "Click",
+        "target": [30, 600, 300, 80],
+        "next": ["Conquest_ToPage_Done"]
+    },
+    // Guild tab: Gate of Expedition building (its label is often covered,
+    // so tap the building itself).
+    "Conquest_ToPage_Guild": {
+        "recognition": "And",
+        "all_of": ["Screen_GuildPage"],
+        "action": "Click",
+        "target": [520, 740, 110, 120],
+        "next": ["Conquest_ToPage_GuildEvents"]
+    },
+    "Conquest_ToPage_TabBar": { // Guild tab (shield icon, right of Home)
+        "recognition": "And",
+        "all_of": ["Screen_TabBar"],
+        "action": "Click",
+        "target": [465, 1180, 80, 70],
+        "post_delay": 1000,
+        "next": ["Conquest_ToPage_Guild"]
+    },
+
+    // ---------------------------------------------------------------
+    // Daily Challenge Attempts left, e.g. "Daily Challenge Attempts: 1/2".
+    // The agent reads it.
+    "Conquest_Attempts": {
+        "recognition": "OCR",
+        "expected": "Attempts:\\s?\\d+\\s?/\\s?\\d+",
+        "roi": [200, 25, 330, 50]
+    },
+
+    // One run, from the Conquest page back to the Conquest page.
+    "Conquest_Run": {
+        "next": ["Conquest_Challenge"]
+    },
+    "Conquest_Challenge": {
+        "recognition": "OCR",
+        "expected": "^Challenge$",
+        "roi": [220, 940, 280, 80],
+        "action": "Click",
+        "next": ["Conquest_StartBattle"]
+    },
+    "Conquest_StartBattle": {
+        "focus": { "Node.Action.Starting": "Battle in progress" },
+        "recognition": "And",
+        "all_of": ["Screen_StartBattle"],
+        "action": "Click",
+        "post_delay": 3000,
+        "timeout": 20000,
+        "next": ["Conquest_Results", "Conquest_InBattle"]
+    },
+    // The battle (up to 50 rounds): wait for the results.
+    "Conquest_InBattle": {
+        "recognition": "And",
+        "all_of": ["Screen_Battle"],
+        "timeout": 600000,
+        "next": ["Conquest_Results"]
+    },
+    // Results: "Battle Ended", DMG Dealt, "Tap to Continue".
+    "Conquest_Results": {
+        "focus": { "Node.Action.Starting": "Battle ended" },
+        "recognition": "And",
+        "all_of": ["Screen_TapToContinue"],
+        "pre_delay": 1500,
+        "action": "Click",
+        "post_delay": 1500,
+        "next": ["Conquest_BackOnPage", "Conquest_Results"]
+    },
+    "Conquest_BackOnPage": {
+        "focus": { "Node.Action.Starting": "Back on the Conquest page" },
+        "recognition": "And",
+        "all_of": ["Screen_ConquestPage"]
+    }
+}

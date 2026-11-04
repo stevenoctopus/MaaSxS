@@ -70,6 +70,8 @@ to start the emulator.
 |---|---|---|
 | Daily Dungeon | Mode, Dungeon, Difficulty | **Single run**: one run of the chosen dungeon and difficulty. **Affection**: reads this week's affection (claiming any tokens waiting), runs the dungeons needed to reach the weekly cap (+7 per run), checks again, and repeats until capped. Stops if a whole batch earns nothing. |
 | Crucible of Hieromon | Mode | **Once**: one run, then claim rewards (the daily). **All gifts**: reads today's damage track, runs until your highest damage today reaches the last gift box, then claims. **All rewards**: the same, up to the last reward. |
+| Conquest | Runs | **Once** (the daily quest) or **Twice**. Never more than the attempts left today. |
+| Claim daily quests | | Opens the daily quest list and claims every finished quest. Runs last, so it picks up what the other tasks completed. |
 
 Every task:
 

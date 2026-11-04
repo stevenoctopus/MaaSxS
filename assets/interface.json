@@ -48,9 +48,45 @@
             "option": [
                 "CrucibleMode"
             ]
+        },
+        {
+            "name": "Conquest",
+            "label": "Conquest",
+            "entry": "Conquest",
+            "option": [
+                "ConquestRuns"
+            ]
+        },
+        {
+            // Last, so it claims what the other tasks completed.
+            "name": "DailyQuests",
+            "label": "Claim daily quests",
+            "entry": "DailyQuests"
         }
     ],
     "option": {
+        "ConquestRuns": {
+            "type": "select",
+            "label": "Runs",
+            "default_case": "Once",
+            "cases": [
+                {
+                    "name": "Once",
+                    "description": "One run (enough for the daily quest)."
+                },
+                {
+                    "name": "Twice",
+                    "description": "Two runs, or as many attempts as are left today.",
+                    "pipeline_override": {
+                        "Conquest_Farm": {
+                            "custom_action_param": {
+                                "runs": 2
+                            }
+                        }
+                    }
+                }
+            ]
+        },
         "CrucibleMode": {
             "type": "select",
             "label": "Mode",
