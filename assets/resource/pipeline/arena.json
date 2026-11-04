@@ -1,0 +1,176 @@
+{
+    // Arena (Journal > Competition > Arena). The agent action ArenaFarm
+    // (agent/arena.py) buys tickets if asked, then challenges the rightmost
+    // opponent once per ticket to use, never more than the tickets held.
+    // Top-level steps have on_error -> Common_Retry: if anything fails, go
+    // Home and start the task over, once.
+    "Arena": {
+        "next": ["Arena_OnPage", "[JumpBack]Arena_ToPage"],
+        "on_error": ["Common_Retry"]
+    },
+    "Arena_OnPage": {
+        "focus": { "Node.Action.Starting": "On the Arena page" },
+        "recognition": "And",
+        "all_of": ["Screen_ArenaPage"],
+        "next": ["Arena_Farm"],
+        "on_error": ["Common_Retry"]
+    },
+    // The "Tickets to use" and "Tickets to buy" options set the params.
+    "Arena_Farm": {
+        "action": "Custom",
+        "custom_action": "ArenaFarm",
+        "custom_action_param": { "tickets": 2, "buy": 0 },
+        "on_error": ["Common_Retry"]
+    },
+
+    // ---------------------------------------------------------------
+    // Get to the Arena page from any screen: tab bar > Journal >
+    // Competition > Arena. Use as "[JumpBack]Arena_ToPage".
+    "Arena_ToPage": {
+        "next": [
+            "Arena_ToPage_Done",
+            "Arena_ToPage_OtherTab",
+            "Arena_ToPage_Competition",
+            "Arena_ToPage_Journal",
+            "Arena_ToPage_TabBar",
+            "[JumpBack]Common_ToTabBar"
+        ]
+    },
+    "Arena_ToPage_Done": {
+        "recognition": "And",
+        "all_of": ["Screen_ArenaPage"]
+    },
+    // Rankings, Arena Shop or Goals tab (title but no opponents): Arena tab.
+    "Arena_ToPage_OtherTab": {
+        "recognition": "And",
+        "all_of": ["Screen_ArenaTitle"],
+        "action": "Click",
+        "target": [160, 1185, 130, 60],
+        "post_delay": 1500,
+        "next": ["Arena_ToPage_Done"]
+    },
+    "Arena_ToPage_Competition": { // Arena tile on the Competition page
+        "recognition": "And",
+        "all_of": [
+            "Screen_CompetitionPage",
+            { "recognition": "OCR", "expected": "^Arena$", "roi": [0, 320, 300, 75] }
+        ],
+        "box_index": 1,
+        "action": "Click",
+        "post_delay": 1000,
+        "next": ["Arena_ToPage_Done", "Arena_ToPage_OtherTab"]
+    },
+    "Arena_ToPage_Journal": { // Competition tile on the Journal
+        "recognition": "OCR",
+        "expected": "^Competition$",
+        "roi": [0, 690, 300, 75],
+        "action": "Click",
+        "post_delay": 1000,
+        "next": ["Arena_ToPage_Competition"]
+    },
+    "Arena_ToPage_TabBar": { // Journal tab
+        "recognition": "And",
+        "all_of": ["Screen_TabBar"],
+        "action": "Click",
+        "target": [175, 1180, 80, 70],
+        "next": ["Arena_ToPage_Journal"]
+    },
+
+    // ---------------------------------------------------------------
+    // One challenge, from the Arena page back to the Arena page. Uses 1
+    // ticket. The battle resolves instantly into Victory/Defeat.
+    "Arena_Run": {
+        "next": ["Arena_Swords"]
+    },
+    // The crossed swords of the rightmost opponent.
+    "Arena_Swords": {
+        "focus": { "Node.Action.Starting": "Challenging the rightmost opponent" },
+        "recognition": "And",
+        "all_of": ["Screen_ArenaPage"],
+        "action": "Click",
+        "target": [592, 862, 60, 60],
+        "post_delay": 1500,
+        "next": ["Arena_Challenge"]
+    },
+    // "Opponent" popup: Challenge (1 ticket). Pressed once; no retry here,
+    // so a slow screen can never spend a second ticket.
+    "Arena_Challenge": {
+        "recognition": "And",
+        "all_of": [
+            { "recognition": "OCR", "expected": "^Opponent$", "roi": [200, 245, 320, 60] },
+            { "recognition": "OCR", "expected": "^Challenge", "roi": [230, 865, 260, 75] }
+        ],
+        "box_index": 1,
+        "action": "Click",
+        "post_delay": 2000,
+        "timeout": 60000, // the battle takes a few seconds
+        "next": ["Arena_Result"]
+    },
+    // VICTORY / DEFEAT, "Tap to Continue".
+    "Arena_Result": {
+        "focus": { "Node.Action.Starting": "Battle ended" },
+        "recognition": "And",
+        "all_of": ["Screen_TapToContinue"],
+        "action": "Click",
+        "post_delay": 1500,
+        "timeout": 30000,
+        "next": ["Arena_BackOnPage", "Arena_Result"]
+    },
+    "Arena_BackOnPage": {
+        "focus": { "Node.Action.Starting": "Back on the Arena page" },
+        "recognition": "And",
+        "all_of": ["Screen_ArenaPage"]
+    },
+
+    // ---------------------------------------------------------------
+    // Buying tickets (agent/arena.py): the "+" by the tickets opens
+    // "Purchase Arena Ticket": Qty (starts at 1), its "+", "Daily Purchase
+    // Limit: U/8", Cancel / Purchase (Dawnium; the price rises per ticket).
+    "Arena_Buy_Open": {
+        "recognition": "And",
+        "all_of": ["Screen_ArenaPage"],
+        "action": "Click",
+        "target": [570, 38, 34, 34],
+        "post_delay": 1500,
+        "timeout": 4000, // no popup (e.g. limit used up): fails, agent carries on
+        "next": ["Arena_Buy_Limit"]
+    },
+    "Arena_Buy_Limit": { // "Daily Purchase Limit: U/L" (bought today / limit)
+        "recognition": "OCR",
+        "expected": "Purchase\\s?Limit:\\s?\\d+\\s?/\\s?\\d+",
+        "roi": [360, 755, 260, 45]
+    },
+    "Arena_Buy_Count": { // the Qty field: how many will be bought
+        "recognition": "OCR",
+        "expected": "^\\d+$",
+        "roi": [220, 670, 280, 55]
+    },
+    "Arena_Buy_More": { // Qty "+"
+        "action": "Click",
+        "target": [518, 681, 36, 36],
+        "post_delay": 700
+    },
+    "Arena_Buy_Purchase": {
+        "recognition": "OCR",
+        "expected": "^Purchase",
+        "roi": [370, 800, 250, 70],
+        "action": "Click",
+        "post_delay": 2000,
+        "next": ["Arena_BackOnPage"]
+    },
+    "Arena_Buy_Cancel": {
+        "recognition": "OCR",
+        "expected": "^Cancel$",
+        "roi": [110, 800, 240, 70],
+        "action": "Click",
+        "post_delay": 1500,
+        "next": ["Arena_BackOnPage"]
+    },
+
+    // Arena tickets held, top right: "N/20" (OCR adds the "+" after it).
+    "Arena_Tickets": {
+        "recognition": "OCR",
+        "expected": "^\\d+\\s?/\\s?\\d+",
+        "roi": [495, 28, 100, 45]
+    }
+}

@@ -184,6 +184,8 @@
             "Screen_MainMenu",
             "Screen_CrucibleTitle",
             "Screen_SplitMirageTitle",
+            "Screen_ArenaTitle",
+            "Screen_CompetitionPage",
             "Screen_DailyEvents",
             "Screen_GuildEvents",
             "Screen_ConquestPage",

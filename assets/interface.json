@@ -66,6 +66,14 @@
             ]
         },
         {
+            "name": "Arena",
+            "label": "Arena",
+            "entry": "Arena",
+            "option": [
+                "ArenaTickets"
+            ]
+        },
+        {
             // Last, so it claims what the other tasks completed.
             "name": "DailyQuests",
             "label": "Claim daily quests",
@@ -151,6 +159,40 @@
                     "description": "Claim every run."
                 }
             ]
+        },
+        // Both inputs in one option: two options overriding Arena_Farm's
+        // custom_action_param would replace each other's param.
+        "ArenaTickets": {
+            "type": "input",
+            "label": "Tickets",
+            "inputs": [
+                {
+                    "name": "buy",
+                    "label": "Tickets to buy",
+                    "description": "Bought first, with Dawnium (the price rises per ticket). Never past the game's daily limit of 8.",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^[0-8]$",
+                    "pattern_msg": "Enter 0 to 8"
+                },
+                {
+                    "name": "tickets",
+                    "label": "Tickets to use",
+                    "description": "One challenge per ticket, against the rightmost opponent. Never more than the tickets you have.",
+                    "default": "2",
+                    "pipeline_type": "int",
+                    "verify": "^\\d+$",
+                    "pattern_msg": "Enter a whole number, e.g. 2"
+                }
+            ],
+            "pipeline_override": {
+                "Arena_Farm": {
+                    "custom_action_param": {
+                        "buy": "{buy}",
+                        "tickets": "{tickets}"
+                    }
+                }
+            }
         },
         "ConquestRuns": {
             "type": "select",
