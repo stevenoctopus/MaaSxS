@@ -20,6 +20,7 @@ from maa.custom_action import CustomAction
 from common import ok
 from gui import say
 from purchase import buy_daily
+from screen import hit, node_param, read_int, screenshot
 
 # (param key, name, title pattern on the list tile and the realm's tab, tile roi,
 #  roi of the tile's tool-count badge)
@@ -33,18 +34,6 @@ REALMS = [
 
 def log(context: Context, msg: str):
     say(context, "Material Realms", msg)
-
-
-def screenshot(context: Context):
-    return context.tasker.controller.post_screencap().wait().get()
-
-
-def read_int(context: Context, node: str, override=None):
-    reco = context.run_recognition(node, screenshot(context), pipeline_override=override or {})
-    if reco and reco.hit:
-        digits = "".join(c for c in reco.best_result.text if c.isdigit())
-        return int(digits) if digits else None
-    return None
 
 
 def params(argv):
@@ -71,8 +60,7 @@ def buy_sets(context: Context, name: str, wanted: int) -> bool:
 # ---------------------------------------------------------------- using
 
 def quick_on(context: Context) -> bool:
-    reco = context.run_recognition("MaterialRealms_QuickOn", screenshot(context))
-    return bool(reco and reco.hit)
+    return hit(context, "MaterialRealms_QuickOn")
 
 
 def set_quick(context: Context, on: bool) -> bool:
@@ -124,13 +112,6 @@ def use_tools(context: Context, name: str, wanted) -> bool:
     return True
 
 
-def node_param(context: Context, node: str) -> dict:
-    """The custom_action_param of another node (with the task's overrides)."""
-    data = context.get_node_data(node) or {}
-    param = data.get("action", {}).get("param", {}).get("custom_action_param") or {}
-    return json.loads(param) if isinstance(param, str) else param
-
-
 @AgentServer.custom_action("MaterialRealms")
 class MaterialRealms(CustomAction):
     """Visit each realm once: buy (MaterialRealms_Buy's param), then use
@@ -142,10 +123,8 @@ class MaterialRealms(CustomAction):
         image = screenshot(context)
         held = {}
         for key, _, _, _, badge in REALMS:
-            reco = context.run_recognition("MaterialRealms_ListCount", image,
-                                           pipeline_override={"MaterialRealms_ListCount": {"roi": badge}})
-            digits = "".join(c for c in reco.best_result.text if c.isdigit()) if reco and reco.hit else ""
-            held[key] = int(digits) if digits else 0
+            held[key] = read_int(context, "MaterialRealms_ListCount", image,
+                                 {"MaterialRealms_ListCount": {"roi": badge}}) or 0
         log(context, "tools: " + ", ".join(f"{name} {held[key]}" for key, name, *_ in REALMS))
 
         for key, name, tile, roi, _ in REALMS:

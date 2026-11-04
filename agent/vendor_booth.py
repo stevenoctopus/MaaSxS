@@ -22,6 +22,7 @@ from maa.custom_action import CustomAction
 import badge
 from common import give_up, ok
 from gui import say
+from screen import hit, node_param, read_int, screenshot
 
 # Top left of each tile of the 3x3 grid, row by row.
 TILES = [(x0, y0) for y0 in (188, 470, 753) for x0 in (30, 260, 490)]
@@ -45,22 +46,6 @@ def log(context: Context, msg: str):
     say(context, "Vendor Booth", msg)
 
 
-def screenshot(context: Context):
-    return context.tasker.controller.post_screencap().wait().get()
-
-
-def node_param(context: Context, node: str) -> dict:
-    data = context.get_node_data(node) or {}
-    param = data.get("action", {}).get("param", {}).get("custom_action_param") or {}
-    return json.loads(param) if isinstance(param, str) else param
-
-
-def hit(context: Context, node: str, image=None, override=None) -> bool:
-    reco = context.run_recognition(node, screenshot(context) if image is None else image,
-                                   pipeline_override=override or {})
-    return bool(reco and reco.hit)
-
-
 def sold_out(context: Context, tile: int, image=None) -> bool:
     x0, y0 = TILES[tile]
     return hit(context, "VendorBooth_SoldOut", image,
@@ -77,12 +62,8 @@ def discount(context: Context, image, tile: int):
     text = badge.prep(crop)
     canvas = np.full_like(image, 255)
     canvas[20:20 + text.shape[0], 20:20 + text.shape[1]] = text
-    reco = context.run_recognition("VendorBooth_Discount", canvas, pipeline_override={
+    return read_int(context, "VendorBooth_Discount", canvas, {
         "VendorBooth_Discount": {"roi": [10, 10, text.shape[1] + 20, text.shape[0] + 20]}})
-    if not (reco and reco.hit):
-        return None
-    digits = "".join(c for c in reco.best_result.text if c.isdigit())
-    return int(digits) if digits else None
 
 
 def buy(context: Context, tile: int, limit: int, page: str) -> bool:
@@ -129,11 +110,7 @@ def buy_page(context: Context, min_off: int) -> bool:
 
 
 def read_left(context: Context):
-    reco = context.run_recognition("VendorBooth_RefreshesLeft", screenshot(context))
-    if reco and reco.hit:
-        digits = "".join(c for c in reco.best_result.text if c.isdigit())
-        return int(digits) if digits else None
-    return None
+    return read_int(context, "VendorBooth_RefreshesLeft")
 
 
 def general(context: Context, min_off: int, wanted: int) -> bool:

@@ -19,8 +19,9 @@ from typing import Callable
 
 from maa.context import Context
 
-from common import ok
+from common import run_once
 from gui import say
+from screen import hit, recognize, screenshot
 
 
 @dataclass
@@ -36,28 +37,21 @@ class TrackEvent:
     close: str                     # task: close the claim popup, back to the menu
 
 
-def screenshot(context: Context):
-    return context.tasker.controller.post_screencap().wait().get()
-
-
 def read_track(context: Context, ev: TrackEvent):
     """[(value, label_box, is_marked, is_claimed)] for the rewards visible on
     the track, lowest first. The reward icon sits right above its value label."""
     image = screenshot(context)
-    reco = context.run_recognition(ev.values, image)
+    reco = recognize(context, ev.values, image)
     out = []
     for r in (reco.filtered_results if reco else []):
         v = ev.parse(r.text)
         if v is None:
             continue
         x, y, w, _ = r.box
-        icon_roi = [x + w // 2 - 40, y - 80, 80, 75]
-        marked = context.run_recognition(
-            ev.marker, image, pipeline_override={ev.marker: {"roi": icon_roi}})
-        claimed = context.run_recognition(
-            "Common_TrackClaimed", image,
-            pipeline_override={"Common_TrackClaimed": {"roi": [x + w // 2 - 18, y - 65, 36, 36]}})
-        out.append((v, r.box, bool(marked and marked.hit), bool(claimed and claimed.hit)))
+        marked = hit(context, ev.marker, image, {ev.marker: {"roi": [x + w // 2 - 40, y - 80, 80, 75]}})
+        claimed = hit(context, "Common_TrackClaimed", image,
+                      {"Common_TrackClaimed": {"roi": [x + w // 2 - 18, y - 65, 36, 36]}})
+        out.append((v, r.box, marked, claimed))
     return sorted(out, key=lambda t: t[0])
 
 
@@ -69,9 +63,8 @@ def at_end(context: Context, view) -> bool:
     left = x + w // 2 + 37  # just past the reward's icon
     if left + 16 > 695:  # the panel's right edge: can't tell
         return False
-    reco = context.run_recognition("Common_TrackNoBar", screenshot(context), pipeline_override={
+    return hit(context, "Common_TrackNoBar", override={
         "Common_TrackNoBar": {"roi": [left, y - 50, 16, 10]}})
-    return bool(reco and reco.hit)
 
 
 def scan_from_end(context: Context, ev: TrackEvent, find, max_steps=12):
@@ -102,8 +95,8 @@ def scan_from_end(context: Context, ev: TrackEvent, find, max_steps=12):
 
 
 def read_best(context: Context, ev: TrackEvent):
-    reco = context.run_recognition(ev.best, screenshot(context))
-    return ev.parse(reco.best_result.text) if reco and reco.hit else None
+    reco = recognize(context, ev.best)
+    return ev.parse(reco.best_result.text) if reco else None
 
 
 def claim_rewards(context: Context, ev: TrackEvent):
@@ -172,13 +165,8 @@ def farm(context: Context, ev: TrackEvent, mode: str) -> bool:
             if best is not None and best >= target:
                 log("target reached")
                 break
-        if context.tasker.stopping:
-            log("stop requested")
-            return False
         run += 1
-        log(f"run {run}")
-        if not ok(context.run_task(ev.run)):
-            log(f"run {run} failed")
+        if run_once(context, ev.name, ev.run, f"run {run}") is None:
             return False
         if mode == "once":
             break

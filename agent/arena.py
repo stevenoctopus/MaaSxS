@@ -8,9 +8,10 @@ from maa.agent.agent_server import AgentServer
 from maa.context import Context
 from maa.custom_action import CustomAction
 
-from common import ok, read_fraction
+from common import run_times
 from gui import say
 from purchase import buy_daily
+from screen import read_fraction
 
 
 def log(context: Context, msg: str):
@@ -36,13 +37,7 @@ class ArenaFarm(CustomAction):
             return False
         runs = min(wanted, held[0])
         log(context, f"{held[0]} ticket(s), using {runs}")
-        for i in range(runs):
-            if context.tasker.stopping:
-                log(context, "stop requested")
-                return False
-            log(context, f"challenge {i + 1}/{runs}")
-            if not ok(context.run_task("Arena_Run")):
-                log(context, f"challenge {i + 1} failed")
-                return False
+        if not run_times(context, "Arena", "Arena_Run", runs, noun="challenge"):
+            return False
         log(context, "done")
         return True

@@ -119,7 +119,9 @@ python tools/configure.py          # copies the OCR model from MaaCommonAssets
     (including crash recovery), matchmaking, retry.
   - one file per task, plus `affection.json` for the affection check.
 - `agent/`: Python custom actions (loops, reading numbers), registered with
-  `@AgentServer.custom_action`. `purchase.py` handles the Purchase popup (Arena, Daily Dungeon, Material Realms). `track.py` holds the reward-track logic
+  `@AgentServer.custom_action`. `screen.py` reads the screen (hits,
+  numbers, "N/M", options on settings nodes) and `common.py` holds the
+  run loop every "run N times" task uses. `purchase.py` handles the Purchase popup (Arena, Daily Dungeon, Material Realms). `track.py` holds the reward-track logic
   shared by Crucible and Split Mirage. `badge.py` straightens the Vendor
   Booth's tilted discount badges so OCR can read them (numpy only).
 

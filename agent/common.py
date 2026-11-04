@@ -1,6 +1,5 @@
 """Shared actions and helpers."""
 import json
-import re
 
 from maa.agent.agent_server import AgentServer
 from maa.context import Context
@@ -8,24 +7,32 @@ from maa.custom_action import CustomAction
 
 from gui import say
 
-FRACTION_RE = re.compile(r"(\d+)\s*/\s*(\d+)")
-
-
 def ok(detail) -> bool:
     """True if a run_task result succeeded."""
     return bool(detail and detail.status.succeeded)
 
 
-def read_fraction(context: Context, node: str, override=None):
-    """Run OCR node `node` (with an optional pipeline override) on a fresh
-    screenshot and return the first "N/M" in its text as (N, M), or None."""
-    image = context.tasker.controller.post_screencap().wait().get()
-    reco = context.run_recognition(node, image, pipeline_override=override or {})
-    if reco and reco.hit:
-        m = FRACTION_RE.search(reco.best_result.text)
-        if m:
-            return int(m.group(1)), int(m.group(2))
-    return None
+def run_once(context: Context, name: str, entry: str, label: str, override=None):
+    """One run of pipeline entry `entry` inside a task's loop: unless a stop
+    was requested, log `label` (e.g. "run 2/5") and run it. Returns the
+    run's detail, or None if stopping or the run failed (both logged)."""
+    if context.tasker.stopping:
+        say(context, name, "stop requested")
+        return None
+    say(context, name, label)
+    detail = context.run_task(entry, pipeline_override=override or {})
+    if not ok(detail):
+        say(context, name, f"{label} failed")
+        return None
+    return detail
+
+
+def run_times(context: Context, name: str, entry: str, count: int, noun: str = "run") -> bool:
+    """Run `entry` `count` times (see run_once); False if stopped or a run failed."""
+    for i in range(count):
+        if run_once(context, name, entry, f"{noun} {i + 1}/{count}") is None:
+            return False
+    return True
 
 
 def give_up(context: Context, name: str, reason: str) -> bool:
