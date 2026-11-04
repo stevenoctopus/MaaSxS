@@ -140,6 +140,9 @@ Dev tools:
 | `python tools/watch.py <session> [--seconds N] [--until REGEX]` | records every screen change with OCR text, for mapping new screens |
 | `python -m unittest discover tests` | checks what the agent reads off saved game screens (discounts, reward tracks, tool badges, ...), that recovery knows every saved screen, and that interface.json matches the pipeline, about 35 s, no emulator needed |
 | `python tools/still.py capture <name>` | saves the emulator's screen to `tests/screens/<name>.png` for a new test |
+| `python tools/run.py <Task> --override tools/overrides/no_spend.json` | a live run that spends nothing: buys press Cancel, battles do nothing (`tools/overrides/README.md`) |
+
+Adding a task: `.claude/skills/add-task/SKILL.md` has the steps.
 
 `tests/test_screens.py` shows each screenshot in `tests/screens/` to the
 agent's own functions through `tools/still.py`: a stand-in device that

@@ -1,0 +1,12 @@
+{
+    "Common_Purchase_Purchase": {"expected": "^Cancel$", "roi": [110, 800, 240, 70]},
+    "DailyDungeon_Buy_Purchase": {"expected": "^Cancel$", "roi": [105, 715, 245, 60]},
+    "VendorBooth_Buy": {"recognition": "DirectHit", "action": "DoNothing", "next": []},
+    "VendorBooth_Refresh": {"recognition": "DirectHit", "action": "DoNothing", "next": []},
+    "Arena_Run": {"recognition": "DirectHit", "action": "DoNothing", "next": []},
+    "Conquest_Run": {"recognition": "DirectHit", "action": "DoNothing", "next": []},
+    "Crucible_Run": {"recognition": "DirectHit", "action": "DoNothing", "next": []},
+    "SplitMirage_Run": {"recognition": "DirectHit", "action": "DoNothing", "next": []},
+    "DailyDungeon_Run": {"recognition": "DirectHit", "action": "DoNothing", "next": []},
+    "MaterialRealms_UseTool": {"recognition": "DirectHit", "action": "DoNothing", "next": []}
+}
