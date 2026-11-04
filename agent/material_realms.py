@@ -1,8 +1,10 @@
-"""Material Realms: buy tool sets with Quick Purchase, then use tools in each
-realm. Starts and ends on the Material Realms list.
+"""Material Realms: buy tool sets, then use tools in each realm. Starts and
+ends on the Material Realms list.
 
-  MaterialBuy  {"ironvein": sets, ...}  sets of 5 tools per realm, within each
-               row's daily purchase limit.
+  MaterialBuy  {"ironvein": sets, ...}  sets of 5 tools per realm to have
+               bought today (sets already bought today count), within the
+               daily purchase limit. Bought on each realm's own page: Quick
+               Purchase can't set a realm to 0 once it has bought today.
   MaterialUse  {"ironvein": n or "ALL", ...}  tools to use per realm. ALL turns
                Quick Mine / Quick Conquer on (it uses a few tools per tap) and
                taps until no tools are left; a number turns it off and taps
@@ -18,12 +20,12 @@ from maa.custom_action import CustomAction
 from common import ok, read_fraction
 from gui import say
 
-# (param key, name on the list and on the realm's tab, tile roi, popup row centre y)
+# (param key, name, title pattern on the list tile and the realm's tab, tile roi)
 REALMS = [
-    ("ironvein", "Ironvein Pit", r"^Ironvein\s?Pit$", [20, 440, 300, 60], 445),
-    ("gilded", "Gilded Depths", r"^Gilded\s?Depths$", [370, 440, 300, 60], 557),
-    ("dread", "Dread Hollow", r"^Dread\s?Hollow$", [20, 950, 280, 60], 669),
-    ("dustfall", "Dustfall Dune", r"^Dustfall\s?Dune$", [370, 945, 300, 60], 781),
+    ("ironvein", "Ironvein Pit", r"^Ironvein\s?Pit$", [20, 440, 300, 60]),
+    ("gilded", "Gilded Depths", r"^Gilded\s?Depths$", [370, 440, 300, 60]),
+    ("dread", "Dread Hollow", r"^Dread\s?Hollow$", [20, 950, 280, 60]),
+    ("dustfall", "Dustfall Dune", r"^Dustfall\s?Dune$", [370, 945, 300, 60]),
 ]
 
 
@@ -47,52 +49,68 @@ def params(argv):
     return json.loads(argv.custom_action_param or "{}") or {}
 
 
+def open_realm(context: Context, tile: str, roi) -> bool:
+    return ok(context.run_task("MaterialRealms_OpenRealm", pipeline_override={
+        "MaterialRealms_OpenRealm": {"expected": tile, "roi": roi},
+        "MaterialRealms_OnRealm": {"all_of": [
+            "Screen_MaterialTitle",
+            {"recognition": "OCR", "expected": tile, "roi": [150, 1185, 210, 50]}]}}))
+
+
+def in_each_realm(context: Context, wanted: dict, skip, work) -> bool:
+    """For each realm whose wanted amount isn't skip(amount): open it, run
+    work(name, amount), and go back to the list."""
+    for key, name, tile, roi in REALMS:
+        amount = wanted.get(key, 0)
+        if skip(amount):
+            continue
+        if not open_realm(context, tile, roi):
+            log(context, f"could not open {name}")
+            return False
+        done = work(name, amount)
+        if not ok(context.run_task("MaterialRealms_RealmBack")):
+            log(context, f"could not get back to the list from {name}")
+            return False
+        if not done:
+            return False
+    return True
+
+
 # ---------------------------------------------------------------- buying
 
-def set_row(context: Context, y: int, target: int) -> bool:
-    """Step a popup row's Set value to `target`; True if it reads `target`."""
-    value_ov = {"MaterialRealms_Buy_Set": {"roi": [495, y - 20, 80, 40]}}
-    for _ in range(25):
-        value = read_int(context, "MaterialRealms_Buy_Set", value_ov)
-        if value is None:
-            return False
-        if value == target:
-            return True
-        x = 578 if value < target else 456  # + or -
-        context.run_task("MaterialRealms_Buy_Step", pipeline_override={
-            "MaterialRealms_Buy_Step": {"target": [x, y - 16, 32, 32]}})
-    return False
+def buy_sets(context: Context, name: str, wanted: int) -> bool:
+    """On a realm's page: buy sets so that `wanted` have been bought today
+    (sets already bought today count), within the daily purchase limit."""
+    if not ok(context.run_task("MaterialRealms_Buy_Open")):
+        log(context, f"{name}: the purchase popup didn't open")
+        return False
+    limit = read_fraction(context, "MaterialRealms_Buy_Limit")
+    if limit is None:
+        log(context, f"{name}: could not read the purchase limit; not buying")
+        context.run_task("MaterialRealms_Buy_Cancel")
+        return False
+    bought, cap = limit
+    sets = max(0, min(wanted, cap) - bought)
+    if sets == 0:
+        log(context, f"{name}: {bought} set(s) already bought today, nothing to buy")
+        return ok(context.run_task("MaterialRealms_Buy_Cancel"))
+    for _ in range(sets - 1):  # Qty starts at 1
+        context.run_task("MaterialRealms_Buy_More")
+    shown = read_int(context, "MaterialRealms_Buy_Count")
+    if shown != sets:
+        log(context, f"{name}: the purchase popup shows {shown}, expected {sets}; not buying")
+        context.run_task("MaterialRealms_Buy_Cancel")
+        return False
+    log(context, f"{name}: buying {sets} set(s) ({bought} already bought today)")
+    return ok(context.run_task("MaterialRealms_Buy_Purchase"))
 
 
 @AgentServer.custom_action("MaterialBuy")
 class MaterialBuy(CustomAction):
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
         wanted = {k: int(v) for k, v in params(argv).items()}
-        if not any(wanted.values()):
-            return True
-        if not ok(context.run_task("MaterialRealms_Buy_Open")):
-            log(context, "could not open Quick Purchase")
-            return False
-
-        plan = []
-        for key, name, _, _, y in REALMS:
-            limit = read_fraction(context, "MaterialRealms_Buy_Limit", {
-                "MaterialRealms_Buy_Limit": {"roi": [430, y - 45, 200, 30]}})
-            bought, cap = limit if limit else (0, 0)
-            sets = max(0, min(wanted.get(key, 0), cap - bought))
-            if wanted.get(key, 0) > sets:
-                log(context, f"{name}: bought {bought}/{cap} today, buying {sets} set(s)")
-            if not set_row(context, y, sets):
-                log(context, f"{name}: could not set the amount to {sets}; not buying")
-                context.run_task("MaterialRealms_Buy_Cancel")
-                return False
-            if sets:
-                plan.append(f"{name} {sets}")
-        if not plan:
-            log(context, "nothing left to buy today")
-            return ok(context.run_task("MaterialRealms_Buy_Cancel"))
-        log(context, "buying sets: " + ", ".join(plan))
-        return ok(context.run_task("MaterialRealms_Buy_Purchase"))
+        return in_each_realm(context, wanted, lambda n: n <= 0,
+                             lambda name, n: buy_sets(context, name, n))
 
 
 # ---------------------------------------------------------------- using
@@ -154,22 +172,7 @@ def use_tools(context: Context, name: str, wanted) -> bool:
 @AgentServer.custom_action("MaterialUse")
 class MaterialUse(CustomAction):
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
-        wanted = params(argv)
-        for key, name, tile, roi, _ in REALMS:
-            amount = wanted.get(key, "ALL")
-            if str(amount).upper() != "ALL" and int(amount) == 0:
-                continue
-            if not ok(context.run_task("MaterialRealms_OpenRealm", pipeline_override={
-                    "MaterialRealms_OpenRealm": {"expected": tile, "roi": roi},
-                    "MaterialRealms_OnRealm": {"all_of": [
-                        "Screen_MaterialTitle",
-                        {"recognition": "OCR", "expected": tile, "roi": [150, 1185, 210, 50]}]}})):
-                log(context, f"could not open {name}")
-                return False
-            done = use_tools(context, name, amount)
-            if not ok(context.run_task("MaterialRealms_RealmBack")):
-                log(context, f"could not get back to the list from {name}")
-                return False
-            if not done:
-                return False
-        return True
+        wanted = {key: "ALL" for key, *_ in REALMS} | params(argv)
+        return in_each_realm(context, wanted,
+                             lambda n: str(n).upper() != "ALL" and int(n) == 0,
+                             lambda name, n: use_tools(context, name, n))
