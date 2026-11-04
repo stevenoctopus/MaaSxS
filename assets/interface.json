@@ -104,6 +104,19 @@
             "name": "DailyQuests",
             "label": "Claim daily quests",
             "entry": "DailyQuests"
+        },
+        {
+            // After everything: with "Mines to claim" ALL it never ends.
+            "name": "GrandMines",
+            "label": "Grand Mines",
+            "entry": "GrandMines",
+            "option": [
+                "GrandMinesCount",
+                "GrandMinesAfk",
+                "GrandMinesIron",
+                "GrandMinesSand",
+                "GrandMinesRolla"
+            ]
         }
     ],
     "option": {
@@ -319,6 +332,48 @@
         "VendorQuestScroll": {
             "type": "select", "label": "Vault: Quest Scroll", "default_case": "Skip",
             "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_QuestScroll": { "custom_action_param": { "buy": 1 } } } }]
+        },
+        // Grand Mines: each option overrides its own node's param.
+        "GrandMinesCount": {
+            "type": "input",
+            "label": "Mines to claim",
+            "inputs": [
+                {
+                    "name": "mines",
+                    "label": "Mines to claim",
+                    "description": "Grand mine claims to make, then stop. ALL: keep watching until you press Stop (put this task last). Claims are free; the task never taps ore rocks, which cost energy, and stops if energy goes down.",
+                    "default": "ALL",
+                    "pipeline_type": "string",
+                    "verify": "^(ALL|All|all|[1-9]\\d*)$",
+                    "pattern_msg": "Enter a number or ALL"
+                }
+            ],
+            "pipeline_override": {
+                "GrandMines_Farm": { "custom_action_param": { "mines": "{mines}" } }
+            }
+        },
+        "GrandMinesAfk": {
+            "type": "select",
+            "label": "AFK spot",
+            "description": "The Resource Hunt resource to wait at (Journal > Map Exploration), where most grand mines of that type appear. Links in chat are followed wherever they are.",
+            "default_case": "Iron",
+            "cases": [
+                { "name": "Iron", "pipeline_override": { "GrandMines_Afk": { "custom_action_param": { "spot": "iron" } } } },
+                { "name": "Sand", "pipeline_override": { "GrandMines_Afk": { "custom_action_param": { "spot": "sand" } } } },
+                { "name": "Rolla", "pipeline_override": { "GrandMines_Afk": { "custom_action_param": { "spot": "rolla" } } } }
+            ]
+        },
+        "GrandMinesIron": {
+            "type": "select", "label": "Grand Iron Mine", "default_case": "Mine",
+            "cases": [{ "name": "Mine" }, { "name": "Skip", "pipeline_override": { "GrandMines_Iron": { "custom_action_param": { "mine": false } } } }]
+        },
+        "GrandMinesSand": {
+            "type": "select", "label": "Grand Sand Mine", "default_case": "Mine",
+            "cases": [{ "name": "Mine" }, { "name": "Skip", "pipeline_override": { "GrandMines_Sand": { "custom_action_param": { "mine": false } } } }]
+        },
+        "GrandMinesRolla": {
+            "type": "select", "label": "Grand Gold Mine (Rolla)", "default_case": "Mine",
+            "cases": [{ "name": "Mine" }, { "name": "Skip", "pipeline_override": { "GrandMines_Rolla": { "custom_action_param": { "mine": false } } } }]
         },
         "ConquestRuns": {
             "type": "select",

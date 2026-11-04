@@ -31,6 +31,24 @@ should have been bought *today*, so purchases already made today (by hand or
 by an earlier run) count: the bot buys `max(0, min(wanted, limit) - bought
 today)`. Running a task twice never buys twice.
 
+**Small chat**: the two-line chat box above the bottom of Home and the
+world map, all channels together. Only its text and links react to taps.
+_Not_: the full chat (opened from it, one tab per channel).
+
+**Grand mine**: a mine on the world map that several players can claim, for
+free, with **claim bars** under it (yellow = claims left). A claim is one
+player mining it once; the reward shows as a toast ("Raw Ore x4.77K"). A
+**grand mine link** is a green `<Grand Iron Mine>` in the small chat (Rolla's are
+`<Grand Gold Mine>`); tapping
+it travels there ("Travel to <region> now?", not shown when already in that
+region) and shows a **flashing icon** that snaps the camera to the mine. Grey
+links are mined out. _Not_: ore rocks (the ⚡5 ones), which spend energy as
+soon as they're tapped.
+
+**Resource Hunt**: Journal > Map Exploration > Resource Hunt: check a
+resource (Rolla, Iron, Sand, Essence), Go >>, and it takes you to that
+resource's current zone. Grand Mines waits there: its **AFK spot**.
+
 ## The bot
 
 **Task**: one entry in the GUI's task list (`interface.json` `task`), with

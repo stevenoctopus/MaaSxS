@@ -185,8 +185,10 @@
         "next": ["Common_ToTabBar"]
     },
     // Sub-pages where Android back is safe: menu, Friends, Affection popup,
-    // Crucible pages, Daily Events, Guild Events, Conquest, quests, and solo
-    // battle setup (which already shows "Round 0/50", so it must come before
+    // Crucible pages, Daily Events, Guild Events, Conquest, quests, Map
+    // Exploration, the full chat, travel popups (back = Cancel), the world
+    // map (back asks "Return to Home?", answered above), and solo battle
+    // setup (which already shows "Round 0/50", so it must come before
     // Common_TabBar_Battle).
     "Common_TabBar_BackOut": {
         "recognition": "Or",
@@ -204,6 +206,10 @@
             "Screen_GuildEvents",
             "Screen_ConquestPage",
             "Screen_QuestList",
+            "Screen_MapExploration",
+            "Screen_FullChat",
+            "Screen_TravelPopup",
+            "Screen_WorldMap",
             "Screen_StartBattle"
         ],
         "action": "ClickKey",

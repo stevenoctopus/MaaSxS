@@ -201,6 +201,33 @@
         "roi": [20, 20, 280, 60]
     },
 
+    // --- World map and chat (Grand Mines) ---
+    // The world map: Explore / Explore x10 buttons, bottom right.
+    "Screen_WorldMap": {
+        "recognition": "OCR",
+        "expected": "^Explore$",
+        "roi": [480, 1225, 110, 50]
+    },
+    // Journal > Map Exploration (Resource Hunt, Destiny Exploration).
+    "Screen_MapExploration": {
+        "recognition": "OCR",
+        "expected": "^Map\\s?Exploration$",
+        "roi": [20, 20, 320, 60]
+    },
+    // "Travel to <region> now?" (a chat link) or "Enter <region> to
+    // explore?" (Resource Hunt), with Cancel / OK.
+    "Screen_TravelPopup": {
+        "recognition": "OCR",
+        "expected": "^Travel\\s?to.*now\\?$|^Enter.*to\\s?explore\\?$",
+        "roi": [100, 540, 520, 90]
+    },
+    // The full chat (tapping the small chat anywhere but a link opens it).
+    "Screen_FullChat": {
+        "recognition": "OCR",
+        "expected": "^Enter\\s?your\\s?message$",
+        "roi": [85, 1195, 370, 50]
+    },
+
     // --- Game start-up ---
     "Screen_Notice": {
         "recognition": "And",

@@ -1,0 +1,135 @@
+{
+    // Grand Mines (world map). The agent action GrandMines (agent/grand_mines.py)
+    // waits at an AFK spot (Journal > Map Exploration > Resource Hunt) and
+    // claims grand mines: ones with claim bars on screen, and ones players
+    // link in the small chat (green "<Grand Iron Mine>"). It loops until the
+    // chosen number is claimed or the user stops it, so it has no page of
+    // its own: the entry goes straight to the action, which uses the nodes
+    // below. Claims cost nothing; ore rocks (the ⚡5 ones) spend energy on a
+    // tap, so the agent only taps what it has recognised.
+    // Top-level steps have on_error -> Common_Retry: if anything fails, go
+    // Home and start the task over, once.
+    "GrandMines": {
+        "next": ["GrandMines_Farm"],
+        "on_error": ["Common_Retry"]
+    },
+    // Grand mines to claim (a number, or "ALL": until stopped). Set by the
+    // "Mines to claim" option.
+    "GrandMines_Farm": {
+        "focus": { "Node.Action.Starting": "Grand Mines: going to the AFK spot" },
+        "action": "Custom",
+        "custom_action": "GrandMines",
+        "custom_action_param": { "mines": "ALL" },
+        "on_error": ["Common_Retry"]
+    },
+    // Settings only, never run (one node per option): the AFK spot, and
+    // which grand mine types to claim.
+    "GrandMines_Afk": {
+        "action": "Custom",
+        "custom_action": "GrandMines",
+        "custom_action_param": { "spot": "iron" }
+    },
+    "GrandMines_Iron": {
+        "action": "Custom",
+        "custom_action": "GrandMines",
+        "custom_action_param": { "mine": true }
+    },
+    "GrandMines_Sand": {
+        "action": "Custom",
+        "custom_action": "GrandMines",
+        "custom_action_param": { "mine": true }
+    },
+    "GrandMines_Rolla": {
+        "action": "Custom",
+        "custom_action": "GrandMines",
+        "custom_action_param": { "mine": true }
+    },
+
+    // ---------------------------------------------------------------
+    // Get to Map Exploration from any screen: tab bar > Journal > Map
+    // Exploration. Use as a run_task entry; ends on the page.
+    "GrandMines_ToHunt": {
+        "next": ["GrandMines_ToHunt_Done", "GrandMines_ToHunt_Journal", "[JumpBack]Common_ToJournal"]
+    },
+    "GrandMines_ToHunt_Done": {
+        "recognition": "And",
+        "all_of": ["Screen_MapExploration"]
+    },
+    "GrandMines_ToHunt_Journal": { // Map Exploration tile on the Journal
+        "recognition": "OCR",
+        "expected": "^Map\\s?Exploration$",
+        "roi": [0, 630, 300, 70],
+        "action": "Click",
+        "post_delay": 1500,
+        "next": ["GrandMines_ToHunt_Done"]
+    },
+
+    // Resource Hunt tile: the resources' circles (Rolla, Iron, Sand,
+    // Essence) are at y 350; the agent sets the target per resource and
+    // checks the checkmark itself.
+    "GrandMines_HuntPick": {
+        "action": "Click",
+        "target": [118, 335, 30, 30],
+        "post_delay": 800
+    },
+    // Go >> on the Resource Hunt tile, then "Enter <region> to explore?" OK.
+    "GrandMines_HuntGo": {
+        "action": "Click",
+        "target": [555, 335, 115, 55],
+        "post_delay": 1000,
+        "next": ["GrandMines_Travel"]
+    },
+    // "Travel to <region> now?" (a chat link) or "Enter <region> to
+    // explore?" (Resource Hunt): OK, then wait out the loading screen for the
+    // world map. Not shown when already in that region.
+    "GrandMines_Travel": {
+        "recognition": "And",
+        "all_of": [
+            "Screen_TravelPopup",
+            { "recognition": "OCR", "expected": "^OK$", "roi": [370, 700, 250, 75] }
+        ],
+        "box_index": 1,
+        "action": "Click",
+        "post_delay": 3000,
+        "next": ["GrandMines_OnMap"]
+    },
+    "GrandMines_OnMap": {
+        "recognition": "And",
+        "all_of": ["Screen_WorldMap"],
+        "timeout": 30000
+    },
+
+    // Resource Hunt's tracker widget (bottom left: the resource's icon with
+    // an X, and how much is held, e.g. "229K"). Its flashing icon stays on
+    // screen and would be taken for a link's, and its pin sits on an ore
+    // rock: close it (the X) once at the spot.
+    "GrandMines_StopTracking": {
+        "recognition": "OCR",
+        "expected": "^\\d[\\d.]*[KM]?$",
+        "roi": [85, 912, 100, 46],
+        "action": "Click",
+        "target": [54, 894, 28, 28],
+        "post_delay": 1000
+    },
+
+    // ---------------------------------------------------------------
+    // Reads. The agent sets the roi of the first two.
+    // Text of one green link in the small chat, or the whole chat line.
+    "GrandMines_ChatText": {
+        "recognition": "OCR",
+        "roi": [15, 1030, 690, 125]
+    },
+    // Toasts across the middle of the map: "Chrono Sand x4.03K" (a claim),
+    // "Ore tracking disabled due to depleted reserves." (link already mined
+    // out), "You have reached the target region." (already in that region).
+    "GrandMines_Toast": {
+        "recognition": "OCR",
+        "roi": [40, 290, 640, 160]
+    },
+    // Energy, top right: "186/300". Claims don't use it; ore rocks do.
+    "GrandMines_Energy": {
+        "recognition": "OCR",
+        "expected": "\\d+\\s?/\\s?\\d+",
+        "roi": [585, 30, 130, 45]
+    }
+}
