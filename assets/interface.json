@@ -226,7 +226,7 @@
         "Difficulty": {
             "type": "select",
             "label": "Difficulty",
-            "default_case": "Hard",
+            "default_case": "Purgatory",
             "cases": [
                 {
                     "name": "Normal",
