@@ -64,16 +64,6 @@ def give_up(context: Context, name: str, reason: str) -> bool:
     return False
 
 
-@AgentServer.custom_action("RunTask")
-class RunTask(CustomAction):
-    """Run a pipeline entry as one step: the node fails if the entry fails,
-    so a task can catch it with on_error (e.g. Common_Retry)."""
-
-    def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
-        entry = task_settings(argv).get("entry")
-        return bool(entry) and ok(context.run_task(entry))
-
-
 _retrying = False
 
 

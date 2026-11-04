@@ -175,6 +175,10 @@ The game font sometimes merges words ("Riftwatch Fortress" reads as
    and points the agent at it.
 4. Run `install/MFAAvalonia.exe`.
 
-Pushing a `v*` tag does all of this in CI and publishes a release.
+Pushing a `v*` tag (`git tag v0.2.0; git push --tags`) does all of this in
+CI for Windows and publishes a release; the build can also be started by
+hand from the Actions tab. Ordinary pushes only run `check.yml` (the
+MaaFramework resource checks and the tests).
 Keep `MAAFW_VERSION` in `.github/workflows/install.yml` and `maafw` in
-`agent/requirements.txt` on the same version.
+`agent/requirements.txt` on the same version. The schema files in
+`deps/tools/` come from MaaFramework; refresh them when upgrading it.

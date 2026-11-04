@@ -7,23 +7,12 @@ env:
   MAAFW_VERSION: "v5.15.0" # keep in step with agent/requirements.txt
   MFAA_VERSION: ""
 
+# Builds only for a version tag (git tag v0.2.0; git push --tags) or when
+# run by hand from the Actions tab. Pushes run check.yml only.
 on:
   push:
     tags:
       - "v*"
-    branches:
-      - "**"
-    paths:
-      - ".github/workflows/install.yml"
-      - "assets/**"
-      - "**.py"
-  pull_request:
-    branches:
-      - "**"
-    paths:
-      - ".github/workflows/install.yml"
-      - "assets/**"
-      - "**.py"
   workflow_dispatch:
 
 jobs:
@@ -72,8 +61,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [win, macos, linux, android]
-        arch: [aarch64, x86_64]
+        # Windows only for now. Other builds: macos, linux, android / aarch64.
+        os: [win]
+        arch: [x86_64]
       fail-fast: false
 
     steps:
@@ -142,6 +132,7 @@ jobs:
         with:
           name: MaaSxS-${{ matrix.os }}-${{ matrix.arch }}
           path: "install"
+          retention-days: 7 # the release keeps its own zip
 
   changelog:
     name: Generate changelog
@@ -191,16 +182,3 @@ jobs:
           body: ${{ needs.changelog.outputs.release_body }}
           draft: false
           prerelease: ${{ needs.meta.outputs.is_prerelease == 'true' }}
-
-        # MirrorChyan is a third-party download mirror, off by default for new projects
-        # It only works once MirrorChyan has enabled the project; turning it on here alone does nothing
-        # https://mirrorchyan.com/
-      - name: Trigger MirrorChyanUploading
-        if: false
-        # if: ${{ github.repository_owner == 'MaaXYZ' }}
-        shell: bash
-        run: |
-          gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_release.yml -f tag=${{ needs.meta.outputs.tag }}
-          gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_release_note.yml -f tag=${{ needs.meta.outputs.tag }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
