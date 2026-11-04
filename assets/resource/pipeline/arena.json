@@ -32,8 +32,7 @@
             "Arena_ToPage_OtherTab",
             "Arena_ToPage_Competition",
             "Arena_ToPage_Journal",
-            "Arena_ToPage_TabBar",
-            "[JumpBack]Common_ToTabBar"
+            "[JumpBack]Common_ToJournal"
         ]
     },
     "Arena_ToPage_Done": {
@@ -67,13 +66,6 @@
         "action": "Click",
         "post_delay": 1000,
         "next": ["Arena_ToPage_Competition"]
-    },
-    "Arena_ToPage_TabBar": { // Journal tab
-        "recognition": "And",
-        "all_of": ["Screen_TabBar"],
-        "action": "Click",
-        "target": [175, 1180, 80, 70],
-        "next": ["Arena_ToPage_Journal"]
     },
 
     // ---------------------------------------------------------------

@@ -39,8 +39,7 @@
         "next": [
             "DailyDungeon_ToList_Done",
             "DailyDungeon_ToList_Journal",
-            "DailyDungeon_ToList_TabBar",
-            "[JumpBack]Common_ToTabBar"
+            "[JumpBack]Common_ToJournal"
         ]
     },
     "DailyDungeon_ToList_Done": {
@@ -53,13 +52,6 @@
         "roi": [0, 140, 300, 60],
         "action": "Click",
         "next": ["DailyDungeon_ToList_Done"]
-    },
-    "DailyDungeon_ToList_TabBar": { // Journal tab (scroll icon, 2nd from the left)
-        "recognition": "And",
-        "all_of": ["Screen_TabBar"],
-        "action": "Click",
-        "target": [175, 1180, 80, 70],
-        "next": ["DailyDungeon_ToList_Journal"]
     },
 
     // ---------------------------------------------------------------
@@ -293,15 +285,13 @@
         "next": ["DailyDungeon_OnDetail"]
     },
     "DailyDungeon_OnDetail": {
-        "recognition": "OCR",
-        "expected": "Daily\\s?Reward\\s?Attempts|Out\\s?of\\s?daily\\s?reward",
-        "roi": [180, 1005, 360, 55]
+        "recognition": "And",
+        "all_of": ["Screen_DungeonDetail"]
     },
     // Dungeon detail: back to the list.
     "DailyDungeon_DetailBack": {
-        "recognition": "OCR",
-        "expected": "Daily\\s?Reward\\s?Attempts|Out\\s?of\\s?daily\\s?reward",
-        "roi": [180, 1005, 360, 55],
+        "recognition": "And",
+        "all_of": ["Screen_DungeonDetail"],
         "action": "Click",
         "target": [30, 1185, 90, 70],
         "post_delay": 1500,

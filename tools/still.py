@@ -88,8 +88,9 @@ class _Probe(CustomAction):
 
 
 class Still:
-    # Any existing node will do: the override makes it a do-nothing hook for _Probe.
-    HOOK = "Screen_Home"
+    # A node of our own for _Probe (the task's overrides would leak into any
+    # pipeline node we borrowed).
+    HOOK = "StillProbe"
 
     def __init__(self):
         self.resource = Resource()
@@ -97,6 +98,10 @@ class Still:
             raise RuntimeError("could not load assets/resource")
         self.probe = _Probe()
         self.resource.register_custom_action("StillProbe", self.probe)
+        if not self.resource.override_pipeline({self.HOOK: {
+                "recognition": "DirectHit", "action": "Custom", "custom_action": "StillProbe",
+                "pre_delay": 0, "post_delay": 0}}):
+            raise RuntimeError("could not add the StillProbe node")
         self.controller = StillController()
         self.controller.post_connection().wait()
         self.tasker = Tasker()
@@ -111,9 +116,7 @@ class Still:
             raise FileNotFoundError(SCREENS / screen)
         self.controller.image = image
         self.probe.fn, self.probe.result, self.probe.error = fn, None, None
-        self.tasker.post_task(self.HOOK, {self.HOOK: {
-            "recognition": "DirectHit", "action": "Custom", "custom_action": "StillProbe",
-            "next": [], "on_error": [], "timeout": 0, "pre_delay": 0, "post_delay": 0}}).wait()
+        self.tasker.post_task(self.HOOK).wait()
         if self.probe.error:
             raise self.probe.error
         return self.probe.result

@@ -42,8 +42,7 @@
             "MaterialRealms_ToList_Done",
             "MaterialRealms_ToList_Realm",
             "MaterialRealms_ToList_Journal",
-            "MaterialRealms_ToList_TabBar",
-            "[JumpBack]Common_ToTabBar"
+            "[JumpBack]Common_ToJournal"
         ]
     },
     "MaterialRealms_ToList_Done": {
@@ -66,13 +65,6 @@
         "action": "Click",
         "post_delay": 1000,
         "next": ["MaterialRealms_ToList_Done"]
-    },
-    "MaterialRealms_ToList_TabBar": { // Journal tab
-        "recognition": "And",
-        "all_of": ["Screen_TabBar"],
-        "action": "Click",
-        "target": [175, 1180, 80, 70],
-        "next": ["MaterialRealms_ToList_Journal"]
     },
 
     // ---------------------------------------------------------------

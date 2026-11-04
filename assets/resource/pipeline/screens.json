@@ -50,6 +50,13 @@
         "expected": "Daily\\s?Reward\\s?Attempts",
         "roi": [200, 20, 320, 60]
     },
+    // A dungeon's detail screen (difficulty, Match): the reward attempts line
+    // above the Match button.
+    "Screen_DungeonDetail": {
+        "recognition": "OCR",
+        "expected": "Daily\\s?Reward\\s?Attempts|Out\\s?of\\s?daily\\s?reward",
+        "roi": [180, 1005, 360, 55]
+    },
     // Title of the Crucible pages (Crucible, Rankings and Goals tabs).
     "Screen_CrucibleTitle": {
         "recognition": "OCR",
