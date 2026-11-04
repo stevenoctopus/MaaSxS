@@ -87,7 +87,8 @@ can't both set the same node's param. Read with `common.settings_node()`;
 a task's own node's settings with `common.task_settings()`.
 
 **Saved screen**: a real screenshot in `tests/screens/`, captured with
-`python tools/still.py capture <name>`. The tests show it to the agent's own
+`python tools/still.py capture <name>`. Kept on the machine, not in git
+(they show the player's name); tests whose screen is missing are skipped. The tests show it to the agent's own
 code through the **Still** adapter (`tools/still.py`), a stand-in device
 that always shows one image and ignores taps.
 

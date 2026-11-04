@@ -454,3 +454,6 @@ config
 debug
 # Claude Code local settings
 .claude/settings.local.json
+
+# Saved game screens for the tests: local only, they show the player's name
+tests/screens/

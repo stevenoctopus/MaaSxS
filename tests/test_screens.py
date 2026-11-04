@@ -5,6 +5,8 @@
 Each test shows one real screenshot to the agent's own code through
 tools/still.py; nothing touches the emulator. To add a case, capture the
 screen with `python tools/still.py capture <name>` and add a test here.
+The screens stay on this machine (tests/screens is in .gitignore: they show
+the player's name); a test whose screen is missing is skipped.
 """
 import sys
 import unittest
@@ -22,8 +24,7 @@ import track  # noqa: E402
 import vendor_booth as vb  # noqa: E402
 from screen import hit, parse_fraction, parse_int, read_int, screenshot  # noqa: E402
 
-import cv2  # noqa: E402
-from still import SCREENS  # noqa: E402
+from still import load  # noqa: E402
 
 still = None
 
@@ -135,7 +136,7 @@ class DailyDungeon(unittest.TestCase):
 
 
 def image(screen):
-    return cv2.imread(str(SCREENS / screen))
+    return load(screen)
 
 
 def near(point, x, y, tol=15):
