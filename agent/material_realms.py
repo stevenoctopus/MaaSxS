@@ -10,17 +10,16 @@ Starts and ends on the Material Realms list.
        tap) and taps until no tools are left; a number turns it off and taps
        once per tool.
 """
-import json
 import time
 
 from maa.agent.agent_server import AgentServer
 from maa.context import Context
 from maa.custom_action import CustomAction
 
-from common import ok
+from common import ok, settings_node, task_settings
 from gui import say
 from purchase import buy_daily
-from screen import hit, node_param, read_int, screenshot
+from screen import hit, read_int, screenshot
 
 # (param key, name, title pattern on the list tile and the realm's tab, tile roi,
 #  roi of the tile's tool-count badge)
@@ -34,10 +33,6 @@ REALMS = [
 
 def log(context: Context, msg: str):
     say(context, "Material Realms", msg)
-
-
-def params(argv):
-    return json.loads(argv.custom_action_param or "{}") or {}
 
 
 def open_realm(context: Context, tile: str, roi) -> bool:
@@ -117,8 +112,8 @@ class MaterialRealms(CustomAction):
     """Visit each realm once: buy (MaterialRealms_Buy's param), then use
     (this node's param). Realms with nothing to buy or use aren't opened."""
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
-        buy = node_param(context, "MaterialRealms_Buy")
-        use = params(argv)
+        buy = settings_node(context, "MaterialRealms_Buy")
+        use = task_settings(argv)
         # Tools held per realm, from the badges on the list (no badge = 0).
         image = screenshot(context)
         held = {}

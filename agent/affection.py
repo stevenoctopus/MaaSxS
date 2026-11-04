@@ -5,14 +5,13 @@
   2. runs = ceil((CAP - N) / per_run), run DailyDungeon_Run that many times.
   3. Check again and repeat until capped. Stops if a whole batch earned nothing.
 """
-import json
 import math
 
 from maa.agent.agent_server import AgentServer
 from maa.context import Context
 from maa.custom_action import CustomAction
 
-from common import give_up, ok, run_times
+from common import give_up, ok, run_times, task_settings
 from gui import say
 from screen import parse_fraction
 
@@ -39,7 +38,7 @@ def check_affection(context: Context):
 @AgentServer.custom_action("AffectionFarm")
 class AffectionFarm(CustomAction):
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
-        param = json.loads(argv.custom_action_param or "{}") or {}
+        param = task_settings(argv)
         per_run = int(param.get("per_run", 7))
 
         previous = None

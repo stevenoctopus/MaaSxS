@@ -6,14 +6,13 @@ Starts and ends on the Daily Dungeon list. By default a run leaves its results
 without claiming (Affection mode); CLAIM switches the results screen to
 claiming (see daily_dungeon.json).
 """
-import json
 import time
 
 from maa.agent.agent_server import AgentServer
 from maa.context import Context
 from maa.custom_action import CustomAction
 
-from common import give_up, ok, run_once
+from common import give_up, ok, run_once, task_settings
 from gui import say
 from purchase import buy_daily
 from screen import hit, read_fraction, screenshot
@@ -77,7 +76,7 @@ def low_grade(detail):
 @AgentServer.custom_action("DungeonDaily")
 class DungeonDaily(CustomAction):
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
-        param = json.loads(argv.custom_action_param or "{}") or {}
+        param = task_settings(argv)
         buy = int(param.get("buy", 0))
 
         if buy > 0 and not buy_attempts(context, buy):

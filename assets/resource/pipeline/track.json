@@ -1,0 +1,52 @@
+{
+    // Reward tracks (Crucible, Split Mirage; agent/track.py).
+    // Scroll to the right end of the track (two full swipes).
+    "Common_TrackEnd": {
+        "action": "Swipe",
+        "begin": [620, 920, 10, 10],
+        "end": [80, 920, 10, 10],
+        "duration": 600,
+        "post_delay": 1500,
+        "next": ["Common_TrackEnd_2"]
+    },
+    "Common_TrackEnd_2": {
+        "action": "Swipe",
+        "begin": [620, 920, 10, 10],
+        "end": [80, 920, 10, 10],
+        "duration": 600,
+        "post_delay": 1500
+    },
+    // Half a screen back towards the start, for scanning from the right end.
+    "Common_TrackStep": {
+        "action": "Swipe",
+        "begin": [220, 920, 10, 10],
+        "end": [500, 920, 10, 10],
+        "duration": 800,
+        "post_delay": 1200
+    },
+    // A claimed reward: its icon is replaced by a yellow-green checkmark.
+    // The agent sets the roi to the middle of the icon above each label.
+    "Common_TrackClaimed": {
+        "recognition": "ColorMatch",
+        "method": 4, // RGB
+        "roi": [59, 893, 36, 36],
+        "lower": [180, 185, 70],
+        "upper": [230, 230, 135],
+        "count": 250
+    },
+    // Plain panel right of the rightmost reward (no bar going on): the track
+    // is already at its right end. The agent sets the roi.
+    "Common_TrackNoBar": {
+        "recognition": "ColorMatch",
+        "method": 4, // RGB
+        "roi": [674, 916, 16, 10],
+        "lower": [205, 205, 205],
+        "upper": [240, 240, 240],
+        "count": 150
+    },
+    // Tap a reward on the track; the agent gives the spot.
+    "Common_TrackTap": {
+        "action": "Click",
+        "post_delay": 2000
+    }
+}

@@ -117,11 +117,15 @@ python tools/configure.py          # copies the OCR model from MaaCommonAssets
   - `screens.json`: screen checks, defined once and referenced by name.
   - `common.json`: shared routines: get to the tab bar or Home from anywhere
     (including crash recovery), matchmaking, retry.
+  - `purchase.json` and `track.json`: the Purchase popup and reward-track
+    nodes, beside `agent/purchase.py` and `agent/track.py`.
   - one file per task, plus `affection.json` for the affection check.
 - `agent/`: Python custom actions (loops, reading numbers), registered with
-  `@AgentServer.custom_action`. `screen.py` reads the screen (hits,
-  numbers, "N/M", options on settings nodes) and `common.py` holds the
-  run loop every "run N times" task uses. `purchase.py` handles the Purchase popup (Arena, Daily Dungeon, Material Realms). `track.py` holds the reward-track logic
+  `@AgentServer.custom_action` (a new task module also needs an import in
+  `main.py`; the tests catch a missing one). `screen.py` reads the screen
+  (hits, numbers, "N/M"). `common.py` holds the run loop every "run N
+  times" task uses and reads a task's settings (see Settings node in
+  GLOSSARY.md). `purchase.py` handles the Purchase popup (Arena, Daily Dungeon, Material Realms). `track.py` holds the reward-track logic
   shared by Crucible and Split Mirage. `badge.py` straightens the Vendor
   Booth's tilted discount badges so OCR can read them (numpy only).
 
@@ -133,13 +137,21 @@ Dev tools:
 | `python tools/screenshot.py [name]` | saves `debug/screenshots/<name>.png` at 720p |
 | `python tools/ocr_dump.py live` or `<png> [x y w h]` | prints everything OCR reads, with boxes |
 | `python tools/watch.py <session> [--seconds N] [--until REGEX]` | records every screen change with OCR text, for mapping new screens |
-| `python -m unittest discover tests` | checks what the agent reads off saved game screens (discounts, reward tracks, tool badges, ...), about 10 s, no emulator needed |
+| `python -m unittest discover tests` | checks what the agent reads off saved game screens (discounts, reward tracks, tool badges, ...) and that interface.json matches the pipeline, about 10 s, no emulator needed |
 | `python tools/still.py capture <name>` | saves the emulator's screen to `tests/screens/<name>.png` for a new test |
 
 `tests/test_screens.py` shows each screenshot in `tests/screens/` to the
 agent's own functions through `tools/still.py`: a stand-in device that
 always shows that image and ignores taps. When the game changes a screen,
 capture it again and update the expected values.
+
+`tests/test_interface.py` checks that every task entry, option and node an
+option changes exists, every `{placeholder}` is one of its option's inputs,
+input defaults pass their own check, and every Custom action in the
+pipeline is registered by the agent.
+
+Flows (buying, refreshing, stopping for Dawnium) are tested live, not
+offline: see `docs/adr/0001-buying-flows-are-tested-live.md`.
 
 With several emulators running, set `MAASXS_DEVICE` (part of the device name
 or address, e.g. `127.0.0.1:16384`) to choose one.

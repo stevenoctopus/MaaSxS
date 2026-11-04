@@ -12,6 +12,24 @@ def ok(detail) -> bool:
     return bool(detail and detail.status.succeeded)
 
 
+def task_settings(argv: CustomAction.RunArg) -> dict:
+    """The settings the GUI's options put on this task's own node
+    (its custom_action_param)."""
+    param = argv.custom_action_param
+    param = json.loads(param or "{}") if isinstance(param, str) else param
+    return param or {}
+
+
+def settings_node(context: Context, node: str) -> dict:
+    """The settings on a settings node: a node that only holds settings, for
+    options that can't go on the task's own node (two options can't both set
+    one node's custom_action_param). Includes the task's overrides."""
+    data = context.get_node_data(node) or {}
+    param = data.get("action", {}).get("param", {}).get("custom_action_param")
+    param = json.loads(param or "{}") if isinstance(param, str) else param
+    return param or {}
+
+
 def run_once(context: Context, name: str, entry: str, label: str, override=None):
     """One run of pipeline entry `entry` inside a task's loop: unless a stop
     was requested, log `label` (e.g. "run 2/5") and run it. Returns the
@@ -52,7 +70,7 @@ class RunTask(CustomAction):
     so a task can catch it with on_error (e.g. Common_Retry)."""
 
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
-        entry = (json.loads(argv.custom_action_param or "{}") or {}).get("entry")
+        entry = task_settings(argv).get("entry")
         return bool(entry) and ok(context.run_task(entry))
 
 
