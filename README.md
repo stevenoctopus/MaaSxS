@@ -82,8 +82,12 @@ to start the emulator.
 Every task:
 
 - **Starts from any screen.** It finds its way from wherever the game is.
-- **Retries once.** If something goes wrong, it goes back Home and starts the
-  task over. If it fails again, it stops.
+- **Retries once.** If something unexpected goes wrong, it goes back Home and
+  starts the task over. If it fails again, it stops.
+- **Stops the run for things only you can fix.** Not enough Dawnium or gold for
+  what the options ask, or a safety stop (Daily Dungeon runs that don't claim,
+  Affection runs that earn nothing): it logs `Stopped: <reason>`, doesn't retry,
+  and the remaining tasks don't run either.
 - **Recovers from crashes and disconnects.** If the game closed or went back to
   its start-up screens, it relaunches the game, gets through the Notice and
   "Tap to Play", and carries on.
@@ -115,7 +119,7 @@ python tools/configure.py          # copies the OCR model from MaaCommonAssets
     (including crash recovery), matchmaking, retry.
   - one file per task, plus `affection.json` for the affection check.
 - `agent/`: Python custom actions (loops, reading numbers), registered with
-  `@AgentServer.custom_action`. `track.py` holds the reward-track logic
+  `@AgentServer.custom_action`. `purchase.py` handles the Purchase popup (Arena, Daily Dungeon, Material Realms). `track.py` holds the reward-track logic
   shared by Crucible and Split Mirage. `badge.py` straightens the Vendor
   Booth's tilted discount badges so OCR can read them (numpy only).
 

@@ -13,7 +13,7 @@ from maa.agent.agent_server import AgentServer
 from maa.context import Context
 from maa.custom_action import CustomAction
 
-from common import ok
+from common import give_up, ok
 from gui import say
 
 TOTAL_RE = re.compile(r"(\d+)\s*/\s*(\d+)")
@@ -71,8 +71,7 @@ class AffectionFarm(CustomAction):
             # Safety stop: a whole batch that earned nothing means affection
             # isn't counting, so running more won't help.
             if previous is not None and current <= previous:
-                log(context, "no affection gained since the last check, stopping")
-                return False
+                return give_up(context, "Affection", "no affection gained since the last check")
             previous = current
             if not run_dungeons(context, runs):
                 return False

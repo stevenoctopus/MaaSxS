@@ -13,8 +13,9 @@ from maa.agent.agent_server import AgentServer
 from maa.context import Context
 from maa.custom_action import CustomAction
 
-from common import ok, read_fraction
+from common import give_up, ok, read_fraction
 from gui import say
+from purchase import buy_daily
 
 
 CLAIM = {"DailyDungeon_Results": {"next": [
@@ -28,37 +29,37 @@ def log(context: Context, msg: str):
 
 def buy_attempts(context: Context, wanted: int) -> bool:
     """On the list: open the chosen dungeon's detail, buy attempts so that
-    `wanted` have been bought today (attempts already bought today count),
-    within the daily purchase limit, and go back to the list."""
+    `wanted` have been bought today (a daily total, see agent/purchase.py),
+    and go back to the list."""
     # Open the detail screen (same steps as a run, stopping before Match).
     if not ok(context.run_task("DailyDungeon_SelectCard", pipeline_override={
             "DailyDungeon_DifficultySelected": {"next": []}})):
         log(context, "could not open the dungeon")
         return False
 
-    if not ok(context.run_task("DailyDungeon_Buy_Open")):
-        # No popup: today's purchases are used up.
+    # The "+" isn't shown once today's attempts are bought and claimed.
+    # TODO: check what it shows while rewards are still claimable.
+    if not buy_option_shown(context):
         log(context, "no extra attempts left to buy today")
-    else:
-        limit = read_fraction(context, "DailyDungeon_Buy_Limit")
-        bought, cap = limit if limit else (0, 0)
-        count = max(0, min(wanted, cap) - bought)
-        if count == 0:
-            log(context, f"{bought} attempt(s) already bought today, nothing to buy")
-            context.run_task("DailyDungeon_Buy_Cancel")
-        else:
-            for _ in range(count - 1):  # the slider starts at 1
-                context.run_task("DailyDungeon_Buy_More")
-            shown = read_fraction(context, "DailyDungeon_Buy_Count")
-            if shown is None or shown[0] != count:
-                log(context, f"the purchase popup shows {shown}, expected {count}; not buying")
-                context.run_task("DailyDungeon_Buy_Cancel")
-                return False
-            log(context, f"buying {count} extra attempt(s) ({bought} already bought today)")
-            if not ok(context.run_task("DailyDungeon_Buy_Purchase")):
-                log(context, "purchase failed")
-                return False
+    elif buy_daily(context, "Daily Dungeon", wanted, "DailyDungeon_Buy_Open",
+                   "DailyDungeon_OnDetail", popup="DailyDungeon_Buy") is None:
+        return False
     return ok(context.run_task("DailyDungeon_DetailBack"))
+
+
+def buy_option_shown(context: Context, wait: float = 4) -> bool:
+    """The attempts line and its "+" show on the detail screen (looks again
+    for `wait` seconds while the screen settles)."""
+    end = time.time() + wait
+    while True:
+        image = context.tasker.controller.post_screencap().wait().get()
+        line = context.run_recognition("DailyDungeon_Buy_Open", image)
+        plus = context.run_recognition("DailyDungeon_BuyPlus", image)
+        if line and line.hit and plus and plus.hit:
+            return True
+        if time.time() >= end:
+            return False
+        time.sleep(0.5)
 
 
 def find_node(detail, name):
@@ -111,5 +112,4 @@ class DungeonDaily(CustomAction):
             # Safety stop: attempts were left but the run didn't claim, so
             # running more won't help.
             if find_node(detail, "DailyDungeon_ClaimConfirm") is None:
-                log(context, f"run {run} didn't claim its rewards, stopping")
-                return False
+                return give_up(context, "Daily Dungeon", f"run {run} didn't claim its rewards though attempts were left")

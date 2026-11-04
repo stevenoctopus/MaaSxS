@@ -123,48 +123,18 @@
     },
 
     // ---------------------------------------------------------------
-    // Buying tickets (agent/arena.py): the "+" by the tickets opens
-    // "Purchase Arena Ticket": Qty (starts at 1), its "+", "Daily Purchase
-    // Limit: U/8", Cancel / Purchase (Dawnium; the price rises per ticket).
+    // Buying tickets (agent/arena.py, agent/purchase.py): the "+" by the
+    // tickets opens "Purchase Arena Ticket", a Purchase popup (the shared
+    // Common_Purchase_* nodes; "Daily Purchase Limit: U/8"; the price rises
+    // per ticket). It opens even when today's limit is used up.
     "Arena_Buy_Open": {
         "recognition": "And",
         "all_of": ["Screen_ArenaPage"],
         "action": "Click",
         "target": [570, 38, 34, 34],
         "post_delay": 1500,
-        "timeout": 4000, // no popup (e.g. limit used up): fails, agent carries on
-        "next": ["Arena_Buy_Limit"]
-    },
-    "Arena_Buy_Limit": { // "Daily Purchase Limit: U/L" (bought today / limit)
-        "recognition": "OCR",
-        "expected": "Purchase\\s?Limit:\\s?\\d+\\s?/\\s?\\d+",
-        "roi": [360, 755, 260, 45]
-    },
-    "Arena_Buy_Count": { // the Qty field: how many will be bought
-        "recognition": "OCR",
-        "expected": "^\\d+$",
-        "roi": [220, 670, 280, 55]
-    },
-    "Arena_Buy_More": { // Qty "+"
-        "action": "Click",
-        "target": [518, 681, 36, 36],
-        "post_delay": 700
-    },
-    "Arena_Buy_Purchase": {
-        "recognition": "OCR",
-        "expected": "^Purchase",
-        "roi": [370, 800, 250, 70],
-        "action": "Click",
-        "post_delay": 2000,
-        "next": ["Arena_BackOnPage"]
-    },
-    "Arena_Buy_Cancel": {
-        "recognition": "OCR",
-        "expected": "^Cancel$",
-        "roi": [110, 800, 240, 70],
-        "action": "Click",
-        "post_delay": 1500,
-        "next": ["Arena_BackOnPage"]
+        "timeout": 4000,
+        "next": ["Common_Purchase_Limit"]
     },
 
     // Arena tickets held, top right: "N/20" (OCR adds the "+" after it).

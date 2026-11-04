@@ -17,8 +17,9 @@ from maa.agent.agent_server import AgentServer
 from maa.context import Context
 from maa.custom_action import CustomAction
 
-from common import ok, read_fraction
+from common import ok
 from gui import say
+from purchase import buy_daily
 
 # (param key, name, title pattern on the list tile and the realm's tab, tile roi,
 #  roi of the tile's tool-count badge)
@@ -62,29 +63,9 @@ def open_realm(context: Context, tile: str, roi) -> bool:
 
 def buy_sets(context: Context, name: str, wanted: int) -> bool:
     """On a realm's page: buy sets so that `wanted` have been bought today
-    (sets already bought today count), within the daily purchase limit."""
-    if not ok(context.run_task("MaterialRealms_Buy_Open")):
-        log(context, f"{name}: the purchase popup didn't open")
-        return False
-    limit = read_fraction(context, "MaterialRealms_Buy_Limit")
-    if limit is None:
-        log(context, f"{name}: could not read the purchase limit; not buying")
-        context.run_task("MaterialRealms_Buy_Cancel")
-        return False
-    bought, cap = limit
-    sets = max(0, min(wanted, cap) - bought)
-    if sets == 0:
-        log(context, f"{name}: {bought} set(s) already bought today, nothing to buy")
-        return ok(context.run_task("MaterialRealms_Buy_Cancel"))
-    for _ in range(sets - 1):  # Qty starts at 1
-        context.run_task("MaterialRealms_Buy_More")
-    shown = read_int(context, "MaterialRealms_Buy_Count")
-    if shown != sets:
-        log(context, f"{name}: the purchase popup shows {shown}, expected {sets}; not buying")
-        context.run_task("MaterialRealms_Buy_Cancel")
-        return False
-    log(context, f"{name}: buying {sets} set(s) ({bought} already bought today)")
-    return ok(context.run_task("MaterialRealms_Buy_Purchase"))
+    (a daily total, see agent/purchase.py)."""
+    return buy_daily(context, f"Material Realms: {name}", wanted,
+                     "MaterialRealms_Buy_Open", "MaterialRealms_OnRealmAgain") is not None
 
 
 # ---------------------------------------------------------------- using
