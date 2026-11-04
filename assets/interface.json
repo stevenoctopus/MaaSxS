@@ -207,8 +207,8 @@
         // overrides its own node's param.
         "MaterialBuy": {
             "type": "input",
-            "label": "Sets to buy (Quick Purchase)",
-            "description": "Sets of 5 tools per realm, bought with Dawnium before using. Never past the game's daily limit of 20 per realm.",
+            "label": "Sets to buy",
+            "description": "Sets of 5 tools per realm to buy per day, with Dawnium, before using (bought on each realm's page). Sets already bought today count, so running twice won't buy twice. Never past the game's daily limit of 20 per realm.",
             "inputs": [
                 { "name": "ironvein", "label": "Ironvein Pit (hammers)", "default": "0", "pipeline_type": "int", "verify": "^([0-9]|1[0-9]|20)$", "pattern_msg": "Enter 0 to 20" },
                 { "name": "gilded", "label": "Gilded Depths (pickaxes)", "default": "0", "pipeline_type": "int", "verify": "^([0-9]|1[0-9]|20)$", "pattern_msg": "Enter 0 to 20" },

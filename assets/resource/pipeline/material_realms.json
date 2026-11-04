@@ -2,7 +2,7 @@
     // Material Realms (Journal > Material Realms): Ironvein Pit, Gilded
     // Depths, Dread Hollow, Dustfall Dune. Each realm uses its own tool
     // (hammer, pickaxe, glove, shovel). The agent (agent/material_realms.py)
-    // first buys tool sets with Quick Purchase (MaterialRealms_Buy), then
+    // first buys tool sets on each realm's page (MaterialRealms_Buy), then
     // uses the tools in each realm (MaterialRealms_Use). The options set the
     // params.
     // Top-level steps have on_error -> Common_Retry: if anything fails, go
@@ -77,52 +77,50 @@
     },
 
     // ---------------------------------------------------------------
-    // Quick Purchase popup, one row per realm in list order. Each row:
-    // "Daily Purchase Limit: U/20", then - Set +. Set starts at 1; one set
-    // is 5 tools. The agent sets each row's roi / target from the row's y.
+    // Buying on a realm's page (not Quick Purchase: once a realm has bought
+    // sets today, its Quick Purchase row can't go below 1). The "+" by the
+    // tool count opens "Purchase <tool>": Qty in sets of 5 (starts at 1), its
+    // "+", "Daily Purchase Limit: U/20", Cancel / Purchase (Dawnium).
     "MaterialRealms_Buy_Open": {
-        "recognition": "And",
-        "all_of": ["Screen_MaterialList"],
         "action": "Click",
-        "target": [480, 1095, 240, 65],
+        "target": [672, 36, 34, 34],
         "post_delay": 1500,
-        "next": ["MaterialRealms_Buy_Popup"]
+        "next": ["MaterialRealms_Buy_Limit"]
     },
-    "MaterialRealms_Buy_Popup": {
-        "recognition": "OCR",
-        "expected": "^Quick\\s?Purchase$",
-        "roi": [180, 245, 360, 70]
-    },
-    "MaterialRealms_Buy_Limit": { // per row
+    "MaterialRealms_Buy_Limit": { // "Daily Purchase Limit: U/L" (sets bought today / limit)
         "recognition": "OCR",
         "expected": "Purchase\\s?Limit:\\s?\\d+\\s?/\\s?\\d+",
-        "roi": [430, 395, 200, 30]
+        "roi": [350, 755, 270, 45]
     },
-    "MaterialRealms_Buy_Set": { // per row: the Set value
+    "MaterialRealms_Buy_Count": { // the Qty field: sets to buy
         "recognition": "OCR",
         "expected": "^\\d+$",
-        "roi": [495, 425, 80, 40]
+        "roi": [220, 670, 280, 55]
     },
-    "MaterialRealms_Buy_Step": { // per row: the - or + button
+    "MaterialRealms_Buy_More": { // Qty "+"
         "action": "Click",
-        "target": [455, 430, 32, 32],
-        "post_delay": 500
+        "target": [518, 681, 36, 36],
+        "post_delay": 600
     },
     "MaterialRealms_Buy_Purchase": {
         "recognition": "OCR",
         "expected": "^Purchase",
-        "roi": [370, 865, 245, 70],
+        "roi": [370, 800, 250, 70],
         "action": "Click",
         "post_delay": 2000,
-        "next": ["MaterialRealms_BackOnList"]
+        "next": ["MaterialRealms_OnRealmAgain"]
     },
     "MaterialRealms_Buy_Cancel": {
         "recognition": "OCR",
         "expected": "^Cancel$",
-        "roi": [110, 865, 240, 70],
+        "roi": [110, 800, 240, 70],
         "action": "Click",
         "post_delay": 1500,
-        "next": ["MaterialRealms_BackOnList"]
+        "next": ["MaterialRealms_OnRealmAgain"]
+    },
+    "MaterialRealms_OnRealmAgain": { // the popup closed: the realm page shows
+        "recognition": "And",
+        "all_of": ["Screen_MaterialTitle"]
     },
     "MaterialRealms_BackOnList": {
         "recognition": "And",
