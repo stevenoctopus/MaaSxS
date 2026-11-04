@@ -1,14 +1,13 @@
 """Arena: buy tickets so `buy` have been bought today (a daily total, see
 agent/purchase.py), then challenge the rightmost opponent `tickets` times,
 limited by the tickets held ("N/20" at the top of the Arena page)."""
-import json
 import time
 
 from maa.agent.agent_server import AgentServer
 from maa.context import Context
 from maa.custom_action import CustomAction
 
-from common import run_times
+from common import run_times, task_settings
 from gui import say
 from purchase import buy_daily
 from screen import read_fraction
@@ -21,7 +20,7 @@ def log(context: Context, msg: str):
 @AgentServer.custom_action("ArenaFarm")
 class ArenaFarm(CustomAction):
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
-        param = json.loads(argv.custom_action_param or "{}") or {}
+        param = task_settings(argv)
         wanted = int(param.get("tickets", 2))
         buy = int(param.get("buy", 0))
 

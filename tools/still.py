@@ -28,11 +28,14 @@ sys.path.insert(0, str(ROOT / "agent"))
 
 
 # Importing maa.agent reloads MaaFramework as an agent server, which breaks the
-# Tasker used here. The agent modules only need its decorators, so stand in a
-# do-nothing AgentServer before they're imported.
+# Tasker used here. The agent modules only need its decorators, so stand in an
+# AgentServer that only records the names, before they're imported.
 class _AgentServer:
+    actions = set()
+
     @staticmethod
     def custom_action(name):
+        _AgentServer.actions.add(name)
         return lambda cls: cls
 
     custom_recognition = custom_action
@@ -42,6 +45,12 @@ _stub = types.ModuleType("maa.agent.agent_server")
 _stub.AgentServer = _AgentServer
 sys.modules.setdefault("maa.agent", types.ModuleType("maa.agent"))
 sys.modules["maa.agent.agent_server"] = _stub
+
+
+def agent_actions() -> set:
+    """Names of the custom actions agent/main.py registers."""
+    import main  # noqa: F401  (imports every task module, like the GUI's agent)
+    return set(_AgentServer.actions)
 
 
 class StillController(CustomController):

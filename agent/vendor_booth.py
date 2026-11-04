@@ -12,7 +12,6 @@ Vault items (Dawnium). Starts in the Vendor Booth, on any tab.
 Buying is instant: a tile turns "Sold Out". Discounts are read from the
 tilted "-N%" badge at a tile's top left (agent/badge.py).
 """
-import json
 
 import numpy as np
 from maa.agent.agent_server import AgentServer
@@ -20,9 +19,9 @@ from maa.context import Context
 from maa.custom_action import CustomAction
 
 import badge
-from common import give_up, ok
+from common import give_up, ok, settings_node, task_settings
 from gui import say
-from screen import hit, node_param, read_int, screenshot
+from screen import hit, read_int, screenshot
 
 # Top left of each tile of the 3x3 grid, row by row.
 TILES = [(x0, y0) for y0 in (188, 470, 753) for x0 in (30, 260, 490)]
@@ -148,7 +147,7 @@ def vault(context: Context) -> bool:
         log(context, "could not open the Vault tab")
         return False
     wanted = [(i + 1, name, limit) for i, (key, name, limit) in enumerate(VAULT)
-              if int(node_param(context, f"VendorBooth_Vault_{key}").get("buy", 0))]
+              if int(settings_node(context, f"VendorBooth_Vault_{key}").get("buy", 0))]
     for tile, name, limit in [(0, "Free reward", 1)] + wanted:
         if sold_out(context, tile):
             log(context, f"Vault: {name} already bought")
@@ -162,8 +161,8 @@ def vault(context: Context) -> bool:
 @AgentServer.custom_action("VendorBooth")
 class VendorBooth(CustomAction):
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
-        min_off = int(json.loads(argv.custom_action_param or "{}").get("discount", 0))
-        refreshes = int(node_param(context, "VendorBooth_Refreshes").get("refreshes", 0))
+        min_off = int(task_settings(argv).get("discount", 0))
+        refreshes = int(settings_node(context, "VendorBooth_Refreshes").get("refreshes", 0))
         if not (general(context, min_off, refreshes) and vault(context)):
             return False
         log(context, "done")

@@ -3,13 +3,13 @@
 The score is the wave reached: "Today's Best: Wave ×N" on the menu, and the
 wave number under each reward on the track.
 """
-import json
 import re
 
 from maa.agent.agent_server import AgentServer
 from maa.context import Context
 from maa.custom_action import CustomAction
 
+from common import task_settings
 from track import TrackEvent, farm
 
 
@@ -35,5 +35,5 @@ SPLIT_MIRAGE = TrackEvent(
 @AgentServer.custom_action("SplitMirageFarm")
 class SplitMirageFarm(CustomAction):
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
-        param = json.loads(argv.custom_action_param or "{}") or {}
+        param = task_settings(argv)
         return farm(context, SPLIT_MIRAGE, param.get("mode", "once"))

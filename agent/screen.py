@@ -7,7 +7,6 @@ Numbers: the first run of digits in the text ("5", "x5", "Attempt 3/5" -> 5,
 Every reader takes an optional `image`, to read several things off one
 screenshot; without it, it takes a fresh one.
 """
-import json
 import re
 
 from maa.context import Context
@@ -53,10 +52,3 @@ def read_fraction(context: Context, node: str, image=None, override=None):
     reco = recognize(context, node, image, override)
     return parse_fraction(reco.best_result.text) if reco else None
 
-
-def node_param(context: Context, node: str) -> dict:
-    """The custom_action_param of another node, with the task's overrides
-    (how a task reads options stored on its settings nodes)."""
-    data = context.get_node_data(node) or {}
-    param = data.get("action", {}).get("param", {}).get("custom_action_param") or {}
-    return json.loads(param) if isinstance(param, str) else param

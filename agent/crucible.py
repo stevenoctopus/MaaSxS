@@ -3,13 +3,13 @@
 The score is damage: "Highest DMG Today" on the menu, and labels like "11.3B"
 on the damage track.
 """
-import json
 import re
 
 from maa.agent.agent_server import AgentServer
 from maa.context import Context
 from maa.custom_action import CustomAction
 
+from common import task_settings
 from track import TrackEvent, farm
 
 VALUE_RE = re.compile(r"^(\d+(?:\.\d+)?)([KMB]?)$")
@@ -38,5 +38,5 @@ CRUCIBLE = TrackEvent(
 @AgentServer.custom_action("CrucibleFarm")
 class CrucibleFarm(CustomAction):
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
-        param = json.loads(argv.custom_action_param or "{}") or {}
+        param = task_settings(argv)
         return farm(context, CRUCIBLE, param.get("mode", "once"))
