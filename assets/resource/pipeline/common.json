@@ -257,6 +257,42 @@
     },
 
     // ---------------------------------------------------------------
+    // The Purchase popup shared by Arena and Material Realms (agent/purchase.py):
+    // Qty (starts at 1) and its "+", "Daily Purchase Limit: U/L" (bought
+    // today / limit), Cancel / Purchase (Dawnium). Each task has its own
+    // <Task>_Buy_Open (the "+" that opens it, next: Common_Purchase_Limit);
+    // the agent checks the task's screen after Purchase / Cancel.
+    "Common_Purchase_Limit": {
+        "recognition": "OCR",
+        "expected": "Purchase\\s?Limit:\\s?\\d+\\s?/\\s?\\d+",
+        "roi": [350, 755, 270, 45]
+    },
+    "Common_Purchase_Count": { // the Qty field
+        "recognition": "OCR",
+        "expected": "^\\d+$",
+        "roi": [220, 670, 280, 55]
+    },
+    "Common_Purchase_More": { // Qty "+"
+        "action": "Click",
+        "target": [518, 681, 36, 36],
+        "post_delay": 700
+    },
+    "Common_Purchase_Purchase": {
+        "recognition": "OCR",
+        "expected": "^Purchase",
+        "roi": [370, 800, 250, 70],
+        "action": "Click",
+        "post_delay": 2000
+    },
+    "Common_Purchase_Cancel": {
+        "recognition": "OCR",
+        "expected": "^Cancel$",
+        "roi": [110, 800, 240, 70],
+        "action": "Click",
+        "post_delay": 1500
+    },
+
+    // ---------------------------------------------------------------
     // Reward tracks (Crucible, Split Mirage; agent/track.py).
     // Scroll to the right end of the track (two full swipes).
     "Common_TrackEnd": {

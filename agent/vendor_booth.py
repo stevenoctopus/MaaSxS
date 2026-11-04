@@ -20,7 +20,7 @@ from maa.context import Context
 from maa.custom_action import CustomAction
 
 import badge
-from common import ok
+from common import give_up, ok
 from gui import say
 
 # Top left of each tile of the 3x3 grid, row by row.
@@ -117,8 +117,7 @@ def buy_page(context: Context, min_off: int) -> bool:
             skipped.append("?" if off is None else f"{off}%")
             continue
         if not buy(context, tile, 1, "VendorBooth_OnGeneral"):
-            log(context, f"could not buy item {tile + 1} (not enough gold?)")
-            return False
+            return give_up(context, "Vendor Booth", f"could not buy General item {tile + 1} (not enough gold?)")
         bought.append(f"{off}%" if off else "full price")
     msg = f"bought {len(bought)}"
     if bought:
@@ -157,8 +156,7 @@ def general(context: Context, min_off: int, wanted: int) -> bool:
         context.run_task("VendorBooth_Refresh")
         now = read_left(context)
         if now is None or now >= left:
-            log(context, "the refresh didn't go through (not enough gold?)")
-            return False
+            return give_up(context, "Vendor Booth", "the refresh didn't go through (not enough gold?)")
         left = now
         log(context, f"refreshed ({n + 1}/{todo})")
         if not buy_page(context, min_off):
@@ -179,8 +177,7 @@ def vault(context: Context) -> bool:
             log(context, f"Vault: {name} already bought")
             continue
         if not buy(context, tile, limit, "VendorBooth_OnVault"):
-            log(context, f"Vault: could not buy {name} (not enough Dawnium?)")
-            return False
+            return give_up(context, "Vendor Booth", f"Vault: could not buy {name} (not enough Dawnium?)")
         log(context, f"Vault: bought {name}")
     return True
 

@@ -250,6 +250,17 @@
         "next": ["DailyDungeon_Buy_Limit"]
     },
     // Purchase popup: "Daily Purchase Limit: U/L" (bought today / limit).
+    // The "+" after "Daily Reward Attempts: N/M" (yellow-green circle).
+    // Not shown once today's attempts are bought and claimed ("Out of daily
+    // reward attempts."): nothing left to buy.
+    "DailyDungeon_BuyPlus": {
+        "recognition": "ColorMatch",
+        "method": 4, // RGB
+        "roi": [515, 1013, 50, 40],
+        "lower": [170, 175, 60],
+        "upper": [235, 235, 150],
+        "count": 150
+    },
     "DailyDungeon_Buy_Limit": {
         "recognition": "OCR",
         "expected": "Purchase\\s?Limit:\\s?\\d+\\s?/\\s?\\d+",

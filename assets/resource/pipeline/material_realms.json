@@ -78,44 +78,14 @@
     // ---------------------------------------------------------------
     // Buying on a realm's page (not Quick Purchase: once a realm has bought
     // sets today, its Quick Purchase row can't go below 1). The "+" by the
-    // tool count opens "Purchase <tool>": Qty in sets of 5 (starts at 1), its
-    // "+", "Daily Purchase Limit: U/20", Cancel / Purchase (Dawnium).
+    // tool count opens "Purchase <tool>", a Purchase popup (the shared
+    // Common_Purchase_* nodes, agent/purchase.py): Qty in sets of 5,
+    // "Daily Purchase Limit: U/20". It opens even when the limit is used up.
     "MaterialRealms_Buy_Open": {
         "action": "Click",
         "target": [672, 36, 34, 34],
         "post_delay": 1500,
-        "next": ["MaterialRealms_Buy_Limit"]
-    },
-    "MaterialRealms_Buy_Limit": { // "Daily Purchase Limit: U/L" (sets bought today / limit)
-        "recognition": "OCR",
-        "expected": "Purchase\\s?Limit:\\s?\\d+\\s?/\\s?\\d+",
-        "roi": [350, 755, 270, 45]
-    },
-    "MaterialRealms_Buy_Count": { // the Qty field: sets to buy
-        "recognition": "OCR",
-        "expected": "^\\d+$",
-        "roi": [220, 670, 280, 55]
-    },
-    "MaterialRealms_Buy_More": { // Qty "+"
-        "action": "Click",
-        "target": [518, 681, 36, 36],
-        "post_delay": 600
-    },
-    "MaterialRealms_Buy_Purchase": {
-        "recognition": "OCR",
-        "expected": "^Purchase",
-        "roi": [370, 800, 250, 70],
-        "action": "Click",
-        "post_delay": 2000,
-        "next": ["MaterialRealms_OnRealmAgain"]
-    },
-    "MaterialRealms_Buy_Cancel": {
-        "recognition": "OCR",
-        "expected": "^Cancel$",
-        "roi": [110, 800, 240, 70],
-        "action": "Click",
-        "post_delay": 1500,
-        "next": ["MaterialRealms_OnRealmAgain"]
+        "next": ["Common_Purchase_Limit"]
     },
     "MaterialRealms_OnRealmAgain": { // the popup closed: the realm page shows
         "recognition": "And",

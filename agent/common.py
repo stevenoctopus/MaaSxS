@@ -28,6 +28,17 @@ def read_fraction(context: Context, node: str, override=None):
     return None
 
 
+def give_up(context: Context, name: str, reason: str) -> bool:
+    """Stop on purpose: something only the user can fix (not enough Dawnium
+    or gold, or a safety stop where running more won't help). Logs why and
+    stops the whole run, so the retry from Home doesn't run and neither do
+    later tasks (they may need the same Dawnium). Returns False, for
+    `return give_up(...)` in an action."""
+    say(context, name, f"Stopped: {reason}")
+    context.tasker.post_stop()
+    return False
+
+
 @AgentServer.custom_action("RunTask")
 class RunTask(CustomAction):
     """Run a pipeline entry as one step: the node fails if the entry fails,
@@ -45,10 +56,13 @@ _retrying = False
 class RetryFromHome(CustomAction):
     """Used by Common_Retry (on_error of a task's top-level steps): go Home
     and run the current task's entry again, once. If the retried task fails
-    too, it lands here again while a retry is running, and we give up."""
+    too, it lands here again while a retry is running, and we give up.
+    Never retries while the run is stopping (give_up() or the Stop button)."""
 
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
         global _retrying
+        if context.tasker.stopping:  # give_up(), or the user pressed Stop
+            return False
         if _retrying:
             say(context, "Retry", "failed again after retrying, stopping")
             return False
