@@ -83,6 +83,23 @@
             ]
         },
         {
+            "name": "VendorBooth",
+            "label": "Vendor Booth",
+            "entry": "VendorBooth",
+            "option": [
+                "VendorRefreshes",
+                "VendorDiscount",
+                "VendorStellatie",
+                "VendorDestinyFruit",
+                "VendorWornKnuckles",
+                "VendorSandShovel",
+                "VendorRefinedOre",
+                "VendorAuroralBadge",
+                "VendorMandrake",
+                "VendorQuestScroll"
+            ]
+        },
+        {
             // Last, so it claims what the other tasks completed.
             "name": "DailyQuests",
             "label": "Claim daily quests",
@@ -236,6 +253,72 @@
                     "custom_action_param": { "ironvein": "{ironvein}", "gilded": "{gilded}", "dread": "{dread}", "dustfall": "{dustfall}" }
                 }
             }
+        },
+        // Vendor Booth: each option overrides its own node's param.
+        "VendorRefreshes": {
+            "type": "input",
+            "label": "General: refreshes",
+            "inputs": [
+                {
+                    "name": "refreshes",
+                    "label": "General: refreshes",
+                    "description": "Refreshes to use per day (gold). The current items are always bought from first, then each refresh's. Refreshes already used today count, so running twice won't refresh twice. 0 to 10 (the game's daily limit).",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^([0-9]|10)$",
+                    "pattern_msg": "Enter 0 to 10"
+                }
+            ],
+            "pipeline_override": {
+                "VendorBooth_Refreshes": { "custom_action_param": { "refreshes": "{refreshes}" } }
+            }
+        },
+        "VendorDiscount": {
+            "type": "select",
+            "label": "General: buy items",
+            "default_case": "Always",
+            "cases": [
+                { "name": "Always", "description": "Buy all 9 items (gold)." },
+                { "name": "10% off or more", "pipeline_override": { "VendorBooth_General": { "custom_action_param": { "discount": 10 } } } },
+                { "name": "20% off or more", "pipeline_override": { "VendorBooth_General": { "custom_action_param": { "discount": 20 } } } },
+                { "name": "30% off or more", "pipeline_override": { "VendorBooth_General": { "custom_action_param": { "discount": 30 } } } },
+                { "name": "40% off or more", "pipeline_override": { "VendorBooth_General": { "custom_action_param": { "discount": 40 } } } },
+                { "name": "50% off or more", "pipeline_override": { "VendorBooth_General": { "custom_action_param": { "discount": 50 } } } },
+                { "name": "60% off or more", "pipeline_override": { "VendorBooth_General": { "custom_action_param": { "discount": 60 } } } }
+            ]
+        },
+        // Vault items (Dawnium). The Free reward is always claimed.
+        "VendorStellatie": {
+            "type": "select", "label": "Vault: Stellatie", "default_case": "Skip",
+            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_Stellatie": { "custom_action_param": { "buy": 1 } } } }]
+        },
+        "VendorDestinyFruit": {
+            "type": "select", "label": "Vault: Destiny Fruit", "default_case": "Skip",
+            "cases": [{ "name": "Skip" }, { "name": "Buy", "description": "Both (limit 2).", "pipeline_override": { "VendorBooth_Vault_DestinyFruit": { "custom_action_param": { "buy": 1 } } } }]
+        },
+        "VendorWornKnuckles": {
+            "type": "select", "label": "Vault: Worn Knuckles", "default_case": "Skip",
+            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_WornKnuckles": { "custom_action_param": { "buy": 1 } } } }]
+        },
+        "VendorSandShovel": {
+            "type": "select", "label": "Vault: Sand Shovel", "default_case": "Skip",
+            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_SandShovel": { "custom_action_param": { "buy": 1 } } } }]
+        },
+        "VendorRefinedOre": {
+            "type": "select", "label": "Vault: Refined Ore", "default_case": "Skip",
+            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_RefinedOre": { "custom_action_param": { "buy": 1 } } } }]
+        },
+        "VendorAuroralBadge": {
+            "type": "select", "label": "Vault: Epic Auroral Badge", "default_case": "Skip",
+            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_AuroralBadge": { "custom_action_param": { "buy": 1 } } } }]
+        },
+        "VendorMandrake": {
+            "type": "select", "label": "Vault: Mandrake", "default_case": "Skip",
+            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_Mandrake": { "custom_action_param": { "buy": 1 } } } }]
+        },
+        "VendorQuestScroll": {
+            "type": "select", "label": "Vault: Quest Scroll", "default_case": "Skip",
+            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_QuestScroll": { "custom_action_param": { "buy": 1 } } } }]
         },
         "ConquestRuns": {
             "type": "select",

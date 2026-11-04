@@ -14,6 +14,7 @@ import split_mirage  # noqa: F401
 import conquest  # noqa: F401
 import arena  # noqa: F401
 import material_realms  # noqa: F401
+import vendor_booth  # noqa: F401
 import daily_dungeon  # noqa: F401
 import common  # noqa: F401
 

@@ -32,6 +32,13 @@
         "any_of": ["Screen_Home", "Screen_Journal", "Screen_HomeTab"]
     },
 
+    // Vendor Booth (the cart on Home), any tab.
+    "Screen_VendorBooth": {
+        "recognition": "OCR",
+        "expected": "^Vendor\\s?Booth$",
+        "roi": [20, 20, 320, 60]
+    },
+
     // --- Journal tab ---
     "Screen_Journal": {
         "recognition": "OCR",

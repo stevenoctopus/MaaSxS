@@ -1,0 +1,137 @@
+{
+    // Vendor Booth (the cart on Home). Two tabs matter:
+    //   General: 9 random items with Purchase Limit 1 (gold), some with a
+    //     "-N%" discount badge at the top left; Refresh (gold, 10 a day)
+    //     gives a new set. Items below the first 9 aren't used.
+    //   Vault: the same items every day (Dawnium), the first one Free.
+    // Buying is instant (no confirm popup): the tile turns "Sold Out".
+    // The agent (agent/vendor_booth.py) does the buying. The options set
+    // VendorBooth_General's param (discount), VendorBooth_Refreshes' and the
+    // VendorBooth_Vault_* nodes' params.
+    // Top-level steps have on_error -> Common_Retry: if anything fails, go
+    // Home and start the task over, once.
+    "VendorBooth": {
+        "next": ["VendorBooth_OnBooth", "[JumpBack]VendorBooth_ToBooth"],
+        "on_error": ["Common_Retry"]
+    },
+    "VendorBooth_OnBooth": {
+        "focus": { "Node.Action.Starting": "In the Vendor Booth" },
+        "recognition": "And",
+        "all_of": ["Screen_VendorBooth"],
+        "next": ["VendorBooth_General"],
+        "on_error": ["Common_Retry"]
+    },
+    // Runs the whole task. discount: minimum % off to buy a General item
+    // (0 = buy every item).
+    "VendorBooth_General": {
+        "action": "Custom",
+        "custom_action": "VendorBooth",
+        "custom_action_param": { "discount": 0 },
+        "on_error": ["Common_Retry"]
+    },
+    // Settings only, never run: refreshes to have used today (0-10).
+    "VendorBooth_Refreshes": {
+        "action": "Custom",
+        "custom_action": "VendorBooth",
+        "custom_action_param": { "refreshes": 0 }
+    },
+    // Settings only, never run: buy this Vault item (1) or not (0).
+    "VendorBooth_Vault_Stellatie": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
+    "VendorBooth_Vault_DestinyFruit": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
+    "VendorBooth_Vault_WornKnuckles": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
+    "VendorBooth_Vault_SandShovel": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
+    "VendorBooth_Vault_RefinedOre": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
+    "VendorBooth_Vault_AuroralBadge": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
+    "VendorBooth_Vault_Mandrake": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
+    "VendorBooth_Vault_QuestScroll": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
+
+    // ---------------------------------------------------------------
+    // Get to the Vendor Booth from any screen: Home > the cart.
+    // Use as "[JumpBack]VendorBooth_ToBooth".
+    "VendorBooth_ToBooth": {
+        "next": ["VendorBooth_ToBooth_Done", "VendorBooth_ToBooth_Cart", "[JumpBack]Common_GoHome"]
+    },
+    "VendorBooth_ToBooth_Done": {
+        "recognition": "And",
+        "all_of": ["Screen_VendorBooth"]
+    },
+    "VendorBooth_ToBooth_Cart": { // the cart, middle right of Home
+        "recognition": "And",
+        "all_of": ["Screen_Home"],
+        "action": "Click",
+        "target": [420, 780, 100, 90],
+        "post_delay": 2000,
+        "next": ["VendorBooth_ToBooth_Done"]
+    },
+
+    // ---------------------------------------------------------------
+    // Tabs (bottom). General shows the Refresh button, the Vault doesn't.
+    "VendorBooth_TabGeneral": {
+        "action": "Click",
+        "target": [200, 1195, 100, 45],
+        "post_delay": 1500,
+        "next": ["VendorBooth_OnGeneral"]
+    },
+    "VendorBooth_TabVault": {
+        "action": "Click",
+        "target": [380, 1195, 100, 45],
+        "post_delay": 1500,
+        "next": ["VendorBooth_OnVault"]
+    },
+    "VendorBooth_OnGeneral": {
+        "recognition": "And",
+        "all_of": ["Screen_VendorBooth", "VendorBooth_RefreshButton"]
+    },
+    // The Vault: the energy counter ("129/300") shows at the top right (on
+    // General only gold shows there), and the first tile is "Free" or Sold Out.
+    "VendorBooth_OnVault": {
+        "recognition": "And",
+        "all_of": [
+            "Screen_VendorBooth",
+            { "recognition": "OCR", "expected": "^\\d+\\s?/\\s?\\d+$", "roi": [605, 32, 110, 44] },
+            { "recognition": "OCR", "expected": "^(Free|Sold\\s?Out)$", "roi": [40, 270, 180, 160] }
+        ]
+    },
+    // Scroll the item list back to the top.
+    "VendorBooth_ScrollTop": {
+        "action": "Swipe",
+        "begin": [360, 400, 10, 10],
+        "end": [360, 1000, 10, 10],
+        "duration": 400,
+        "post_delay": 1200
+    },
+    "VendorBooth_RefreshButton": {
+        "recognition": "OCR",
+        "expected": "^Refresh$",
+        "roi": [510, 98, 110, 44]
+    },
+    // Refreshes left today, in the circle on the Refresh button.
+    "VendorBooth_RefreshesLeft": {
+        "recognition": "OCR",
+        "expected": "^\\d+$",
+        "roi": [448, 94, 72, 52]
+    },
+    "VendorBooth_Refresh": {
+        "action": "Click",
+        "target": [520, 100, 160, 40],
+        "post_delay": 2500
+    },
+
+    // ---------------------------------------------------------------
+    // One tile of the 3x3 grid. The agent sets the roi / target per tile.
+    "VendorBooth_SoldOut": {
+        "recognition": "OCR",
+        "expected": "Sold\\s?Out",
+        "roi": [40, 275, 180, 45]
+    },
+    "VendorBooth_Discount": { // "-10%" badge, top left of a tile
+        "recognition": "OCR",
+        "expected": "(\\d+)\\s?%",
+        "roi": [5, 168, 75, 55]
+    },
+    "VendorBooth_Buy": { // the price button
+        "action": "Click",
+        "target": [60, 393, 140, 32],
+        "post_delay": 1500
+    }
+}
