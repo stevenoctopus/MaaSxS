@@ -79,6 +79,21 @@
         ]
     },
 
+    // --- Material Realms (Journal > Material Realms) ---
+    // Title of the list and of each realm's page (OCR may read the "!" badge).
+    "Screen_MaterialTitle": {
+        "recognition": "OCR",
+        "expected": "Material\\s?Realms$",
+        "roi": [20, 20, 320, 60]
+    },
+    "Screen_MaterialList": { // the four realms, with Quick Purchase
+        "recognition": "And",
+        "all_of": [
+            "Screen_MaterialTitle",
+            { "recognition": "OCR", "expected": "^Quick\\s?Purchase$", "roi": [480, 1095, 240, 65] }
+        ]
+    },
+
     // Title of the Split Mirage pages (OCR reads the "!" badge before it).
     "Screen_SplitMirageTitle": {
         "recognition": "OCR",

@@ -1,0 +1,181 @@
+{
+    // Material Realms (Journal > Material Realms): Ironvein Pit, Gilded
+    // Depths, Dread Hollow, Dustfall Dune. Each realm uses its own tool
+    // (hammer, pickaxe, glove, shovel). The agent (agent/material_realms.py)
+    // first buys tool sets with Quick Purchase (MaterialRealms_Buy), then
+    // uses the tools in each realm (MaterialRealms_Use). The options set the
+    // params.
+    // Top-level steps have on_error -> Common_Retry: if anything fails, go
+    // Home and start the task over, once.
+    "MaterialRealms": {
+        "next": ["MaterialRealms_OnList", "[JumpBack]MaterialRealms_ToList"],
+        "on_error": ["Common_Retry"]
+    },
+    "MaterialRealms_OnList": {
+        "focus": { "Node.Action.Starting": "On the Material Realms list" },
+        "recognition": "And",
+        "all_of": ["Screen_MaterialList"],
+        "next": ["MaterialRealms_Buy"],
+        "on_error": ["Common_Retry"]
+    },
+    // Sets of 5 tools to buy per realm (0 = none).
+    "MaterialRealms_Buy": {
+        "action": "Custom",
+        "custom_action": "MaterialBuy",
+        "custom_action_param": { "ironvein": 0, "gilded": 0, "dread": 0, "dustfall": 0 },
+        "next": ["MaterialRealms_Use"],
+        "on_error": ["Common_Retry"]
+    },
+    // Tools to use per realm: a number, or "ALL".
+    "MaterialRealms_Use": {
+        "action": "Custom",
+        "custom_action": "MaterialUse",
+        "custom_action_param": { "ironvein": "ALL", "gilded": "ALL", "dread": "ALL", "dustfall": "ALL" },
+        "on_error": ["Common_Retry"]
+    },
+
+    // ---------------------------------------------------------------
+    // Get to the Material Realms list from any screen: tab bar > Journal >
+    // Material Realms. Use as "[JumpBack]MaterialRealms_ToList", or as a
+    // next to end there.
+    "MaterialRealms_ToList": {
+        "next": [
+            "MaterialRealms_ToList_Done",
+            "MaterialRealms_ToList_Realm",
+            "MaterialRealms_ToList_Journal",
+            "MaterialRealms_ToList_TabBar",
+            "[JumpBack]Common_ToTabBar"
+        ]
+    },
+    "MaterialRealms_ToList_Done": {
+        "recognition": "And",
+        "all_of": ["Screen_MaterialList"]
+    },
+    // A realm's page (title, no Quick Purchase): back arrow to the list.
+    "MaterialRealms_ToList_Realm": {
+        "recognition": "And",
+        "all_of": ["Screen_MaterialTitle"],
+        "action": "Click",
+        "target": [30, 1185, 90, 70],
+        "post_delay": 1500,
+        "next": ["MaterialRealms_ToList_Done", "MaterialRealms_ToList_Realm"]
+    },
+    "MaterialRealms_ToList_Journal": { // Material Realms tile on the Journal
+        "recognition": "OCR",
+        "expected": "^Material\\s?Realms$",
+        "roi": [0, 1080, 300, 70],
+        "action": "Click",
+        "post_delay": 1000,
+        "next": ["MaterialRealms_ToList_Done"]
+    },
+    "MaterialRealms_ToList_TabBar": { // Journal tab
+        "recognition": "And",
+        "all_of": ["Screen_TabBar"],
+        "action": "Click",
+        "target": [175, 1180, 80, 70],
+        "next": ["MaterialRealms_ToList_Journal"]
+    },
+
+    // ---------------------------------------------------------------
+    // Quick Purchase popup, one row per realm in list order. Each row:
+    // "Daily Purchase Limit: U/20", then - Set +. Set starts at 1; one set
+    // is 5 tools. The agent sets each row's roi / target from the row's y.
+    "MaterialRealms_Buy_Open": {
+        "recognition": "And",
+        "all_of": ["Screen_MaterialList"],
+        "action": "Click",
+        "target": [480, 1095, 240, 65],
+        "post_delay": 1500,
+        "next": ["MaterialRealms_Buy_Popup"]
+    },
+    "MaterialRealms_Buy_Popup": {
+        "recognition": "OCR",
+        "expected": "^Quick\\s?Purchase$",
+        "roi": [180, 245, 360, 70]
+    },
+    "MaterialRealms_Buy_Limit": { // per row
+        "recognition": "OCR",
+        "expected": "Purchase\\s?Limit:\\s?\\d+\\s?/\\s?\\d+",
+        "roi": [430, 395, 200, 30]
+    },
+    "MaterialRealms_Buy_Set": { // per row: the Set value
+        "recognition": "OCR",
+        "expected": "^\\d+$",
+        "roi": [495, 425, 80, 40]
+    },
+    "MaterialRealms_Buy_Step": { // per row: the - or + button
+        "action": "Click",
+        "target": [455, 430, 32, 32],
+        "post_delay": 500
+    },
+    "MaterialRealms_Buy_Purchase": {
+        "recognition": "OCR",
+        "expected": "^Purchase",
+        "roi": [370, 865, 245, 70],
+        "action": "Click",
+        "post_delay": 2000,
+        "next": ["MaterialRealms_BackOnList"]
+    },
+    "MaterialRealms_Buy_Cancel": {
+        "recognition": "OCR",
+        "expected": "^Cancel$",
+        "roi": [110, 865, 240, 70],
+        "action": "Click",
+        "post_delay": 1500,
+        "next": ["MaterialRealms_BackOnList"]
+    },
+    "MaterialRealms_BackOnList": {
+        "recognition": "And",
+        "all_of": ["Screen_MaterialList"]
+    },
+
+    // ---------------------------------------------------------------
+    // A realm's page. The agent sets the tile's expected/roi per realm.
+    "MaterialRealms_OpenRealm": {
+        "recognition": "OCR",
+        "expected": "^Dread\\s?Hollow$",
+        "roi": [20, 950, 280, 60],
+        "action": "Click",
+        "post_delay": 2000,
+        "next": ["MaterialRealms_OnRealm"]
+    },
+    "MaterialRealms_OnRealm": { // the tab at the bottom names the realm
+        "recognition": "And",
+        "all_of": [
+            "Screen_MaterialTitle",
+            { "recognition": "OCR", "expected": "^Dread\\s?Hollow$", "roi": [150, 1185, 210, 50] }
+        ]
+    },
+    "MaterialRealms_ToolCount": { // tools held, top right (the far-right counter)
+        "recognition": "OCR",
+        "expected": "^\\d+",
+        "roi": [610, 28, 70, 45]
+    },
+    // The big tool button: one tap uses 1 tool, or with Quick Mine / Quick
+    // Conquer on, enough tools to finish the current mine or monster.
+    "MaterialRealms_UseTool": {
+        "action": "Click",
+        "target": [320, 885, 80, 80],
+        "post_delay": 1500
+    },
+    // Quick Mine / Quick Conquer is on: its knob is yellow, on the right.
+    "MaterialRealms_QuickOn": {
+        "recognition": "ColorMatch",
+        "method": 4, // RGB
+        "roi": [420, 1038, 40, 36],
+        "lower": [170, 175, 70],
+        "upper": [230, 230, 140],
+        "count": 60
+    },
+    "MaterialRealms_QuickToggle": {
+        "action": "Click",
+        "target": [380, 1040, 70, 30],
+        "post_delay": 1000
+    },
+    "MaterialRealms_RealmBack": { // back arrow to the list
+        "action": "Click",
+        "target": [30, 1185, 90, 70],
+        "post_delay": 1500,
+        "next": ["MaterialRealms_BackOnList"]
+    }
+}
