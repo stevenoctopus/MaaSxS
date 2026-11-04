@@ -121,6 +121,13 @@
         "recognition": "And",
         "all_of": ["Screen_MaterialTitle"]
     },
+    // Tools held, shown on the list as a small blue badge at the top right
+    // of each tile (no badge = 0 tools). The agent sets the roi per realm.
+    "MaterialRealms_ListCount": {
+        "recognition": "OCR",
+        "expected": "^\\d+",
+        "roi": [318, 168, 40, 34]
+    },
     "MaterialRealms_BackOnList": {
         "recognition": "And",
         "all_of": ["Screen_MaterialList"]

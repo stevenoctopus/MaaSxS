@@ -110,7 +110,7 @@
                 },
                 {
                     "name": "1",
-                    "description": "Buy 1 extra reward attempt with Dawnium.",
+                    "description": "Have 1 extra reward attempt bought today, with Dawnium (attempts already bought today count).",
                     "pipeline_override": {
                         "DailyDungeon_DailyFarm": {
                             "custom_action_param": {
@@ -121,7 +121,7 @@
                 },
                 {
                     "name": "2",
-                    "description": "Buy 2 extra reward attempts with Dawnium (the daily limit).",
+                    "description": "Have 2 extra reward attempts bought today, with Dawnium (the daily limit; attempts already bought today count).",
                     "pipeline_override": {
                         "DailyDungeon_DailyFarm": {
                             "custom_action_param": {
@@ -178,7 +178,7 @@
                 {
                     "name": "buy",
                     "label": "Tickets to buy",
-                    "description": "Bought first, with Dawnium (the price rises per ticket). Never past the game's daily limit of 8.",
+                    "description": "Tickets to buy per day, bought first, with Dawnium (the price rises per ticket). Tickets already bought today count, so running twice won't buy twice. Never past the game's daily limit of 8.",
                     "default": "0",
                     "pipeline_type": "int",
                     "verify": "^[0-8]$",

@@ -27,8 +27,9 @@ def log(context: Context, msg: str):
 
 
 def buy_attempts(context: Context, wanted: int) -> bool:
-    """On the list: open the chosen dungeon's detail, buy up to `wanted`
-    attempts within today's purchase limit, and go back to the list."""
+    """On the list: open the chosen dungeon's detail, buy attempts so that
+    `wanted` have been bought today (attempts already bought today count),
+    within the daily purchase limit, and go back to the list."""
     # Open the detail screen (same steps as a run, stopping before Match).
     if not ok(context.run_task("DailyDungeon_SelectCard", pipeline_override={
             "DailyDungeon_DifficultySelected": {"next": []}})):
@@ -41,9 +42,9 @@ def buy_attempts(context: Context, wanted: int) -> bool:
     else:
         limit = read_fraction(context, "DailyDungeon_Buy_Limit")
         bought, cap = limit if limit else (0, 0)
-        count = min(wanted, cap - bought)
-        if count <= 0:
-            log(context, f"already bought {bought}/{cap} today")
+        count = max(0, min(wanted, cap) - bought)
+        if count == 0:
+            log(context, f"{bought} attempt(s) already bought today, nothing to buy")
             context.run_task("DailyDungeon_Buy_Cancel")
         else:
             for _ in range(count - 1):  # the slider starts at 1
@@ -53,7 +54,7 @@ def buy_attempts(context: Context, wanted: int) -> bool:
                 log(context, f"the purchase popup shows {shown}, expected {count}; not buying")
                 context.run_task("DailyDungeon_Buy_Cancel")
                 return False
-            log(context, f"buying {count} extra attempt(s)")
+            log(context, f"buying {count} extra attempt(s) ({bought} already bought today)")
             if not ok(context.run_task("DailyDungeon_Buy_Purchase")):
                 log(context, "purchase failed")
                 return False
