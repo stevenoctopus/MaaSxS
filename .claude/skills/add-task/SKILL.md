@@ -35,6 +35,14 @@ A task is a pipeline entry plus, when it loops or reads numbers, one Python cust
 
 8. **Finish**: README task table row and any new tool; new terms in `GLOSSARY.md`; ask the user to close the GUI, then `cd tools; python install.py v0.1.3 win x86_64`; commit and push.
 
+These steps are defaults: where a feature doesn't fit them, follow the game and say why in the pipeline comments.
+
+## Gotchas
+
+- Solo battle setup already shows "Round 0/50", so its screen check must come before `Screen_Battle` wherever both are in one `next`.
+- Read `tools/run.py` output to the end (filter with `Select-String`); cutting it off early (`Select-Object -First`) kills the run mid-task.
+- Mapping screens costs nothing, but some taps spend a daily attempt (Match, Challenge, Purchase): take those only with the user's OK.
+
 ## Cleanup
 
 For "clean up" or "tidy" requests, also check:
