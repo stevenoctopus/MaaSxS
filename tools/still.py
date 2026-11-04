@@ -19,6 +19,7 @@ from pathlib import Path
 import cv2
 from maa.controller import CustomController
 from maa.custom_action import CustomAction
+from maa.define import LoggingLevelEnum
 from maa.resource import Resource
 from maa.tasker import Tasker
 
@@ -93,6 +94,9 @@ class Still:
     HOOK = "StillProbe"
 
     def __init__(self):
+        # MaaFramework's console log buries the test results. To see it while
+        # debugging a test, comment this out.
+        Tasker.set_stdout_level(LoggingLevelEnum.Off)
         self.resource = Resource()
         if not self.resource.post_bundle(str(ROOT / "assets" / "resource")).wait().succeeded:
             raise RuntimeError("could not load assets/resource")
