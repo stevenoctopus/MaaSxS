@@ -282,6 +282,16 @@
         "duration": 800,
         "post_delay": 1200
     },
+    // A claimed reward: its icon is replaced by a yellow-green checkmark.
+    // The agent sets the roi to the middle of the icon above each label.
+    "Common_TrackClaimed": {
+        "recognition": "ColorMatch",
+        "method": 4, // RGB
+        "roi": [59, 893, 36, 36],
+        "lower": [180, 185, 70],
+        "upper": [230, 230, 135],
+        "count": 250
+    },
     // Tap a reward on the track; the agent gives the spot.
     "Common_TrackTap": {
         "action": "Click",
