@@ -61,8 +61,21 @@ def read_track(context: Context, ev: TrackEvent):
     return sorted(out, key=lambda t: t[0])
 
 
+def at_end(context: Context, view) -> bool:
+    """No bar to the right of the rightmost reward: the track is at its end."""
+    if not view:
+        return False
+    x, y, w, _ = max(view, key=lambda t: t[1][0])[1]
+    left = x + w // 2 + 37  # just past the reward's icon
+    if left + 16 > 695:  # the panel's right edge: can't tell
+        return False
+    reco = context.run_recognition("Common_TrackNoBar", screenshot(context), pipeline_override={
+        "Common_TrackNoBar": {"roi": [left, y - 50, 16, 10]}})
+    return bool(reco and reco.hit)
+
+
 def scan_from_end(context: Context, ev: TrackEvent, find, max_steps=12):
-    """Jump to the right end of the track, then step back towards the start
+    """Jump to the right end of the track (unless it's already there), then step back towards the start
     until find(view) returns something (view = read_track()). Everything we
     look for is "the highest X", so the first view where X shows up has the
     answer. Returns find's result, or None if the track ran out.
@@ -70,7 +83,8 @@ def scan_from_end(context: Context, ev: TrackEvent, find, max_steps=12):
     Claiming one reward claims every reward before it, so once a claimed
     reward shows, everything to its left is claimed too: stop there.
     """
-    context.run_task("Common_TrackEnd")
+    if not at_end(context, read_track(context, ev)):
+        context.run_task("Common_TrackEnd")
     seen = set()
     for _ in range(max_steps):
         view = read_track(context, ev)
