@@ -76,6 +76,7 @@ to start the emulator.
 | Conquest | Runs | **Once** (the daily quest) or **Twice**. Never more than the attempts left today. |
 | Arena | Tickets to buy, Tickets to use | Buys tickets with Dawnium first (*Tickets to buy*: 0 to 8 per day, default 0; tickets already bought today count, and never past the game's daily limit), then challenges the rightmost opponent once per ticket (*Tickets to use*: default 2, any number), never more than the tickets you have. |
 | Material Realms | Sets to buy, Tools to use (each per realm) | Buys tool sets on each realm's page first (*Sets to buy*: 0 to 20 sets of 5 per realm per day, default 0; sets already bought today count, and never past the daily limit), then uses tools in each realm (*Tools to use*: a number or ALL, default ALL). Realms with nothing to buy and no tools (no count badge on the list) aren't opened. ALL turns on Quick Mine / Quick Conquer and uses every tool; a number turns it off and uses exactly that many. |
+| Vendor Booth | General: refreshes, General: buy items, Vault items (8) | Opens the cart on Home. **General**: buys each of the 9 items (gold) that's at least the chosen discount (*buy items*: Always, or 10% to 60% off or more; default Always), then refreshes and buys again (*refreshes*: 0 to 10 per day, default 0; refreshes already used today count). **Vault**: always claims the Free reward, and buys each item set to Buy (default Skip; Destiny Fruit buys both). |
 | Claim daily quests | | Opens the daily quest list and claims every finished quest. Runs last, so it picks up what the other tasks completed. |
 
 Every task:
@@ -115,7 +116,8 @@ python tools/configure.py          # copies the OCR model from MaaCommonAssets
   - one file per task, plus `affection.json` for the affection check.
 - `agent/`: Python custom actions (loops, reading numbers), registered with
   `@AgentServer.custom_action`. `track.py` holds the reward-track logic
-  shared by Crucible and Split Mirage.
+  shared by Crucible and Split Mirage. `badge.py` straightens the Vendor
+  Booth's tilted discount badges so OCR can read them (numpy only).
 
 Dev tools:
 
