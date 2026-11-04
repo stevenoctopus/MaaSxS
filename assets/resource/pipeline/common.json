@@ -35,6 +35,7 @@
             "Common_TabBar_TapToPlay",
             "Common_TabBar_Loading",
             "Common_TabBar_DungeonList",
+            "Common_TabBar_DungeonDetail",
             "Common_TabBar_DungeonResults",
             "Common_TabBar_TapToContinue",
             "Common_TabBar_BackOut",
@@ -56,6 +57,7 @@
             "Common_TabBar_TapToPlay",
             "Common_TabBar_Loading",
             "Common_TabBar_DungeonList",
+            "Common_TabBar_DungeonDetail",
             "Common_TabBar_DungeonResults",
             "Common_TabBar_TapToContinue",
             "Common_TabBar_BackOut",
@@ -76,6 +78,7 @@
             "Common_TabBar_TapToPlay",
             "Common_TabBar_Loading",
             "Common_TabBar_DungeonList",
+            "Common_TabBar_DungeonDetail",
             "Common_TabBar_DungeonResults",
             "Common_TabBar_TapToContinue",
             "Common_TabBar_BackOut",
@@ -99,6 +102,7 @@
             "Common_TabBar_TapToPlay",
             "Common_TabBar_Loading",
             "Common_TabBar_DungeonList",
+            "Common_TabBar_DungeonDetail",
             "Common_TabBar_DungeonResults",
             "Common_TabBar_TapToContinue",
             "Common_TabBar_BackOut",
@@ -155,6 +159,14 @@
         "all_of": ["Screen_DungeonList"],
         "action": "Click",
         "target": [30, 1185, 90, 70],
+        "next": ["Common_ToTabBar"]
+    },
+    "Common_TabBar_DungeonDetail": { // back arrow, to the Dungeon list
+        "recognition": "And",
+        "all_of": ["Screen_DungeonDetail"],
+        "action": "Click",
+        "target": [30, 1185, 90, 70],
+        "post_delay": 1500,
         "next": ["Common_ToTabBar"]
     },
     "Common_TabBar_DungeonResults": { // back arrow
@@ -236,6 +248,26 @@
         "action": "Click",
         "target": [320, 1175, 90, 80],
         "next": ["Common_AtHome"]
+    },
+
+    // ---------------------------------------------------------------
+    // Go to the Journal tab (Daily Dungeon, Daily Events, Competition,
+    // Material Realms, ...): get to the tab bar, then tap the Journal tab
+    // (scroll icon, 2nd from the left). Use as "[JumpBack]Common_ToJournal";
+    // the task then taps its own tile.
+    "Common_ToJournal": {
+        "next": ["Common_ToJournal_Done", "Common_ToJournal_Tab", "[JumpBack]Common_ToTabBar"]
+    },
+    "Common_ToJournal_Done": {
+        "recognition": "And",
+        "all_of": ["Screen_Journal"]
+    },
+    "Common_ToJournal_Tab": {
+        "recognition": "And",
+        "all_of": ["Screen_TabBar"],
+        "action": "Click",
+        "target": [175, 1180, 80, 70],
+        "next": ["Common_ToJournal_Done"]
     },
 
     // ---------------------------------------------------------------

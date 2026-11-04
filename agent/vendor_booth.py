@@ -12,6 +12,7 @@ Vault items (Dawnium). Starts in the Vendor Booth, on any tab.
 Buying is instant: a tile turns "Sold Out". Discounts are read from the
 tilted "-N%" badge at a tile's top left (agent/badge.py).
 """
+from dataclasses import dataclass
 
 import numpy as np
 from maa.agent.agent_server import AgentServer
@@ -27,16 +28,24 @@ from screen import hit, read_int, screenshot
 TILES = [(x0, y0) for y0 in (188, 470, 753) for x0 in (30, 260, 490)]
 BADGE_W, BADGE_H = 75, 55
 
-# Vault tiles after the Free one (tile 0): (node suffix, name, purchase limit).
+@dataclass
+class VaultItem:
+    tile: int     # index in TILES
+    setting: str  # its settings node is VendorBooth_Vault_<setting> ({"buy": 1} buys it)
+    name: str     # for the log
+    limit: int    # purchase limit
+
+
+FREE = VaultItem(0, "", "Free reward", 1)  # always claimed
 VAULT = [
-    ("Stellatie", "Stellatie", 1),
-    ("DestinyFruit", "Destiny Fruit", 2),
-    ("Row2Left", "row 2, left", 1),
-    ("Row2Middle", "row 2, middle", 1),
-    ("RefinedOre", "Refined Ore", 1),
-    ("Row3Left", "row 3, left", 1),
-    ("Row3Middle", "row 3, middle", 1),
-    ("QuestScroll", "Quest Scroll", 1),
+    VaultItem(1, "Stellatie", "Stellatie", 1),
+    VaultItem(2, "DestinyFruit", "Destiny Fruit", 2),
+    VaultItem(3, "Row2Left", "row 2, left", 1),
+    VaultItem(4, "Row2Middle", "row 2, middle", 1),
+    VaultItem(5, "RefinedOre", "Refined Ore", 1),
+    VaultItem(6, "Row3Left", "row 3, left", 1),
+    VaultItem(7, "Row3Middle", "row 3, middle", 1),
+    VaultItem(8, "QuestScroll", "Quest Scroll", 1),
 ]
 MAX_REFRESHES = 10
 
@@ -146,15 +155,15 @@ def vault(context: Context) -> bool:
     if not go_tab(context, "Vault"):
         log(context, "could not open the Vault tab")
         return False
-    wanted = [(i + 1, name, limit) for i, (key, name, limit) in enumerate(VAULT)
-              if int(settings_node(context, f"VendorBooth_Vault_{key}").get("buy", 0))]
-    for tile, name, limit in [(0, "Free reward", 1)] + wanted:
-        if sold_out(context, tile):
-            log(context, f"Vault: {name} already bought")
+    wanted = [item for item in VAULT
+              if int(settings_node(context, f"VendorBooth_Vault_{item.setting}").get("buy", 0))]
+    for item in [FREE] + wanted:
+        if sold_out(context, item.tile):
+            log(context, f"Vault: {item.name} already bought")
             continue
-        if not buy(context, tile, limit, "VendorBooth_OnVault"):
-            return give_up(context, "Vendor Booth", f"Vault: could not buy {name} (not enough Dawnium?)")
-        log(context, f"Vault: bought {name}")
+        if not buy(context, item.tile, item.limit, "VendorBooth_OnVault"):
+            return give_up(context, "Vendor Booth", f"Vault: could not buy {item.name} (not enough Dawnium?)")
+        log(context, f"Vault: bought {item.name}")
     return True
 
 

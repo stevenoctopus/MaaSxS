@@ -11,6 +11,7 @@ Starts and ends on the Material Realms list.
        once per tool.
 """
 import time
+from dataclasses import dataclass
 
 from maa.agent.agent_server import AgentServer
 from maa.context import Context
@@ -21,13 +22,20 @@ from gui import say
 from purchase import buy_daily
 from screen import hit, read_int, screenshot
 
-# (param key, name, title pattern on the list tile and the realm's tab, tile roi,
-#  roi of the tile's tool-count badge)
+@dataclass
+class Realm:
+    key: str        # its key in the MaterialBuy / MaterialUse options
+    name: str       # for the log
+    title: str      # OCR pattern for its name on the list tile and the realm's tab
+    tile_roi: list  # where the title is on the list
+    badge_roi: list  # the tile's tool-count badge on the list
+
+
 REALMS = [
-    ("ironvein", "Ironvein Pit", r"^Ironvein\s?Pit$", [20, 440, 300, 60], [318, 168, 40, 34]),
-    ("gilded", "Gilded Depths", r"^Gilded\s?Depths$", [370, 440, 300, 60], [670, 168, 40, 34]),
-    ("dread", "Dread Hollow", r"^Dread\s?Hollow$", [20, 950, 280, 60], [318, 672, 40, 34]),
-    ("dustfall", "Dustfall Dune", r"^Dustfall\s?Dune$", [370, 945, 300, 60], [670, 672, 40, 34]),
+    Realm("ironvein", "Ironvein Pit", r"^Ironvein\s?Pit$", [20, 440, 300, 60], [318, 168, 40, 34]),
+    Realm("gilded", "Gilded Depths", r"^Gilded\s?Depths$", [370, 440, 300, 60], [670, 168, 40, 34]),
+    Realm("dread", "Dread Hollow", r"^Dread\s?Hollow$", [20, 950, 280, 60], [318, 672, 40, 34]),
+    Realm("dustfall", "Dustfall Dune", r"^Dustfall\s?Dune$", [370, 945, 300, 60], [670, 672, 40, 34]),
 ]
 
 
@@ -117,18 +125,19 @@ class MaterialRealms(CustomAction):
         # Tools held per realm, from the badges on the list (no badge = 0).
         image = screenshot(context)
         held = {}
-        for key, _, _, _, badge in REALMS:
-            held[key] = read_int(context, "MaterialRealms_ListCount", image,
-                                 {"MaterialRealms_ListCount": {"roi": badge}}) or 0
-        log(context, "tools: " + ", ".join(f"{name} {held[key]}" for key, name, *_ in REALMS))
+        for realm in REALMS:
+            held[realm.key] = read_int(context, "MaterialRealms_ListCount", image,
+                                       {"MaterialRealms_ListCount": {"roi": realm.badge_roi}}) or 0
+        log(context, "tools: " + ", ".join(f"{r.name} {held[r.key]}" for r in REALMS))
 
-        for key, name, tile, roi, _ in REALMS:
-            sets = int(buy.get(key, 0))
-            amount = str(use.get(key, "ALL"))
+        for realm in REALMS:
+            name = realm.name
+            sets = int(buy.get(realm.key, 0))
+            amount = str(use.get(realm.key, "ALL"))
             use_some = amount.upper() == "ALL" or int(amount) > 0
-            if sets <= 0 and (not use_some or held[key] == 0):
+            if sets <= 0 and (not use_some or held[realm.key] == 0):
                 continue  # nothing to buy, and nothing to use (or no tools)
-            if not open_realm(context, tile, roi):
+            if not open_realm(context, realm.title, realm.tile_roi):
                 log(context, f"could not open {name}")
                 return False
             done = (sets <= 0 or buy_sets(context, name, sets)) and \

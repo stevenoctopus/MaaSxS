@@ -85,7 +85,7 @@ class Interface(unittest.TestCase):
 
     def test_custom_actions_registered(self):
         registered = agent_actions()
-        for node in resource.node_list:
+        for node in set(resource.node_list) - {Still.HOOK}:
             action = (resource.get_node_data(node) or {}).get("action", {})
             if action.get("type") == "Custom":
                 name = action["param"]["custom_action"]

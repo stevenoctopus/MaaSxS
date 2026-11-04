@@ -116,7 +116,8 @@ python tools/configure.py          # copies the OCR model from MaaCommonAssets
 - `assets/resource/pipeline/`: the screen-by-screen logic.
   - `screens.json`: screen checks, defined once and referenced by name.
   - `common.json`: shared routines: get to the tab bar or Home from anywhere
-    (including crash recovery), matchmaking, retry.
+    (including crash recovery), go to the Journal (`Common_ToJournal`, used
+    by every Journal task), matchmaking, retry.
   - `purchase.json` and `track.json`: the Purchase popup and reward-track
     nodes, beside `agent/purchase.py` and `agent/track.py`.
   - one file per task, plus `affection.json` for the affection check.
@@ -137,7 +138,7 @@ Dev tools:
 | `python tools/screenshot.py [name]` | saves `debug/screenshots/<name>.png` at 720p |
 | `python tools/ocr_dump.py live` or `<png> [x y w h]` | prints everything OCR reads, with boxes |
 | `python tools/watch.py <session> [--seconds N] [--until REGEX]` | records every screen change with OCR text, for mapping new screens |
-| `python -m unittest discover tests` | checks what the agent reads off saved game screens (discounts, reward tracks, tool badges, ...) and that interface.json matches the pipeline, about 10 s, no emulator needed |
+| `python -m unittest discover tests` | checks what the agent reads off saved game screens (discounts, reward tracks, tool badges, ...), that recovery knows every saved screen, and that interface.json matches the pipeline, about 35 s, no emulator needed |
 | `python tools/still.py capture <name>` | saves the emulator's screen to `tests/screens/<name>.png` for a new test |
 
 `tests/test_screens.py` shows each screenshot in `tests/screens/` to the
@@ -149,6 +150,12 @@ capture it again and update the expected values.
 option changes exists, every `{placeholder}` is one of its option's inputs,
 input defaults pass their own check, and every Custom action in the
 pipeline is registered by the agent.
+
+`tests/test_recovery.py` checks that the four recovery stages in
+`common.json` look for the same screens, and that recovery recognises every
+screenshot in `tests/screens/`. A new task needs no test changes; if a new
+screenshot fails, add its screen to `Common_TabBar_BackOut` (when Android
+back is safe there) or give it its own `Common_TabBar_*` step.
 
 Flows (buying, refreshing, stopping for Dawnium) are tested live, not
 offline: see `docs/adr/0001-buying-flows-are-tested-live.md`.

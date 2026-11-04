@@ -33,8 +33,7 @@
             "SplitMirage_ToMenu_OtherTab",
             "SplitMirage_ToMenu_DailyEvents",
             "SplitMirage_ToMenu_Journal",
-            "SplitMirage_ToMenu_TabBar",
-            "[JumpBack]Common_ToTabBar"
+            "[JumpBack]Common_ToJournal"
         ]
     },
     "SplitMirage_ToMenu_Done": {
@@ -63,13 +62,6 @@
         "roi": [400, 740, 320, 70],
         "action": "Click",
         "next": ["SplitMirage_ToMenu_DailyEvents"]
-    },
-    "SplitMirage_ToMenu_TabBar": { // Journal tab
-        "recognition": "And",
-        "all_of": ["Screen_TabBar"],
-        "action": "Click",
-        "target": [175, 1180, 80, 70],
-        "next": ["SplitMirage_ToMenu_Journal"]
     },
 
     // ---------------------------------------------------------------

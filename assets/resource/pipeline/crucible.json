@@ -34,8 +34,7 @@
             "Crucible_ToMenu_Results",
             "Crucible_ToMenu_DailyEvents",
             "Crucible_ToMenu_Journal",
-            "Crucible_ToMenu_TabBar",
-            "[JumpBack]Common_ToTabBar"
+            "[JumpBack]Common_ToJournal"
         ]
     },
     "Crucible_ToMenu_Done": {
@@ -71,13 +70,6 @@
         "roi": [400, 740, 320, 70],
         "action": "Click",
         "next": ["Crucible_ToMenu_DailyEvents"]
-    },
-    "Crucible_ToMenu_TabBar": { // Journal tab
-        "recognition": "And",
-        "all_of": ["Screen_TabBar"],
-        "action": "Click",
-        "target": [175, 1180, 80, 70],
-        "next": ["Crucible_ToMenu_Journal"]
     },
 
     // ---------------------------------------------------------------

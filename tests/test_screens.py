@@ -108,7 +108,7 @@ class RewardTrack(unittest.TestCase):
 class MaterialRealms(unittest.TestCase):
     def badges(self, screen):
         return still.run(screen, lambda c: [
-            read_int(c, "MaterialRealms_ListCount", override={"MaterialRealms_ListCount": {"roi": realm[4]}})
+            read_int(c, "MaterialRealms_ListCount", override={"MaterialRealms_ListCount": {"roi": realm.badge_roi}})
             for realm in material_realms.REALMS])
 
     def test_tool_badges(self):
