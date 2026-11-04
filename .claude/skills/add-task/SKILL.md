@@ -29,7 +29,7 @@ A task is a pipeline entry plus, when it loops or reads numbers, one Python cust
 
 5. **GUI options** in `assets/interface.json`: add the task (`name`, `label`, `entry`, `option`) and its options. Defaults are the safe choice (buy nothing, spend nothing). Two options can't both set one node's `custom_action_param`: give the second its own settings node. Describe buy options as a daily total, and say what each option spends.
 
-6. **Tests** in `tests/test_screens.py`: one test per new reading on the saved screens (each count, badge, page check). `python -m unittest discover tests` must pass; it also checks interface.json against the pipeline, that every Custom action is registered, and that recovery knows every saved screen.
+6. **Tests** in `tests/test_screens.py`: one test per new reading on the saved screens (each count, badge, page check). `tests/screens/` is in `.gitignore` (screenshots show the player's name): never commit them; tests whose screen is missing skip. `python -m unittest discover tests` must pass; it also checks interface.json against the pipeline, that every Custom action is registered, and that recovery knows every saved screen.
 
 7. **Live check** with `python tools/run.py <Task> --opt "Option=Case" --override tools/overrides/no_spend.json`: Purchase presses Cancel, battles do nothing. Add the task's own run/buy nodes to a copy of that file if it spends something new. Done when the agent log lines show the route, the reads and the run loop working. Spend only with the user's OK.
 

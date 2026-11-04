@@ -140,7 +140,7 @@ Dev tools:
 | `python tools/ocr_dump.py live` or `<png> [x y w h]` | prints everything OCR reads, with boxes |
 | `python tools/watch.py <session> [--seconds N] [--until REGEX]` | records every screen change with OCR text, for mapping new screens |
 | `python -m unittest discover tests` | checks what the agent reads off saved game screens (discounts, reward tracks, tool badges, ...), that recovery knows every saved screen, and that interface.json matches the pipeline, about 35 s, no emulator needed |
-| `python tools/still.py capture <name>` | saves the emulator's screen to `tests/screens/<name>.png` for a new test |
+| `python tools/still.py capture <name>` | saves the emulator's screen to `tests/screens/<name>.png` for a new test (local only: the folder is in `.gitignore`, since screenshots show your character's name) |
 | `python tools/run.py <Task> --override tools/overrides/no_spend.json` | a live run that spends nothing: buys press Cancel, battles do nothing (`tools/overrides/README.md`) |
 
 Adding a task: `.claude/skills/add-task/SKILL.md` has the steps.
@@ -148,7 +148,10 @@ Adding a task: `.claude/skills/add-task/SKILL.md` has the steps.
 `tests/test_screens.py` shows each screenshot in `tests/screens/` to the
 agent's own functions through `tools/still.py`: a stand-in device that
 always shows that image and ignores taps. When the game changes a screen,
-capture it again and update the expected values.
+capture it again and update the expected values. The screenshots aren't in
+git (they show the player's name): a test whose screenshot isn't on the
+machine is skipped, so CI only runs the parsing, interface and recovery
+list checks.
 
 `tests/test_interface.py` checks that every task entry, option and node an
 option changes exists, every `{placeholder}` is one of its option's inputs,

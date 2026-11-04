@@ -2,6 +2,9 @@
 
     python tools/still.py capture <name>   save the emulator's screen to tests/screens/<name>.png
 
+tests/screens is local only (in .gitignore): screenshots show the player's
+name. Tests whose screen is missing are skipped.
+
 In tests:
 
     still = Still()                        # loads assets/resource once
@@ -14,6 +17,7 @@ do nothing.
 """
 import sys
 import types
+import unittest
 from pathlib import Path
 
 import cv2
@@ -115,15 +119,22 @@ class Still:
 
     def run(self, screen: str, fn):
         """fn(context) with tests/screens/<screen> on the screen; returns its result."""
-        image = cv2.imread(str(SCREENS / screen))
-        if image is None:
-            raise FileNotFoundError(SCREENS / screen)
-        self.controller.image = image
+        self.controller.image = load(screen)
         self.probe.fn, self.probe.result, self.probe.error = fn, None, None
         self.tasker.post_task(self.HOOK).wait()
         if self.probe.error:
             raise self.probe.error
         return self.probe.result
+
+
+def load(screen: str):
+    """tests/screens/<screen> as an image. The screens are kept out of git
+    (they show the player's name), so a test whose screen isn't on this
+    machine (e.g. CI) is skipped, not failed."""
+    image = cv2.imread(str(SCREENS / screen))
+    if image is None:
+        raise unittest.SkipTest(f"no saved screen {screen} (tests/screens is local only)")
+    return image
 
 
 def capture(name: str):
