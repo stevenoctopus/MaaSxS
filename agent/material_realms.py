@@ -1,14 +1,14 @@
-"""Material Realms: buy tool sets, then use tools in each realm. Starts and
-ends on the Material Realms list.
+"""Material Realms: visit each realm once, buy tool sets, then use tools.
+Starts and ends on the Material Realms list.
 
-  MaterialBuy  {"ironvein": sets, ...}  sets of 5 tools per realm to have
-               bought today (sets already bought today count), within the
-               daily purchase limit. Bought on each realm's own page: Quick
-               Purchase can't set a realm to 0 once it has bought today.
-  MaterialUse  {"ironvein": n or "ALL", ...}  tools to use per realm. ALL turns
-               Quick Mine / Quick Conquer on (it uses a few tools per tap) and
-               taps until no tools are left; a number turns it off and taps
-               once per tool.
+  Buy  (MaterialRealms_Buy) {"ironvein": sets, ...}  sets of 5 tools per realm
+       to have bought today (sets already bought today count), within the
+       daily purchase limit. Bought on each realm's own page: Quick Purchase
+       can't set a realm to 0 once it has bought today.
+  Use  (MaterialRealms_Use) {"ironvein": n or "ALL", ...}  tools to use per
+       realm. ALL turns Quick Mine / Quick Conquer on (it uses a few tools per
+       tap) and taps until no tools are left; a number turns it off and taps
+       once per tool.
 """
 import json
 import time
@@ -57,25 +57,6 @@ def open_realm(context: Context, tile: str, roi) -> bool:
             {"recognition": "OCR", "expected": tile, "roi": [150, 1185, 210, 50]}]}}))
 
 
-def in_each_realm(context: Context, wanted: dict, skip, work) -> bool:
-    """For each realm whose wanted amount isn't skip(amount): open it, run
-    work(name, amount), and go back to the list."""
-    for key, name, tile, roi in REALMS:
-        amount = wanted.get(key, 0)
-        if skip(amount):
-            continue
-        if not open_realm(context, tile, roi):
-            log(context, f"could not open {name}")
-            return False
-        done = work(name, amount)
-        if not ok(context.run_task("MaterialRealms_RealmBack")):
-            log(context, f"could not get back to the list from {name}")
-            return False
-        if not done:
-            return False
-    return True
-
-
 # ---------------------------------------------------------------- buying
 
 def buy_sets(context: Context, name: str, wanted: int) -> bool:
@@ -103,14 +84,6 @@ def buy_sets(context: Context, name: str, wanted: int) -> bool:
         return False
     log(context, f"{name}: buying {sets} set(s) ({bought} already bought today)")
     return ok(context.run_task("MaterialRealms_Buy_Purchase"))
-
-
-@AgentServer.custom_action("MaterialBuy")
-class MaterialBuy(CustomAction):
-    def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
-        wanted = {k: int(v) for k, v in params(argv).items()}
-        return in_each_realm(context, wanted, lambda n: n <= 0,
-                             lambda name, n: buy_sets(context, name, n))
 
 
 # ---------------------------------------------------------------- using
@@ -169,10 +142,35 @@ def use_tools(context: Context, name: str, wanted) -> bool:
     return True
 
 
-@AgentServer.custom_action("MaterialUse")
-class MaterialUse(CustomAction):
+def node_param(context: Context, node: str) -> dict:
+    """The custom_action_param of another node (with the task's overrides)."""
+    data = context.get_node_data(node) or {}
+    param = data.get("action", {}).get("param", {}).get("custom_action_param") or {}
+    return json.loads(param) if isinstance(param, str) else param
+
+
+@AgentServer.custom_action("MaterialRealms")
+class MaterialRealms(CustomAction):
+    """Visit each realm once: buy (MaterialRealms_Buy's param), then use
+    (this node's param). Realms with nothing to buy or use aren't opened."""
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
-        wanted = {key: "ALL" for key, *_ in REALMS} | params(argv)
-        return in_each_realm(context, wanted,
-                             lambda n: str(n).upper() != "ALL" and int(n) == 0,
-                             lambda name, n: use_tools(context, name, n))
+        buy = node_param(context, "MaterialRealms_Buy")
+        use = params(argv)
+        for key, name, tile, roi in REALMS:
+            sets = int(buy.get(key, 0))
+            amount = str(use.get(key, "ALL"))
+            use_some = amount.upper() == "ALL" or int(amount) > 0
+            if sets <= 0 and not use_some:
+                continue
+            if not open_realm(context, tile, roi):
+                log(context, f"could not open {name}")
+                return False
+            done = (sets <= 0 or buy_sets(context, name, sets)) and \
+                   (not use_some or use_tools(context, name, amount))
+            if not ok(context.run_task("MaterialRealms_RealmBack")):
+                log(context, f"could not get back to the list from {name}")
+                return False
+            if not done:
+                return False
+        log(context, "done")
+        return True
