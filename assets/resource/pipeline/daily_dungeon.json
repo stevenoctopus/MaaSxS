@@ -141,17 +141,19 @@
     },
 
     // Daily mode's results: the agent sets DailyDungeon_Results' next to
-    // [Claim, LeaveResults, UnclaimedPrompt]. Claim the rewards if a reward
-    // attempt is left, then tap back. Leaving is only allowed once the button
-    // reads "Claimed" or no attempts are left: the Claim button appears a
-    // moment after "Drops", and leaving early would forfeit the rewards.
+    // [Claim, LeaveResults, LowGrade, UnclaimedPrompt]. Claim the rewards if
+    // the grade is good enough and a reward attempt is left, then tap back.
+    // Leaving is only allowed once the button reads "Claimed", no attempts
+    // are left, or the grade is too low: the Claim button appears a moment
+    // after "Drops", and leaving early would forfeit the rewards.
     "DailyDungeon_Claim": {
         "focus": { "Node.Action.Starting": "Claiming the rewards (uses 1 reward attempt)" },
         "recognition": "And",
         "all_of": [
             { "recognition": "OCR", "expected": "^Claim\\s?Rewards$", "roi": [360, 1180, 320, 75] },
-            { "recognition": "OCR", "expected": "Attempts:\\s?[1-9]", "roi": [370, 1135, 300, 45] }
-        ],
+            { "recognition": "OCR", "expected": "Attempts:\\s?[1-9]", "roi": [370, 1135, 300, 45] },
+            "DailyDungeon_GoodGrade"
+        ], // clicks the first: Claim Rewards
         "action": "Click",
         "post_delay": 1500,
         "next": ["DailyDungeon_ClaimConfirm"]
@@ -189,6 +191,22 @@
         "post_delay": 1500,
         "timeout": 30000,
         "next": ["DailyDungeon_BackOnList", "DailyDungeon_LeaveResults", "DailyDungeon_UnclaimedPrompt"]
+    },
+    // The run's grade, the big letter in the banner (S, A, B or C). The
+    // "Claim grade" option sets which grades are good enough (GoodGrade) and
+    // which aren't (LowGrade); by default every grade is claimed.
+    "DailyDungeon_GoodGrade": {
+        "recognition": "OCR",
+        "expected": "^[SABC]$",
+        "roi": [230, 160, 260, 170]
+    },
+    // Too low: leave without claiming (keeps the attempt); the agent runs again.
+    "DailyDungeon_LowGrade": {
+        "focus": { "Node.Action.Starting": "Grade below the minimum: leaving without claiming" },
+        "recognition": "OCR",
+        "expected": "(?!)", // matches nothing
+        "roi": [230, 160, 260, 170],
+        "next": ["DailyDungeon_Leave"]
     },
     // "Daily Dungeon rewards not claimed. Exit the dungeon?": in Daily mode
     // never exit, go back and claim.

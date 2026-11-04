@@ -1,5 +1,6 @@
 """Daily Dungeon, Daily mode: buy extra reward attempts (Dawnium), then run
-and claim until no reward attempts are left.
+and claim until no reward attempts are left. Runs below the "Claim grade"
+leave without claiming and don't use an attempt.
 
 Starts and ends on the Daily Dungeon list. By default a run leaves its results
 without claiming (Affection mode); CLAIM switches the results screen to
@@ -17,7 +18,8 @@ from gui import say
 
 
 CLAIM = {"DailyDungeon_Results": {"next": [
-    "DailyDungeon_Claim", "DailyDungeon_LeaveResults", "DailyDungeon_UnclaimedPrompt"]}}
+    "DailyDungeon_Claim", "DailyDungeon_LeaveResults", "DailyDungeon_LowGrade",
+    "DailyDungeon_UnclaimedPrompt"]}}
 
 
 def log(context: Context, msg: str):
@@ -58,9 +60,17 @@ def buy_attempts(context: Context, wanted: int) -> bool:
     return ok(context.run_task("DailyDungeon_DetailBack"))
 
 
-def claimed(detail) -> bool:
-    """Did this run press Claim and confirm it?"""
-    return any(n.name == "DailyDungeon_ClaimConfirm" for n in (detail.nodes or []))
+def find_node(detail, name):
+    return next((n for n in (detail.nodes or []) if n.name == name), None)
+
+
+def low_grade(detail):
+    """The grade if this run left without claiming because it was too low, else None."""
+    node = find_node(detail, "DailyDungeon_LowGrade")
+    if node is None:
+        return None
+    reco = node.recognition
+    return reco.best_result.text if reco and reco.best_result else "?"
 
 
 @AgentServer.custom_action("DungeonDaily")
@@ -93,8 +103,12 @@ class DungeonDaily(CustomAction):
             if not ok(detail):
                 log(context, f"run {run} failed")
                 return False
+            grade = low_grade(detail)
+            if grade is not None:
+                log(context, f"run {run}: grade {grade} is below the minimum, not claimed; running again")
+                continue
             # Safety stop: attempts were left but the run didn't claim, so
             # running more won't help.
-            if not claimed(detail):
+            if find_node(detail, "DailyDungeon_ClaimConfirm") is None:
                 log(context, f"run {run} didn't claim its rewards, stopping")
                 return False
