@@ -196,13 +196,20 @@ def install_python():
 
 
 def install_gui_defaults():
-    """Start MFAAvalonia in English. Only written when missing, so an
-    existing install keeps its settings."""
-    config = install_path / "config" / "config.json"
-    if config.exists():
-        return
-    config.parent.mkdir(parents=True, exist_ok=True)
-    config.write_text(json.dumps({"CurrentLanguage": "en-US"}, indent=2), encoding="utf-8")
+    """MFAAvalonia defaults for a fresh install: English, and stop the run
+    when a task fails (Settings > Running > "Whether to continue running
+    other tasks after a task fails": later tasks may need what the failed
+    one ran out of, e.g. Dawnium). Each file is only written when missing,
+    so an existing install keeps its settings."""
+    defaults = {
+        install_path / "config" / "config.json": {"CurrentLanguage": "en-US"},
+        install_path / "config" / "instances" / "default.json": {"ContinueRunningWhenError": False},
+    }
+    for path, values in defaults.items():
+        if path.exists():
+            continue
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(values, indent=2), encoding="utf-8")
 
 
 if __name__ == "__main__":
