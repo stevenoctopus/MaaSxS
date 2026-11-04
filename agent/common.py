@@ -16,11 +16,11 @@ def ok(detail) -> bool:
     return bool(detail and detail.status.succeeded)
 
 
-def read_fraction(context: Context, node: str):
-    """Run OCR node `node` on a fresh screenshot and return the first "N/M"
-    in its text as (N, M), or None."""
+def read_fraction(context: Context, node: str, override=None):
+    """Run OCR node `node` (with an optional pipeline override) on a fresh
+    screenshot and return the first "N/M" in its text as (N, M), or None."""
     image = context.tasker.controller.post_screencap().wait().get()
-    reco = context.run_recognition(node, image)
+    reco = context.run_recognition(node, image, pipeline_override=override or {})
     if reco and reco.hit:
         m = FRACTION_RE.search(reco.best_result.text)
         if m:

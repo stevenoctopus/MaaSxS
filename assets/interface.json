@@ -74,6 +74,15 @@
             ]
         },
         {
+            "name": "MaterialRealms",
+            "label": "Material Realms",
+            "entry": "MaterialRealms",
+            "option": [
+                "MaterialBuy",
+                "MaterialUse"
+            ]
+        },
+        {
             // Last, so it claims what the other tasks completed.
             "name": "DailyQuests",
             "label": "Claim daily quests",
@@ -191,6 +200,40 @@
                         "buy": "{buy}",
                         "tickets": "{tickets}"
                     }
+                }
+            }
+        },
+        // Material Realms: buying and using are separate nodes, so each option
+        // overrides its own node's param.
+        "MaterialBuy": {
+            "type": "input",
+            "label": "Sets to buy (Quick Purchase)",
+            "description": "Sets of 5 tools per realm, bought with Dawnium before using. Never past the game's daily limit of 20 per realm.",
+            "inputs": [
+                { "name": "ironvein", "label": "Ironvein Pit (hammers)", "default": "0", "pipeline_type": "int", "verify": "^([0-9]|1[0-9]|20)$", "pattern_msg": "Enter 0 to 20" },
+                { "name": "gilded", "label": "Gilded Depths (pickaxes)", "default": "0", "pipeline_type": "int", "verify": "^([0-9]|1[0-9]|20)$", "pattern_msg": "Enter 0 to 20" },
+                { "name": "dread", "label": "Dread Hollow (gloves)", "default": "0", "pipeline_type": "int", "verify": "^([0-9]|1[0-9]|20)$", "pattern_msg": "Enter 0 to 20" },
+                { "name": "dustfall", "label": "Dustfall Dune (shovels)", "default": "0", "pipeline_type": "int", "verify": "^([0-9]|1[0-9]|20)$", "pattern_msg": "Enter 0 to 20" }
+            ],
+            "pipeline_override": {
+                "MaterialRealms_Buy": {
+                    "custom_action_param": { "ironvein": "{ironvein}", "gilded": "{gilded}", "dread": "{dread}", "dustfall": "{dustfall}" }
+                }
+            }
+        },
+        "MaterialUse": {
+            "type": "input",
+            "label": "Tools to use",
+            "description": "Per realm: a number, or ALL. ALL turns on Quick Mine / Quick Conquer and uses every tool; a number turns it off and uses exactly that many.",
+            "inputs": [
+                { "name": "ironvein", "label": "Ironvein Pit", "default": "ALL", "pipeline_type": "string", "verify": "^(ALL|All|all|\\d+)$", "pattern_msg": "Enter a number or ALL" },
+                { "name": "gilded", "label": "Gilded Depths", "default": "ALL", "pipeline_type": "string", "verify": "^(ALL|All|all|\\d+)$", "pattern_msg": "Enter a number or ALL" },
+                { "name": "dread", "label": "Dread Hollow", "default": "ALL", "pipeline_type": "string", "verify": "^(ALL|All|all|\\d+)$", "pattern_msg": "Enter a number or ALL" },
+                { "name": "dustfall", "label": "Dustfall Dune", "default": "ALL", "pipeline_type": "string", "verify": "^(ALL|All|all|\\d+)$", "pattern_msg": "Enter a number or ALL" }
+            ],
+            "pipeline_override": {
+                "MaterialRealms_Use": {
+                    "custom_action_param": { "ironvein": "{ironvein}", "gilded": "{gilded}", "dread": "{dread}", "dustfall": "{dustfall}" }
                 }
             }
         },

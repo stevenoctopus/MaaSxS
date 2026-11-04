@@ -2,7 +2,8 @@
 
 Automation for the mobile game **Sword x Staff** (Android, on a PC emulator).
 It plays Daily Dungeon runs (including farming weekly affection), the
-Crucible of Hieromon, Split Mirage, Conquest and Arena, and claims your daily quests,
+Crucible of Hieromon, Split Mirage, Conquest, Arena and Material Realms, and
+claims your daily quests,
 starting from whatever screen the game is on,
 and recovers if the game crashes or disconnects.
 
@@ -74,6 +75,7 @@ to start the emulator.
 | Split Mirage | Mode | **Once**: one run, then claim rewards (the daily). **All gems**: reads today's reward track, runs until your best wave today reaches the last gem, then claims. **All rewards**: the same, up to the last reward. Endless Mode is never used. |
 | Conquest | Runs | **Once** (the daily quest) or **Twice**. Never more than the attempts left today. |
 | Arena | Tickets to buy, Tickets to use | Buys tickets with Dawnium first (*Tickets to buy*: 0 to 8, default 0, never past the game's daily limit), then challenges the rightmost opponent once per ticket (*Tickets to use*: default 2, any number), never more than the tickets you have. |
+| Material Realms | Sets to buy, Tools to use (each per realm) | Buys tool sets with Quick Purchase first (*Sets to buy*: 0 to 20 sets of 5 per realm, default 0, never past the daily limit), then uses tools in each realm (*Tools to use*: a number or ALL, default ALL). ALL turns on Quick Mine / Quick Conquer and uses every tool; a number turns it off and uses exactly that many. |
 | Claim daily quests | | Opens the daily quest list and claims every finished quest. Runs last, so it picks up what the other tasks completed. |
 
 Every task:
