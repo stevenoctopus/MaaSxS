@@ -19,6 +19,7 @@ import material_realms  # noqa: E402
 import split_mirage  # noqa: E402
 import track  # noqa: E402
 import vendor_booth as vb  # noqa: E402
+from screen import hit, parse_fraction, parse_int, read_int, screenshot  # noqa: E402
 
 still = None
 
@@ -28,8 +29,18 @@ def setUpModule():
     still = Still()
 
 
-def hit(context, node):
-    return vb.hit(context, node)
+class Parsing(unittest.TestCase):
+    def test_numbers(self):
+        self.assertEqual(parse_int("5"), 5)
+        self.assertEqual(parse_int("-40%"), 40)
+        self.assertEqual(parse_int("Attempt 3/5"), 3)
+        self.assertIsNone(parse_int("Refresh"))
+        self.assertIsNone(parse_int(None))
+
+    def test_fractions(self):
+        self.assertEqual(parse_fraction("Daily Purchase Limit: 2/6"), (2, 6))
+        self.assertEqual(parse_fraction("Earned This Week: 120 / 300"), (120, 300))
+        self.assertIsNone(parse_fraction("12"))
 
 
 class VendorBooth(unittest.TestCase):
@@ -38,7 +49,7 @@ class VendorBooth(unittest.TestCase):
             "general": hit(c, "VendorBooth_OnGeneral"),
             "vault": hit(c, "VendorBooth_OnVault"),
             "left": vb.read_left(c),
-            "off": [vb.discount(c, vb.screenshot(c), t) for t in range(9)],
+            "off": [vb.discount(c, screenshot(c), t) for t in range(9)],
             "sold": [t for t in range(9) if vb.sold_out(c, t)],
         })
 
@@ -97,8 +108,7 @@ class RewardTrack(unittest.TestCase):
 class MaterialRealms(unittest.TestCase):
     def badges(self, screen):
         return still.run(screen, lambda c: [
-            material_realms.read_int(c, "MaterialRealms_ListCount",
-                                     {"MaterialRealms_ListCount": {"roi": realm[4]}})
+            read_int(c, "MaterialRealms_ListCount", override={"MaterialRealms_ListCount": {"roi": realm[4]}})
             for realm in material_realms.REALMS])
 
     def test_tool_badges(self):

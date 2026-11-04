@@ -9,25 +9,11 @@ Its nodes are named <popup>_Limit, _Count, _More, _Purchase and _Cancel.
 Arena and Material Realms share one set (Common_Purchase_*); Daily Dungeon
 has its own (DailyDungeon_Buy_*).
 """
-import re
-
 from maa.context import Context
 
-from common import give_up, ok, read_fraction
+from common import give_up, ok
 from gui import say
-
-NUMBER_RE = re.compile(r"\d+")
-
-
-def first_number(context: Context, node: str):
-    """The first number in an OCR node's text ("3", "Attempt ×3/5" -> 3), or None."""
-    image = context.tasker.controller.post_screencap().wait().get()
-    reco = context.run_recognition(node, image)
-    if reco and reco.hit:
-        m = NUMBER_RE.search(reco.best_result.text)
-        if m:
-            return int(m.group())
-    return None
+from screen import read_fraction, read_int
 
 
 def buy_daily(context: Context, name: str, wanted: int, open_node: str, back_node: str,
@@ -65,7 +51,7 @@ def buy_daily(context: Context, name: str, wanted: int, open_node: str, back_nod
         return 0 if close(f"{popup}_Cancel") else None
     for _ in range(count - 1):  # Qty starts at 1
         context.run_task(f"{popup}_More")
-    shown = first_number(context, f"{popup}_Count")
+    shown = read_int(context, f"{popup}_Count")
     if shown is not None and shown < count:
         # The game caps the Qty at what you can afford (and we never ask
         # past today's limit), so a Qty stuck below ours is short Dawnium.

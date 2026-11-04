@@ -13,9 +13,10 @@ from maa.agent.agent_server import AgentServer
 from maa.context import Context
 from maa.custom_action import CustomAction
 
-from common import give_up, ok, read_fraction
+from common import give_up, ok, run_once
 from gui import say
 from purchase import buy_daily
+from screen import hit, read_fraction, screenshot
 
 
 CLAIM = {"DailyDungeon_Results": {"next": [
@@ -52,10 +53,8 @@ def buy_option_shown(context: Context, wait: float = 4) -> bool:
     for `wait` seconds while the screen settles)."""
     end = time.time() + wait
     while True:
-        image = context.tasker.controller.post_screencap().wait().get()
-        line = context.run_recognition("DailyDungeon_Buy_Open", image)
-        plus = context.run_recognition("DailyDungeon_BuyPlus", image)
-        if line and line.hit and plus and plus.hit:
+        image = screenshot(context)
+        if hit(context, "DailyDungeon_Buy_Open", image) and hit(context, "DailyDungeon_BuyPlus", image):
             return True
         if time.time() >= end:
             return False
@@ -96,14 +95,9 @@ class DungeonDaily(CustomAction):
             if left == 0:
                 log(context, "done")
                 return True
-            if context.tasker.stopping:
-                log(context, "stop requested")
-                return False
             run += 1
-            log(context, f"run {run}")
-            detail = context.run_task("DailyDungeon_Run", pipeline_override=CLAIM)
-            if not ok(detail):
-                log(context, f"run {run} failed")
+            detail = run_once(context, "Daily Dungeon", "DailyDungeon_Run", f"run {run}", CLAIM)
+            if detail is None:
                 return False
             grade = low_grade(detail)
             if grade is not None:

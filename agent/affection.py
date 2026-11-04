@@ -7,16 +7,14 @@
 """
 import json
 import math
-import re
 
 from maa.agent.agent_server import AgentServer
 from maa.context import Context
 from maa.custom_action import CustomAction
 
-from common import give_up, ok
+from common import give_up, ok, run_times
 from gui import say
-
-TOTAL_RE = re.compile(r"(\d+)\s*/\s*(\d+)")
+from screen import parse_fraction
 
 
 def log(context: Context, msg: str):
@@ -31,24 +29,11 @@ def check_affection(context: Context):
         return None
     for node in detail.nodes:
         if node.name == "Affection_Read" and node.recognition and node.recognition.hit:
-            m = TOTAL_RE.search(node.recognition.best_result.text)
-            if m:
-                return int(m.group(1)), int(m.group(2))
+            total = parse_fraction(node.recognition.best_result.text)
+            if total:
+                return total
     log(context, "could not read the affection total")
     return None
-
-
-def run_dungeons(context: Context, count: int) -> bool:
-    """Run DailyDungeon_Run `count` times; False if a run fails or a stop is requested."""
-    for i in range(count):
-        if context.tasker.stopping:
-            log(context, "stop requested")
-            return False
-        log(context, f"run {i + 1}/{count}")
-        if not ok(context.run_task("DailyDungeon_Run")):
-            log(context, f"run {i + 1} failed")
-            return False
-    return True
 
 
 @AgentServer.custom_action("AffectionFarm")
@@ -73,5 +58,5 @@ class AffectionFarm(CustomAction):
             if previous is not None and current <= previous:
                 return give_up(context, "Affection", "no affection gained since the last check")
             previous = current
-            if not run_dungeons(context, runs):
+            if not run_times(context, "Affection", "DailyDungeon_Run", runs):
                 return False

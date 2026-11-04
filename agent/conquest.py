@@ -6,8 +6,9 @@ from maa.agent.agent_server import AgentServer
 from maa.context import Context
 from maa.custom_action import CustomAction
 
-from common import ok, read_fraction
+from common import run_times
 from gui import say
+from screen import read_fraction
 
 
 def log(context: Context, msg: str):
@@ -27,13 +28,7 @@ class ConquestFarm(CustomAction):
         left = attempts[0]
         runs = min(wanted, left)
         log(context, f"{left} attempt(s) left, running {runs}")
-        for i in range(runs):
-            if context.tasker.stopping:
-                log(context, "stop requested")
-                return False
-            log(context, f"run {i + 1}/{runs}")
-            if not ok(context.run_task("Conquest_Run")):
-                log(context, f"run {i + 1} failed")
-                return False
+        if not run_times(context, "Conquest", "Conquest_Run", runs):
+            return False
         log(context, "done")
         return True
