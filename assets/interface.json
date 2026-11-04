@@ -65,6 +65,48 @@
         }
     ],
     "option": {
+        // Shown under Daily Dungeon's Daily mode. Spends Dawnium (100 for the
+        // first attempt); never more than the game's daily purchase limit.
+        "DungeonBuy": {
+            "type": "select",
+            "label": "Buy extra attempts",
+            "default_case": "2",
+            "cases": [
+                {
+                    "name": "0",
+                    "description": "Don't buy any.",
+                    "pipeline_override": {
+                        "DailyDungeon_DailyFarm": {
+                            "custom_action_param": {
+                                "buy": 0
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "1",
+                    "description": "Buy 1 extra reward attempt with Dawnium.",
+                    "pipeline_override": {
+                        "DailyDungeon_DailyFarm": {
+                            "custom_action_param": {
+                                "buy": 1
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "2",
+                    "description": "Buy 2 extra reward attempts with Dawnium (the daily limit).",
+                    "pipeline_override": {
+                        "DailyDungeon_DailyFarm": {
+                            "custom_action_param": {
+                                "buy": 2
+                            }
+                        }
+                    }
+                }
+            ]
+        },
         "ConquestRuns": {
             "type": "select",
             "label": "Runs",
@@ -127,7 +169,7 @@
             "cases": [
                 {
                     "name": "Single run",
-                    "description": "Play one run, then stop."
+                    "description": "Play one run (claiming its rewards if a reward attempt is left), then stop."
                 },
                 {
                     "name": "Affection",
@@ -138,6 +180,20 @@
                         "DailyDungeon": {
                             "next": [
                                 "DailyDungeon_AffectionFarm"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Daily",
+                    "description": "Buy extra reward attempts (optional), then run and claim rewards until no reward attempts are left.",
+                    "option": [
+                        "DungeonBuy"
+                    ],
+                    "pipeline_override": {
+                        "DailyDungeon_OnList": {
+                            "next": [
+                                "DailyDungeon_DailyFarm"
                             ]
                         }
                     }

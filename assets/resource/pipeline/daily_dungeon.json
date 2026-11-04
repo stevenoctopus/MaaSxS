@@ -30,6 +30,15 @@
         "custom_action_param": { "per_run": 7 },
         "on_error": ["Common_Retry"]
     },
+    // Daily mode: buy extra reward attempts, then run (and claim) until no
+    // reward attempts are left. Logic lives in agent/daily_dungeon.py; the
+    // "Buy extra attempts" option sets the param.
+    "DailyDungeon_DailyFarm": {
+        "action": "Custom",
+        "custom_action": "DungeonDaily",
+        "custom_action_param": { "buy": 2 },
+        "on_error": ["Common_Retry"]
+    },
 
     // ---------------------------------------------------------------
     // Get to the Daily Dungeon list from any screen: tab bar > Journal > tile.
@@ -101,22 +110,149 @@
         "timeout": 300000,
         "next": ["DailyDungeon_Results"]
     },
-    // Results ("Drops"): tap back. The tap is sometimes swallowed while the
-    // chests animate, so if the results are still showing, tap again.
+    // Results ("Drops"). Claim the rewards if a reward attempt is left, then
+    // tap back. Leaving is only allowed once the button reads "Claimed" or no
+    // attempts are left: the Claim button appears a moment after "Drops", and
+    // leaving early forfeits the rewards.
     "DailyDungeon_Results": {
-        "focus": { "Node.Action.Starting": "Battle ended: leaving the results" },
+        "focus": { "Node.Action.Starting": "Battle ended" },
         "recognition": "And",
         "all_of": ["Screen_DungeonResults"],
-        "pre_delay": 1500, // let the results animation finish
+        "pre_delay": 1500,
+        "timeout": 30000,
+        "next": ["DailyDungeon_Claim", "DailyDungeon_LeaveResults", "DailyDungeon_UnclaimedPrompt"]
+    },
+    "DailyDungeon_Claim": {
+        "focus": { "Node.Action.Starting": "Claiming the rewards (uses 1 reward attempt)" },
+        "recognition": "And",
+        "all_of": [
+            { "recognition": "OCR", "expected": "^Claim\\s?Rewards$", "roi": [360, 1180, 320, 75] },
+            { "recognition": "OCR", "expected": "Attempts:\\s?[1-9]", "roi": [370, 1135, 300, 45] }
+        ],
+        "action": "Click",
+        "post_delay": 1500,
+        "next": ["DailyDungeon_ClaimConfirm"]
+    },
+    // "Spend 1 reward attempt(s) to claim these dungeon rewards 1 time(s)?"
+    "DailyDungeon_ClaimConfirm": {
+        "recognition": "And",
+        "all_of": [
+            { "recognition": "OCR", "expected": "reward\\s?attempt", "roi": [100, 500, 520, 120] },
+            { "recognition": "OCR", "expected": "^OK$", "roi": [370, 700, 250, 75] }
+        ],
+        "box_index": 1,
+        "action": "Click",
+        "post_delay": 2000,
+        "timeout": 30000,
+        "next": ["DailyDungeon_LeaveResults"]
+    },
+    // Tap back: only when claimed, or when there's no attempt to claim with.
+    // The tap is sometimes swallowed while the chests animate, so if the
+    // results are still showing, tap again.
+    "DailyDungeon_LeaveResults": {
+        "recognition": "And",
+        "all_of": [
+            "Screen_DungeonResults",
+            {
+                "recognition": "Or",
+                "any_of": [
+                    { "recognition": "OCR", "expected": "^Claimed$", "roi": [360, 1180, 320, 75] },
+                    { "recognition": "OCR", "expected": "Attempts:\\s?0\\s?/", "roi": [370, 1135, 300, 45] }
+                ]
+            }
+        ],
         "action": "Click",
         "target": [30, 1185, 90, 70], // back arrow, bottom left
         "post_delay": 1500,
         "timeout": 30000,
-        "next": ["DailyDungeon_BackOnList", "DailyDungeon_Results"]
+        "next": ["DailyDungeon_BackOnList", "DailyDungeon_LeaveResults", "DailyDungeon_UnclaimedPrompt"]
+    },
+    // "Daily Dungeon rewards not claimed. Exit the dungeon?": never exit,
+    // go back and claim.
+    "DailyDungeon_UnclaimedPrompt": {
+        "recognition": "And",
+        "all_of": [
+            { "recognition": "OCR", "expected": "not\\s?claimed", "roi": [100, 500, 520, 120] },
+            { "recognition": "OCR", "expected": "^Cancel$", "roi": [100, 700, 260, 75] }
+        ],
+        "box_index": 1,
+        "action": "Click",
+        "post_delay": 1500,
+        "next": ["DailyDungeon_Claim", "DailyDungeon_LeaveResults"]
     },
     "DailyDungeon_BackOnList": {
         "focus": { "Node.Action.Starting": "Run complete" },
         "recognition": "And",
         "all_of": ["Screen_DungeonList"]
+    },
+
+    // ---------------------------------------------------------------
+    // Helpers for the Daily mode agent (agent/daily_dungeon.py).
+    // "Daily Reward Attempts: N/2" on the list.
+    "DailyDungeon_ListAttempts": {
+        "recognition": "OCR",
+        "expected": "Attempts:\\s?\\d+\\s?/\\s?\\d+",
+        "roi": [230, 30, 260, 45]
+    },
+    // Dungeon detail: the "+" next to "Daily Reward Attempts: N/2" (or "Out of
+    // daily reward attempts." at 0) opens Purchase.
+    // Once today's purchases are used up, no popup opens: this node then
+    // fails after the timeout and the agent carries on without buying.
+    "DailyDungeon_Buy_Open": {
+        "recognition": "OCR",
+        "expected": "Daily\\s?Reward\\s?Attempts|Out\\s?of\\s?daily\\s?reward",
+        "roi": [180, 1005, 360, 55],
+        "action": "Click",
+        "target": [520, 1008, 55, 50], // the "+" (just right of the text)
+        "post_delay": 1500,
+        "timeout": 4000,
+        "next": ["DailyDungeon_Buy_Limit"]
+    },
+    // Purchase popup: "Daily Purchase Limit: U/L" (bought today / limit).
+    "DailyDungeon_Buy_Limit": {
+        "recognition": "OCR",
+        "expected": "Purchase\\s?Limit:\\s?\\d+\\s?/\\s?\\d+",
+        "roi": [360, 670, 280, 45]
+    },
+    "DailyDungeon_Buy_Count": { // "Attempt ×N/M": how many will be bought
+        "recognition": "OCR",
+        "expected": "Attempt\\s?\\S?\\s?\\d+\\s?/\\s?\\d+",
+        "roi": [95, 565, 220, 45]
+    },
+    "DailyDungeon_Buy_More": { // slider "+"
+        "action": "Click",
+        "target": [575, 620, 45, 45],
+        "post_delay": 600
+    },
+    "DailyDungeon_Buy_Purchase": {
+        "recognition": "OCR",
+        "expected": "^Purchase$",
+        "roi": [370, 715, 245, 60],
+        "action": "Click",
+        "post_delay": 2000,
+        "next": ["DailyDungeon_OnDetail"]
+    },
+    "DailyDungeon_Buy_Cancel": {
+        "recognition": "OCR",
+        "expected": "^Cancel$",
+        "roi": [105, 715, 245, 60],
+        "action": "Click",
+        "post_delay": 1500,
+        "next": ["DailyDungeon_OnDetail"]
+    },
+    "DailyDungeon_OnDetail": {
+        "recognition": "OCR",
+        "expected": "Daily\\s?Reward\\s?Attempts|Out\\s?of\\s?daily\\s?reward",
+        "roi": [180, 1005, 360, 55]
+    },
+    // Dungeon detail: back to the list.
+    "DailyDungeon_DetailBack": {
+        "recognition": "OCR",
+        "expected": "Daily\\s?Reward\\s?Attempts|Out\\s?of\\s?daily\\s?reward",
+        "roi": [180, 1005, 360, 55],
+        "action": "Click",
+        "target": [30, 1185, 90, 70],
+        "post_delay": 1500,
+        "next": ["DailyDungeon_BackOnList"]
     }
 }
