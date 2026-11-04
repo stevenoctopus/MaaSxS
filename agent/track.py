@@ -3,7 +3,7 @@
 Each has a menu showing today's best score and a scrolling track of rewards,
 each unlocked at a score. Modes:
 
-  once   one run, then claim.
+  once   one run, then claim; no run if today's best already shows a score.
   marked run until today's best reaches the last marked reward still on the
          track (Crucible's gift boxes, Split Mirage's gems), then claim.
   all    run until it reaches the last reward on the track, then claim.
@@ -135,7 +135,15 @@ def farm(context: Context, ev: TrackEvent, mode: str) -> bool:
         say(context, ev.name, msg)
 
     target = None
-    if mode != "once":
+    if mode == "once":
+        # Already played today (a best score shows): just claim.
+        best = read_best(context, ev)
+        if best:
+            log(f"already played today (best: {ev.fmt(best)}), not running again")
+            claim_rewards(context, ev)
+            log("done")
+            return True
+    else:
         target = find_target(context, ev, mode)
         if target is None:
             claim_rewards(context, ev)
