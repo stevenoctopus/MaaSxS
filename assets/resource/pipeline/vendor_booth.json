@@ -38,11 +38,11 @@
     // Settings only, never run: buy this Vault item (1) or not (0).
     "VendorBooth_Vault_Stellatie": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
     "VendorBooth_Vault_DestinyFruit": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
-    "VendorBooth_Vault_WornKnuckles": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
-    "VendorBooth_Vault_SandShovel": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
+    "VendorBooth_Vault_Row2Left": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
+    "VendorBooth_Vault_Row2Middle": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
     "VendorBooth_Vault_RefinedOre": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
-    "VendorBooth_Vault_AuroralBadge": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
-    "VendorBooth_Vault_Mandrake": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
+    "VendorBooth_Vault_Row3Left": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
+    "VendorBooth_Vault_Row3Middle": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
     "VendorBooth_Vault_QuestScroll": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
 
     // ---------------------------------------------------------------

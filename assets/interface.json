@@ -91,11 +91,11 @@
                 "VendorDiscount",
                 "VendorStellatie",
                 "VendorDestinyFruit",
-                "VendorWornKnuckles",
-                "VendorSandShovel",
+                "VendorRow2Left",
+                "VendorRow2Middle",
                 "VendorRefinedOre",
-                "VendorAuroralBadge",
-                "VendorMandrake",
+                "VendorRow3Left",
+                "VendorRow3Middle",
                 "VendorQuestScroll"
             ]
         },
@@ -296,25 +296,25 @@
             "type": "select", "label": "Vault: Destiny Fruit", "default_case": "Skip",
             "cases": [{ "name": "Skip" }, { "name": "Buy", "description": "Both (limit 2).", "pipeline_override": { "VendorBooth_Vault_DestinyFruit": { "custom_action_param": { "buy": 1 } } } }]
         },
-        "VendorWornKnuckles": {
-            "type": "select", "label": "Vault: Worn Knuckles", "default_case": "Skip",
-            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_WornKnuckles": { "custom_action_param": { "buy": 1 } } } }]
+        "VendorRow2Left": {
+            "type": "select", "label": "Vault: row 2, left", "description": "Changes daily (a tool, e.g. Worn Knuckles).", "default_case": "Skip",
+            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_Row2Left": { "custom_action_param": { "buy": 1 } } } }]
         },
-        "VendorSandShovel": {
-            "type": "select", "label": "Vault: Sand Shovel", "default_case": "Skip",
-            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_SandShovel": { "custom_action_param": { "buy": 1 } } } }]
+        "VendorRow2Middle": {
+            "type": "select", "label": "Vault: row 2, middle", "description": "Changes daily (a tool, e.g. Sand Shovel).", "default_case": "Skip",
+            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_Row2Middle": { "custom_action_param": { "buy": 1 } } } }]
         },
         "VendorRefinedOre": {
             "type": "select", "label": "Vault: Refined Ore", "default_case": "Skip",
             "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_RefinedOre": { "custom_action_param": { "buy": 1 } } } }]
         },
-        "VendorAuroralBadge": {
-            "type": "select", "label": "Vault: Epic Auroral Badge", "default_case": "Skip",
-            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_AuroralBadge": { "custom_action_param": { "buy": 1 } } } }]
+        "VendorRow3Left": {
+            "type": "select", "label": "Vault: row 3, left", "description": "Changes daily (a badge, e.g. Epic Auroral Badge).", "default_case": "Skip",
+            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_Row3Left": { "custom_action_param": { "buy": 1 } } } }]
         },
-        "VendorMandrake": {
-            "type": "select", "label": "Vault: Mandrake", "default_case": "Skip",
-            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_Mandrake": { "custom_action_param": { "buy": 1 } } } }]
+        "VendorRow3Middle": {
+            "type": "select", "label": "Vault: row 3, middle", "description": "Changes daily (e.g. Mandrake).", "default_case": "Skip",
+            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_Row3Middle": { "custom_action_param": { "buy": 1 } } } }]
         },
         "VendorQuestScroll": {
             "type": "select", "label": "Vault: Quest Scroll", "default_case": "Skip",
