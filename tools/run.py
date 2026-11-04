@@ -38,7 +38,9 @@ def build_override(interface, task, chosen):
     """Merge the pipeline_override of the task and each selected option case."""
     override = {}
     merge(override, task.get("pipeline_override", {}))
-    for key in task.get("option", []):
+    keys = list(task.get("option", []))
+    while keys:
+        key = keys.pop(0)
         opt = interface["option"][key]
         name = chosen.get(key, opt.get("default_case"))
         case = next((c for c in opt["cases"] if c["name"] == name), None)
@@ -47,6 +49,7 @@ def build_override(interface, task, chosen):
                      f"Choices: {[c['name'] for c in opt['cases']]}")
         print(f"{key} = {name}")
         merge(override, case.get("pipeline_override", {}))
+        keys.extend(case.get("option", []))  # sub-options shown for this case
     return override
 
 

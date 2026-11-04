@@ -1,5 +1,6 @@
 """Shared actions and helpers."""
 import json
+import re
 
 from maa.agent.agent_server import AgentServer
 from maa.context import Context
@@ -7,10 +8,24 @@ from maa.custom_action import CustomAction
 
 from gui import say
 
+FRACTION_RE = re.compile(r"(\d+)\s*/\s*(\d+)")
+
 
 def ok(detail) -> bool:
     """True if a run_task result succeeded."""
     return bool(detail and detail.status.succeeded)
+
+
+def read_fraction(context: Context, node: str):
+    """Run OCR node `node` on a fresh screenshot and return the first "N/M"
+    in its text as (N, M), or None."""
+    image = context.tasker.controller.post_screencap().wait().get()
+    reco = context.run_recognition(node, image)
+    if reco and reco.hit:
+        m = FRACTION_RE.search(reco.best_result.text)
+        if m:
+            return int(m.group(1)), int(m.group(2))
+    return None
 
 
 @AgentServer.custom_action("RunTask")
