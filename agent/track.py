@@ -41,8 +41,8 @@ def screenshot(context: Context):
 
 
 def read_track(context: Context, ev: TrackEvent):
-    """[(value, label_box, is_marked)] for the rewards visible on the track,
-    lowest first. The reward icon sits right above its value label."""
+    """[(value, label_box, is_marked, is_claimed)] for the rewards visible on
+    the track, lowest first. The reward icon sits right above its value label."""
     image = screenshot(context)
     reco = context.run_recognition(ev.values, image)
     out = []
@@ -54,7 +54,10 @@ def read_track(context: Context, ev: TrackEvent):
         icon_roi = [x + w // 2 - 40, y - 80, 80, 75]
         marked = context.run_recognition(
             ev.marker, image, pipeline_override={ev.marker: {"roi": icon_roi}})
-        out.append((v, r.box, bool(marked and marked.hit)))
+        claimed = context.run_recognition(
+            "Common_TrackClaimed", image,
+            pipeline_override={"Common_TrackClaimed": {"roi": [x + w // 2 - 18, y - 65, 36, 36]}})
+        out.append((v, r.box, bool(marked and marked.hit), bool(claimed and claimed.hit)))
     return sorted(out, key=lambda t: t[0])
 
 
@@ -63,6 +66,9 @@ def scan_from_end(context: Context, ev: TrackEvent, find, max_steps=12):
     until find(view) returns something (view = read_track()). Everything we
     look for is "the highest X", so the first view where X shows up has the
     answer. Returns find's result, or None if the track ran out.
+
+    Claiming one reward claims every reward before it, so once a claimed
+    reward shows, everything to its left is claimed too: stop there.
     """
     context.run_task("Common_TrackEnd")
     seen = set()
@@ -71,7 +77,9 @@ def scan_from_end(context: Context, ev: TrackEvent, find, max_steps=12):
         found = find(view)
         if found is not None:
             return found
-        values = {v for v, _, _ in view}
+        if any(claimed for *_, claimed in view):
+            return None
+        values = {v for v, *_ in view}
         if values <= seen:  # nothing new: we're at the left end
             return None
         seen |= values
@@ -91,14 +99,17 @@ def claim_rewards(context: Context, ev: TrackEvent):
         return
 
     def highest_reached(view):
-        reached = [(v, box) for v, box, _ in view if v <= best]
+        reached = [(v, box, claimed) for v, box, _, claimed in view if v <= best]
         return reached[-1] if reached else None
 
     found = scan_from_end(context, ev, highest_reached)
     if found is None:
         say(context, ev.name, "no reward reached yet")
         return
-    value, (x, y, w, _) = found
+    value, (x, y, w, _), claimed = found
+    if claimed:
+        say(context, ev.name, f"rewards up to {ev.fmt(value)} already claimed")
+        return
     say(context, ev.name, f"claiming (tapping the {ev.fmt(value)} reward)")
     context.run_action("Common_TrackTap", [x + w // 2 - 20, y - 60, 40, 40])
     context.run_task(ev.close)
@@ -113,7 +124,7 @@ def find_target(context: Context, ev: TrackEvent, mode):
     # Claimed rewards show a checkmark instead of their icon, so no marked
     # icon left on the track means every marked reward is already claimed.
     found = scan_from_end(
-        context, ev, lambda view: max((v for v, _, m in view if m), default=None))
+        context, ev, lambda view: max((v for v, _, m, _ in view if m), default=None))
     say(context, ev.name, f"last {ev.marked}: {ev.fmt(found)}" if found else f"no unclaimed {ev.marked} on the track")
     return found
 

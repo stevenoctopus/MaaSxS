@@ -99,12 +99,9 @@ def buy(context: Context, tile: int, limit: int, page: str) -> bool:
 
 
 def go_tab(context: Context, tab: str) -> bool:
-    """Open a tab ("General" / "Vault") with its list scrolled to the top."""
+    """Open a tab ("General" / "Vault"). Tabs open scrolled to the top."""
     page = f"VendorBooth_On{tab}"
-    if not hit(context, page) and not ok(context.run_task(f"VendorBooth_Tab{tab}")):
-        return False
-    context.run_task("VendorBooth_ScrollTop")
-    return hit(context, page)
+    return hit(context, page) or ok(context.run_task(f"VendorBooth_Tab{tab}"))
 
 
 # ---------------------------------------------------------------- General
