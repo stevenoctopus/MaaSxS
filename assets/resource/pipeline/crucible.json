@@ -20,7 +20,7 @@
     "Crucible_Farm": {
         "action": "Custom",
         "custom_action": "CrucibleFarm",
-        "custom_action_param": { "mode": "once" }, // once | all_gifts | all
+        "custom_action_param": { "mode": "once" }, // once | marked (gift boxes) | all
         "on_error": ["Common_Retry"]
     },
 
@@ -143,30 +143,7 @@
         "recognition": "TemplateMatch",
         "template": "Crucible/gift.png"
     },
-    // Scroll to the right end of the track (two full swipes).
-    "Crucible_TrackEnd": {
-        "action": "Swipe",
-        "begin": [620, 920, 10, 10],
-        "end": [80, 920, 10, 10],
-        "duration": 600,
-        "post_delay": 1500,
-        "next": ["Crucible_TrackEnd_2"]
-    },
-    "Crucible_TrackEnd_2": {
-        "action": "Swipe",
-        "begin": [620, 920, 10, 10],
-        "end": [80, 920, 10, 10],
-        "duration": 600,
-        "post_delay": 1500
-    },
-    // Half a screen back towards the start, for scanning from the right end.
-    "Crucible_TrackStep": {
-        "action": "Swipe",
-        "begin": [220, 920, 10, 10],
-        "end": [500, 920, 10, 10],
-        "duration": 800,
-        "post_delay": 1200
-    },
+    // Scrolling the track: Common_TrackEnd / Common_TrackStep (common.json).
     // Close whatever claiming opened (rewards popup): back until the menu shows.
     "Crucible_CloseToMenu": {
         "next": ["Crucible_BackOnMenu", "Crucible_CloseToMenu_Back"]

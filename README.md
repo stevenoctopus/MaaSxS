@@ -1,8 +1,9 @@
 # MaaSxS
 
 Automation for the mobile game **Sword x Staff** (Android, on a PC emulator).
-It plays Daily Dungeon runs (including farming weekly affection) and the
-Crucible of Hieromon for you, starting from whatever screen the game is on,
+It plays Daily Dungeon runs (including farming weekly affection), the
+Crucible of Hieromon, Split Mirage and Conquest, and claims your daily quests,
+starting from whatever screen the game is on,
 and recovers if the game crashes or disconnects.
 
 Built on [MaaFramework](https://github.com/MaaXYZ/MaaFramework), with the
@@ -70,6 +71,7 @@ to start the emulator.
 |---|---|---|
 | Daily Dungeon | Mode, Dungeon, Difficulty | Runs the chosen dungeon and difficulty. **Daily** (default): buys extra reward attempts with Dawnium (*Buy extra attempts*: 0, 1 or 2, default 2, never past the game's daily limit), then runs and claims the rewards until no reward attempts are left. **Affection**: reads this week's affection (claiming any tokens waiting), runs the dungeons needed to reach the weekly cap (+7 per run), checks again, and repeats until capped. Never claims dungeon rewards, so your reward attempts are kept. Stops if a whole batch earns nothing. |
 | Crucible of Hieromon | Mode | **Once**: one run, then claim rewards (the daily). **All gifts**: reads today's damage track, runs until your highest damage today reaches the last gift box, then claims. **All rewards**: the same, up to the last reward. |
+| Split Mirage | Mode | **Once**: one run, then claim rewards (the daily). **All gems**: reads today's reward track, runs until your best wave today reaches the last gem, then claims. **All rewards**: the same, up to the last reward. Endless Mode is never used. |
 | Conquest | Runs | **Once** (the daily quest) or **Twice**. Never more than the attempts left today. |
 | Claim daily quests | | Opens the daily quest list and claims every finished quest. Runs last, so it picks up what the other tasks completed. |
 
@@ -109,7 +111,8 @@ python tools/configure.py          # copies the OCR model from MaaCommonAssets
     (including crash recovery), matchmaking, retry.
   - one file per task, plus `affection.json` for the affection check.
 - `agent/`: Python custom actions (loops, reading numbers), registered with
-  `@AgentServer.custom_action`.
+  `@AgentServer.custom_action`. `track.py` holds the reward-track logic
+  shared by Crucible and Split Mirage.
 
 Dev tools:
 
