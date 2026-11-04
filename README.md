@@ -2,7 +2,7 @@
 
 Automation for the mobile game **Sword x Staff** (Android, on a PC emulator).
 It plays Daily Dungeon runs (including farming weekly affection), the
-Crucible of Hieromon, Split Mirage and Conquest, and claims your daily quests,
+Crucible of Hieromon, Split Mirage, Conquest and Arena, and claims your daily quests,
 starting from whatever screen the game is on,
 and recovers if the game crashes or disconnects.
 
@@ -73,6 +73,7 @@ to start the emulator.
 | Crucible of Hieromon | Mode | **Once**: one run, then claim rewards (the daily). **All gifts**: reads today's damage track, runs until your highest damage today reaches the last gift box, then claims. **All rewards**: the same, up to the last reward. |
 | Split Mirage | Mode | **Once**: one run, then claim rewards (the daily). **All gems**: reads today's reward track, runs until your best wave today reaches the last gem, then claims. **All rewards**: the same, up to the last reward. Endless Mode is never used. |
 | Conquest | Runs | **Once** (the daily quest) or **Twice**. Never more than the attempts left today. |
+| Arena | Tickets to buy, Tickets to use | Buys tickets with Dawnium first (*Tickets to buy*: 0 to 8, default 0, never past the game's daily limit), then challenges the rightmost opponent once per ticket (*Tickets to use*: default 2, any number), never more than the tickets you have. |
 | Claim daily quests | | Opens the daily quest list and claims every finished quest. Runs last, so it picks up what the other tasks completed. |
 
 Every task:
@@ -118,7 +119,7 @@ Dev tools:
 
 | Command | What it does |
 |---|---|
-| `python tools/run.py <task or node> [--opt "Option=Case"] [--override <json>]` | runs a task, or any pipeline node, without the GUI. The agent starts through AgentClient, the same way the GUI does it |
+| `python tools/run.py <task or node> [--opt "Option=Case"] [--opt "InputOption=value"] [--override <json>]` | runs a task, or any pipeline node, without the GUI. The agent starts through AgentClient, the same way the GUI does it |
 | `python tools/screenshot.py [name]` | saves `debug/screenshots/<name>.png` at 720p |
 | `python tools/ocr_dump.py live` or `<png> [x y w h]` | prints everything OCR reads, with boxes |
 | `python tools/watch.py <session> [--seconds N] [--until REGEX]` | records every screen change with OCR text, for mapping new screens |

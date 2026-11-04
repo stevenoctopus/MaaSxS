@@ -59,6 +59,26 @@
         "recognition": "And",
         "all_of": ["Screen_CrucibleTitle", "Screen_MatchButton"]
     },
+    // --- Competition and Arena (Journal > Competition > Arena) ---
+    "Screen_CompetitionPage": {
+        "recognition": "OCR",
+        "expected": "^Competition$",
+        "roi": [20, 20, 320, 60]
+    },
+    // Title of the Arena pages (OCR may read the "!" badge before it).
+    "Screen_ArenaTitle": {
+        "recognition": "OCR",
+        "expected": "Arena$",
+        "roi": [20, 20, 300, 60]
+    },
+    "Screen_ArenaPage": { // the Arena tab: title plus the opponent list
+        "recognition": "And",
+        "all_of": [
+            "Screen_ArenaTitle",
+            { "recognition": "OCR", "expected": "^Opponents$", "roi": [0, 500, 260, 70] }
+        ]
+    },
+
     // Title of the Split Mirage pages (OCR reads the "!" badge before it).
     "Screen_SplitMirageTitle": {
         "recognition": "OCR",

@@ -3,6 +3,7 @@
     python tools/run.py DailyDungeon
     python tools/run.py DailyDungeon --opt "Dungeon=Court of Purification" --opt Difficulty=Nightmare
     python tools/run.py Affection_Check     # any pipeline node works as an entry
+    python tools/run.py Arena --opt ArenaTickets=3   # input options take the value
 
 Options not given use their default_case, like the GUI does. The agent
 (agent/main.py) is started as a separate process through AgentClient, the
@@ -34,6 +35,40 @@ def merge(dst, src):
             dst[k] = v
 
 
+def fill_inputs(opt, given):
+    """An "input" option's pipeline_override with {name} placeholders filled in.
+    `given` is "value" (one input) or "name=value,name=value"; missing ones use
+    their default. A string that is just "{name}" becomes the input's
+    pipeline_type (int/bool), like the GUI does."""
+    inputs = {i["name"]: i for i in opt["inputs"]}
+    values = {n: i.get("default", "") for n, i in inputs.items()}
+    if given is not None:
+        if "=" in given:
+            values.update(kv.split("=", 1) for kv in given.split(","))
+        else:
+            values[next(iter(inputs))] = given
+
+    def convert(name):
+        kind, v = inputs[name].get("pipeline_type", "string"), values[name]
+        return int(v) if kind == "int" else v.lower() == "true" if kind == "bool" else v
+
+    def fill(node):
+        if isinstance(node, dict):
+            return {k: fill(v) for k, v in node.items()}
+        if isinstance(node, list):
+            return [fill(v) for v in node]
+        if isinstance(node, str):
+            whole = node[1:-1] if node.startswith("{") and node.endswith("}") else None
+            if whole in inputs:
+                return convert(whole)
+            for n, v in values.items():
+                node = node.replace("{" + n + "}", v)
+        return node
+
+    print(f"  inputs: {values}")
+    return fill(opt.get("pipeline_override", {}))
+
+
 def build_override(interface, task, chosen):
     """Merge the pipeline_override of the task and each selected option case."""
     override = {}
@@ -42,6 +77,10 @@ def build_override(interface, task, chosen):
     while keys:
         key = keys.pop(0)
         opt = interface["option"][key]
+        if opt.get("type") == "input":
+            print(f"{key}:")
+            merge(override, fill_inputs(opt, chosen.get(key)))
+            continue
         name = chosen.get(key, opt.get("default_case"))
         case = next((c for c in opt["cases"] if c["name"] == name), None)
         if case is None:
