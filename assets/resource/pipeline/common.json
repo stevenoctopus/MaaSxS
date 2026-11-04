@@ -292,6 +292,16 @@
         "upper": [230, 230, 135],
         "count": 250
     },
+    // Plain panel right of the rightmost reward (no bar going on): the track
+    // is already at its right end. The agent sets the roi.
+    "Common_TrackNoBar": {
+        "recognition": "ColorMatch",
+        "method": 4, // RGB
+        "roi": [674, 916, 16, 10],
+        "lower": [205, 205, 205],
+        "upper": [240, 240, 240],
+        "count": 150
+    },
     // Tap a reward on the track; the agent gives the spot.
     "Common_TrackTap": {
         "action": "Click",
