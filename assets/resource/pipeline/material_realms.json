@@ -2,9 +2,9 @@
     // Material Realms (Journal > Material Realms): Ironvein Pit, Gilded
     // Depths, Dread Hollow, Dustfall Dune. Each realm uses its own tool
     // (hammer, pickaxe, glove, shovel). The agent (agent/material_realms.py)
-    // first buys tool sets on each realm's page (MaterialRealms_Buy), then
-    // uses the tools in each realm (MaterialRealms_Use). The options set the
-    // params.
+    // visits each realm once: buys tool sets on its page, then uses tools.
+    // The "Sets to buy" option sets MaterialRealms_Buy's param, "Tools to
+    // use" sets MaterialRealms_Use's.
     // Top-level steps have on_error -> Common_Retry: if anything fails, go
     // Home and start the task over, once.
     "MaterialRealms": {
@@ -15,21 +15,20 @@
         "focus": { "Node.Action.Starting": "On the Material Realms list" },
         "recognition": "And",
         "all_of": ["Screen_MaterialList"],
-        "next": ["MaterialRealms_Buy"],
-        "on_error": ["Common_Retry"]
-    },
-    // Sets of 5 tools to buy per realm (0 = none).
-    "MaterialRealms_Buy": {
-        "action": "Custom",
-        "custom_action": "MaterialBuy",
-        "custom_action_param": { "ironvein": 0, "gilded": 0, "dread": 0, "dustfall": 0 },
         "next": ["MaterialRealms_Use"],
         "on_error": ["Common_Retry"]
     },
-    // Tools to use per realm: a number, or "ALL".
+    // Settings only, never run: sets of 5 tools to buy per realm per day
+    // (0 = none). Read by the MaterialRealms action.
+    "MaterialRealms_Buy": {
+        "action": "Custom",
+        "custom_action": "MaterialRealms",
+        "custom_action_param": { "ironvein": 0, "gilded": 0, "dread": 0, "dustfall": 0 }
+    },
+    // Tools to use per realm (a number, or "ALL"); runs the whole task.
     "MaterialRealms_Use": {
         "action": "Custom",
-        "custom_action": "MaterialUse",
+        "custom_action": "MaterialRealms",
         "custom_action_param": { "ironvein": "ALL", "gilded": "ALL", "dread": "ALL", "dustfall": "ALL" },
         "on_error": ["Common_Retry"]
     },
