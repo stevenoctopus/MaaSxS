@@ -50,6 +50,14 @@
             ]
         },
         {
+            "name": "SplitMirage",
+            "label": "Split Mirage",
+            "entry": "SplitMirage",
+            "option": [
+                "SplitMirageMode"
+            ]
+        },
+        {
             "name": "Conquest",
             "label": "Conquest",
             "entry": "Conquest",
@@ -144,7 +152,7 @@
                     "pipeline_override": {
                         "Crucible_Farm": {
                             "custom_action_param": {
-                                "mode": "all_gifts"
+                                "mode": "marked"
                             }
                         }
                     }
@@ -154,6 +162,39 @@
                     "description": "Read today's damage track, then run until today's highest damage reaches the last reward, then claim.",
                     "pipeline_override": {
                         "Crucible_Farm": {
+                            "custom_action_param": {
+                                "mode": "all"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "SplitMirageMode": {
+            "type": "select",
+            "label": "Mode",
+            "default_case": "Once",
+            "cases": [
+                {
+                    "name": "Once",
+                    "description": "Play one run, then claim (daily)."
+                },
+                {
+                    "name": "All gems",
+                    "description": "Read today's reward track, then run until today's best wave reaches the last gem, then claim.",
+                    "pipeline_override": {
+                        "SplitMirage_Farm": {
+                            "custom_action_param": {
+                                "mode": "marked"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "All rewards",
+                    "description": "Read today's reward track, then run until today's best wave reaches the last reward, then claim.",
+                    "pipeline_override": {
+                        "SplitMirage_Farm": {
                             "custom_action_param": {
                                 "mode": "all"
                             }

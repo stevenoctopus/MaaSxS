@@ -183,6 +183,7 @@
             "Screen_FriendsPage",
             "Screen_MainMenu",
             "Screen_CrucibleTitle",
+            "Screen_SplitMirageTitle",
             "Screen_DailyEvents",
             "Screen_GuildEvents",
             "Screen_ConquestPage",
@@ -252,7 +253,39 @@
     },
 
     // ---------------------------------------------------------------
-    // Matchmaking, shared by Daily Dungeon and Crucible: from a screen with
+    // Reward tracks (Crucible, Split Mirage; agent/track.py).
+    // Scroll to the right end of the track (two full swipes).
+    "Common_TrackEnd": {
+        "action": "Swipe",
+        "begin": [620, 920, 10, 10],
+        "end": [80, 920, 10, 10],
+        "duration": 600,
+        "post_delay": 1500,
+        "next": ["Common_TrackEnd_2"]
+    },
+    "Common_TrackEnd_2": {
+        "action": "Swipe",
+        "begin": [620, 920, 10, 10],
+        "end": [80, 920, 10, 10],
+        "duration": 600,
+        "post_delay": 1500
+    },
+    // Half a screen back towards the start, for scanning from the right end.
+    "Common_TrackStep": {
+        "action": "Swipe",
+        "begin": [220, 920, 10, 10],
+        "end": [500, 920, 10, 10],
+        "duration": 800,
+        "post_delay": 1200
+    },
+    // Tap a reward on the track; the agent gives the spot.
+    "Common_TrackTap": {
+        "action": "Click",
+        "post_delay": 2000
+    },
+
+    // ---------------------------------------------------------------
+    // Matchmaking, shared by Daily Dungeon, Crucible and Split Mirage: from a screen with
     // the Match button until the battle starts. Use as "[JumpBack]Common_Queue".
     // Match, Accept (the game re-queues by itself if someone declines),
     // Match again if we get dropped, Ready.

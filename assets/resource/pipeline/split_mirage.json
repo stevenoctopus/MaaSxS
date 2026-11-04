@@ -1,0 +1,152 @@
+{
+    // Split Mirage (Journal > Daily Events). The agent action SplitMirageFarm
+    // (agent/split_mirage.py) runs SplitMirage_Run once, or until today's
+    // best wave reaches the last gem / last reward on the reward track, then
+    // claims. Same shape as Crucible (crucible.json).
+    // Top-level steps have on_error -> Common_Retry: if anything fails, go
+    // Home and start the task over, once.
+    "SplitMirage": {
+        "next": ["SplitMirage_OnMenu", "[JumpBack]SplitMirage_ToMenu"],
+        "on_error": ["Common_Retry"]
+    },
+    "SplitMirage_OnMenu": {
+        "focus": { "Node.Action.Starting": "On the Split Mirage menu" },
+        "recognition": "And",
+        "all_of": ["Screen_SplitMirageMenu"],
+        "next": ["SplitMirage_Farm"],
+        "on_error": ["Common_Retry"]
+    },
+    // The mode option sets the param.
+    "SplitMirage_Farm": {
+        "action": "Custom",
+        "custom_action": "SplitMirageFarm",
+        "custom_action_param": { "mode": "once" }, // once | marked (gems) | all
+        "on_error": ["Common_Retry"]
+    },
+
+    // ---------------------------------------------------------------
+    // Get to the Split Mirage menu from any screen: tab bar > Journal > Daily
+    // Events > Split Mirage. Use as "[JumpBack]SplitMirage_ToMenu".
+    "SplitMirage_ToMenu": {
+        "next": [
+            "SplitMirage_ToMenu_Done",
+            "SplitMirage_ToMenu_OtherTab",
+            "SplitMirage_ToMenu_DailyEvents",
+            "SplitMirage_ToMenu_Journal",
+            "SplitMirage_ToMenu_TabBar",
+            "[JumpBack]Common_ToTabBar"
+        ]
+    },
+    "SplitMirage_ToMenu_Done": {
+        "recognition": "And",
+        "all_of": ["Screen_SplitMirageMenu"]
+    },
+    // Rankings or Goals tab (title but no Match button): Split Mirage tab.
+    "SplitMirage_ToMenu_OtherTab": {
+        "recognition": "And",
+        "all_of": ["Screen_SplitMirageTitle"],
+        "action": "Click",
+        "target": [160, 1185, 170, 60],
+        "post_delay": 1500,
+        "next": ["SplitMirage_ToMenu_Done"]
+    },
+    "SplitMirage_ToMenu_DailyEvents": { // Split Mirage tile, below Crucible's
+        "recognition": "OCR",
+        "expected": "^Split\\s?Mirage$",
+        "roi": [0, 595, 450, 80],
+        "action": "Click",
+        "next": ["SplitMirage_ToMenu_Done", "SplitMirage_ToMenu_OtherTab"]
+    },
+    "SplitMirage_ToMenu_Journal": { // Daily Events tile
+        "recognition": "OCR",
+        "expected": "^Daily\\s?Events$",
+        "roi": [400, 740, 320, 70],
+        "action": "Click",
+        "next": ["SplitMirage_ToMenu_DailyEvents"]
+    },
+    "SplitMirage_ToMenu_TabBar": { // Journal tab
+        "recognition": "And",
+        "all_of": ["Screen_TabBar"],
+        "action": "Click",
+        "target": [175, 1180, 80, 70],
+        "next": ["SplitMirage_ToMenu_Journal"]
+    },
+
+    // ---------------------------------------------------------------
+    // One run, from the Split Mirage menu back to the Split Mirage menu.
+    "SplitMirage_Run": {
+        "next": ["SplitMirage_InRun", "[JumpBack]Common_Queue"]
+    },
+    "SplitMirage_InRun": {
+        "recognition": "And",
+        "all_of": ["Screen_Battle"],
+        "timeout": 600000,
+        "next": ["SplitMirage_Results"]
+    },
+    // Results: "Battle Ended", Waves Cleared, "Tap to Continue".
+    "SplitMirage_Results": {
+        "focus": { "Node.Action.Starting": "Battle ended" },
+        "recognition": "And",
+        "all_of": ["Screen_TapToContinue"],
+        "pre_delay": 1500, // let the numbers settle
+        "timeout": 600000,
+        "next": ["SplitMirage_Waves", "SplitMirage_TapContinue"]
+    },
+    // Waves Cleared (e.g. "12"), shown in the log; then tap to continue.
+    "SplitMirage_Waves": {
+        "recognition": "OCR",
+        "expected": "^\\d+$",
+        "roi": [130, 815, 460, 75],
+        "action": "Click",
+        "target": [150, 1170, 420, 70], // Tap to Continue
+        "post_delay": 1500,
+        "next": ["SplitMirage_BackOnMenu", "SplitMirage_TapContinue"]
+    },
+    // The tap didn't take (or the waves weren't readable): tap again.
+    "SplitMirage_TapContinue": {
+        "recognition": "And",
+        "all_of": ["Screen_TapToContinue"],
+        "action": "Click",
+        "post_delay": 1500,
+        "next": ["SplitMirage_BackOnMenu", "SplitMirage_TapContinue"]
+    },
+    "SplitMirage_BackOnMenu": {
+        "focus": { "Node.Action.Starting": "Back on the Split Mirage menu" },
+        "recognition": "And",
+        "all_of": ["Screen_SplitMirageMenu"]
+    },
+
+    // ---------------------------------------------------------------
+    // Reward-track helpers used by the agent (agent/track.py).
+    "SplitMirage_Best": { // "Today's Best: Wave ×N"
+        "recognition": "OCR",
+        "expected": "Wave\\s?\\S?\\s?\\d+$",
+        "roi": [180, 795, 360, 50]
+    },
+    "SplitMirage_TrackValues": { // the wave under each reward, e.g. "10"
+        "recognition": "OCR",
+        "expected": "^\\d+$",
+        "roi": [20, 940, 680, 60]
+    },
+    // Gem rewards sit in a bright blue ring (any gem colour); coins in a
+    // grey one. The agent sets the roi to the spot above each wave label.
+    "SplitMirage_GemIcon": {
+        "recognition": "ColorMatch",
+        "method": 4, // RGB
+        "lower": [85, 160, 225],
+        "upper": [120, 205, 255],
+        "count": 30
+    },
+    // Close whatever claiming opened (rewards popup): back until the menu shows.
+    "SplitMirage_CloseToMenu": {
+        "next": ["SplitMirage_BackOnMenu", "SplitMirage_CloseToMenu_Back"]
+    },
+    "SplitMirage_CloseToMenu_Back": {
+        "action": "ClickKey",
+        "key": 4,
+        "pre_delay": 1000,
+        "post_delay": 1500,
+        "max_hit": 5,
+        "next": ["SplitMirage_BackOnMenu", "SplitMirage_CloseToMenu_Back"]
+    }
+}

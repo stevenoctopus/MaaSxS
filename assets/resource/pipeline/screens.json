@@ -59,6 +59,16 @@
         "recognition": "And",
         "all_of": ["Screen_CrucibleTitle", "Screen_MatchButton"]
     },
+    // Title of the Split Mirage pages (OCR reads the "!" badge before it).
+    "Screen_SplitMirageTitle": {
+        "recognition": "OCR",
+        "expected": "Split\\s?Mirage$",
+        "roi": [20, 20, 420, 60]
+    },
+    "Screen_SplitMirageMenu": { // the Split Mirage tab: title plus the Match button
+        "recognition": "And",
+        "all_of": ["Screen_SplitMirageTitle", "Screen_MatchButton"]
+    },
 
     // --- Menu and Friends (affection check) ---
     "Screen_MainMenu": { // menu opened from Home: "Friends" entry
