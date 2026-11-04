@@ -20,12 +20,13 @@ from maa.custom_action import CustomAction
 from common import ok, read_fraction
 from gui import say
 
-# (param key, name, title pattern on the list tile and the realm's tab, tile roi)
+# (param key, name, title pattern on the list tile and the realm's tab, tile roi,
+#  roi of the tile's tool-count badge)
 REALMS = [
-    ("ironvein", "Ironvein Pit", r"^Ironvein\s?Pit$", [20, 440, 300, 60]),
-    ("gilded", "Gilded Depths", r"^Gilded\s?Depths$", [370, 440, 300, 60]),
-    ("dread", "Dread Hollow", r"^Dread\s?Hollow$", [20, 950, 280, 60]),
-    ("dustfall", "Dustfall Dune", r"^Dustfall\s?Dune$", [370, 945, 300, 60]),
+    ("ironvein", "Ironvein Pit", r"^Ironvein\s?Pit$", [20, 440, 300, 60], [318, 168, 40, 34]),
+    ("gilded", "Gilded Depths", r"^Gilded\s?Depths$", [370, 440, 300, 60], [670, 168, 40, 34]),
+    ("dread", "Dread Hollow", r"^Dread\s?Hollow$", [20, 950, 280, 60], [318, 672, 40, 34]),
+    ("dustfall", "Dustfall Dune", r"^Dustfall\s?Dune$", [370, 945, 300, 60], [670, 672, 40, 34]),
 ]
 
 
@@ -156,12 +157,22 @@ class MaterialRealms(CustomAction):
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
         buy = node_param(context, "MaterialRealms_Buy")
         use = params(argv)
-        for key, name, tile, roi in REALMS:
+        # Tools held per realm, from the badges on the list (no badge = 0).
+        image = screenshot(context)
+        held = {}
+        for key, _, _, _, badge in REALMS:
+            reco = context.run_recognition("MaterialRealms_ListCount", image,
+                                           pipeline_override={"MaterialRealms_ListCount": {"roi": badge}})
+            digits = "".join(c for c in reco.best_result.text if c.isdigit()) if reco and reco.hit else ""
+            held[key] = int(digits) if digits else 0
+        log(context, "tools: " + ", ".join(f"{name} {held[key]}" for key, name, *_ in REALMS))
+
+        for key, name, tile, roi, _ in REALMS:
             sets = int(buy.get(key, 0))
             amount = str(use.get(key, "ALL"))
             use_some = amount.upper() == "ALL" or int(amount) > 0
-            if sets <= 0 and not use_some:
-                continue
+            if sets <= 0 and (not use_some or held[key] == 0):
+                continue  # nothing to buy, and nothing to use (or no tools)
             if not open_realm(context, tile, roi):
                 log(context, f"could not open {name}")
                 return False

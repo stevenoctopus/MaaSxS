@@ -23,17 +23,18 @@ def read_int(context: Context, node: str):
 
 
 def buy_tickets(context: Context, wanted: int) -> bool:
-    """On the Arena page: buy up to `wanted` tickets within today's purchase
-    limit, and end back on the Arena page."""
+    """On the Arena page: buy tickets so that `wanted` have been bought today
+    (tickets already bought today count), within the daily purchase limit,
+    and end back on the Arena page."""
     if not ok(context.run_task("Arena_Buy_Open")):
         # No popup: today's purchases are used up.
         log(context, "no tickets left to buy today")
         return True
     limit = read_fraction(context, "Arena_Buy_Limit")
     bought, cap = limit if limit else (0, 0)
-    count = min(wanted, cap - bought)
-    if count <= 0:
-        log(context, f"already bought {bought}/{cap} today")
+    count = max(0, min(wanted, cap) - bought)
+    if count == 0:
+        log(context, f"{bought} ticket(s) already bought today, nothing to buy")
         return ok(context.run_task("Arena_Buy_Cancel"))
     for _ in range(count - 1):  # Qty starts at 1
         context.run_task("Arena_Buy_More")
@@ -42,7 +43,7 @@ def buy_tickets(context: Context, wanted: int) -> bool:
         log(context, f"the purchase popup shows {shown}, expected {count}; not buying")
         context.run_task("Arena_Buy_Cancel")
         return False
-    log(context, f"buying {count} ticket(s)")
+    log(context, f"buying {count} ticket(s) ({bought} already bought today)")
     if not ok(context.run_task("Arena_Buy_Purchase")):
         log(context, "purchase failed")
         return False
