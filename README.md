@@ -131,6 +131,13 @@ Dev tools:
 | `python tools/screenshot.py [name]` | saves `debug/screenshots/<name>.png` at 720p |
 | `python tools/ocr_dump.py live` or `<png> [x y w h]` | prints everything OCR reads, with boxes |
 | `python tools/watch.py <session> [--seconds N] [--until REGEX]` | records every screen change with OCR text, for mapping new screens |
+| `python -m unittest discover tests` | checks what the agent reads off saved game screens (discounts, reward tracks, tool badges, ...), about 10 s, no emulator needed |
+| `python tools/still.py capture <name>` | saves the emulator's screen to `tests/screens/<name>.png` for a new test |
+
+`tests/test_screens.py` shows each screenshot in `tests/screens/` to the
+agent's own functions through `tools/still.py`: a stand-in device that
+always shows that image and ignores taps. When the game changes a screen,
+capture it again and update the expected values.
 
 With several emulators running, set `MAASXS_DEVICE` (part of the device name
 or address, e.g. `127.0.0.1:16384`) to choose one.
