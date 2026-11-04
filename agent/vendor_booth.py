@@ -31,11 +31,11 @@ BADGE_W, BADGE_H = 75, 55
 VAULT = [
     ("Stellatie", "Stellatie", 1),
     ("DestinyFruit", "Destiny Fruit", 2),
-    ("WornKnuckles", "Worn Knuckles", 1),
-    ("SandShovel", "Sand Shovel", 1),
+    ("Row2Left", "row 2, left", 1),
+    ("Row2Middle", "row 2, middle", 1),
     ("RefinedOre", "Refined Ore", 1),
-    ("AuroralBadge", "Epic Auroral Badge", 1),
-    ("Mandrake", "Mandrake", 1),
+    ("Row3Left", "row 3, left", 1),
+    ("Row3Middle", "row 3, middle", 1),
     ("QuestScroll", "Quest Scroll", 1),
 ]
 MAX_REFRESHES = 10
