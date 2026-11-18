@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD033 MD041 -->
 <div align="center">
 
-<img alt="MaaSxS: a chibi Akane waving" src="docs/images/logo.svg" width="256" height="256" />
+<img alt="MaaSxS: chibi Akane peeking out of a picture frame" src="docs/images/logo.webp" width="256" height="256" />
 
 # MaaSxS
 
