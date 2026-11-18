@@ -4,6 +4,7 @@ MaaSxS automates the game Sword x Staff with MaaFramework (pipeline JSON + a Pyt
 
 - Code map and dev tools: README.md, "Development".
 - Adding or changing a task, or cleaning up: the `add-task` skill.
+- Before writing agent Python or adding a dependency: docs/maafw.md (MaaFramework built-ins, and behaviours verified on the pinned version).
 - Terms: GLOSSARY.md. Decisions: docs/adr/.
 - Tests: `python -m unittest discover tests` (no emulator). Live checks: `tools/run.py` with `tools/overrides/no_spend.json`.
 - The emulator is the user's game: use it only when they aren't playing.

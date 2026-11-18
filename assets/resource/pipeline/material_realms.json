@@ -39,15 +39,11 @@
     // next to end there.
     "MaterialRealms_ToList": {
         "next": [
-            "MaterialRealms_ToList_Done",
+            "Screen_MaterialList",
             "MaterialRealms_ToList_Realm",
             "MaterialRealms_ToList_Journal",
             "[JumpBack]Common_ToJournal"
         ]
-    },
-    "MaterialRealms_ToList_Done": {
-        "recognition": "And",
-        "all_of": ["Screen_MaterialList"]
     },
     // A realm's page (title, no Quick Purchase): back arrow to the list.
     "MaterialRealms_ToList_Realm": {
@@ -56,7 +52,7 @@
         "action": "Click",
         "target": [30, 1185, 90, 70],
         "post_delay": 1500,
-        "next": ["MaterialRealms_ToList_Done", "MaterialRealms_ToList_Realm"]
+        "next": ["Screen_MaterialList", "MaterialRealms_ToList_Realm"]
     },
     "MaterialRealms_ToList_Journal": { // Material Realms tile on the Journal
         "recognition": "OCR",
@@ -64,7 +60,7 @@
         "roi": [0, 1080, 300, 70],
         "action": "Click",
         "post_delay": 1000,
-        "next": ["MaterialRealms_ToList_Done"]
+        "next": ["Screen_MaterialList"]
     },
 
     // ---------------------------------------------------------------
@@ -79,20 +75,12 @@
         "post_delay": 1500,
         "next": ["Common_Purchase_Limit"]
     },
-    "MaterialRealms_OnRealmAgain": { // the popup closed: the realm page shows
-        "recognition": "And",
-        "all_of": ["Screen_MaterialTitle"]
-    },
     // Tools held, shown on the list as a small blue badge at the top right
     // of each tile (no badge = 0 tools). The agent sets the roi per realm.
     "MaterialRealms_ListCount": {
         "recognition": "OCR",
         "expected": "^\\d+",
         "roi": [318, 168, 40, 34]
-    },
-    "MaterialRealms_BackOnList": {
-        "recognition": "And",
-        "all_of": ["Screen_MaterialList"]
     },
 
     // ---------------------------------------------------------------
@@ -142,6 +130,6 @@
         "action": "Click",
         "target": [30, 1185, 90, 70],
         "post_delay": 1500,
-        "next": ["MaterialRealms_BackOnList"]
+        "next": ["Screen_MaterialList"]
     }
 }

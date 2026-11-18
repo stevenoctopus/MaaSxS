@@ -1,4 +1,33 @@
 {
+    // Taps the agent places (agent/grand_mines.py sets the target), as nodes
+    // so they show in MaaFramework's log.
+    "GrandMines_Tap": { "action": "Click" },
+    "GrandMines_BackKey": { "action": "ClickKey", "key": 4 },
+
+    // What agent/grand_mines.py looks for on the map (it reads every result).
+    // Claim bars: the yellow segments, RGB about (204, 207, 103), one result
+    // per segment; the agent keeps the bar-sized ones and groups them by mine.
+    "GrandMines_Bars": {
+        "recognition": "ColorMatch",
+        "method": 4, // RGB
+        "roi": [0, 130, 720, 870],
+        "lower": [180, 185, 80],
+        "upper": [230, 230, 130],
+        "connected": true,
+        "count": 55
+    },
+    // Green links in the small chat: one result per blob (letter, underline);
+    // the agent joins the blobs of one line into one link.
+    "GrandMines_Links": {
+        "recognition": "ColorMatch",
+        "method": 40, // HSV
+        "roi": [15, 1030, 690, 125],
+        "lower": [35, 90, 150],
+        "upper": [55, 255, 255],
+        "connected": true,
+        "count": 1
+    },
+
     // Grand Mines (world map). The agent action GrandMines (agent/grand_mines.py)
     // waits at an AFK spot (Journal > Map Exploration > Resource Hunt) and
     // claims grand mines: ones with claim bars on screen, and ones players
@@ -27,7 +56,7 @@
     "GrandMines_Afk": {
         "action": "Custom",
         "custom_action": "GrandMines",
-        "custom_action_param": { "spot": "iron" }
+        "custom_action_param": { "spot": "sand" }
     },
     "GrandMines_Iron": {
         "action": "Custom",
@@ -49,11 +78,7 @@
     // Get to Map Exploration from any screen: tab bar > Journal > Map
     // Exploration. Use as a run_task entry; ends on the page.
     "GrandMines_ToHunt": {
-        "next": ["GrandMines_ToHunt_Done", "GrandMines_ToHunt_Journal", "[JumpBack]Common_ToJournal"]
-    },
-    "GrandMines_ToHunt_Done": {
-        "recognition": "And",
-        "all_of": ["Screen_MapExploration"]
+        "next": ["Screen_MapExploration", "GrandMines_ToHunt_Journal", "[JumpBack]Common_ToJournal"]
     },
     "GrandMines_ToHunt_Journal": { // Map Exploration tile on the Journal
         "recognition": "OCR",
@@ -61,7 +86,7 @@
         "roi": [0, 630, 300, 70],
         "action": "Click",
         "post_delay": 1500,
-        "next": ["GrandMines_ToHunt_Done"]
+        "next": ["Screen_MapExploration"]
     },
 
     // Resource Hunt tile: the resources' circles (Rolla, Iron, Sand,
@@ -86,7 +111,7 @@
         "recognition": "And",
         "all_of": [
             "Screen_TravelPopup",
-            { "recognition": "OCR", "expected": "^OK$", "roi": [370, 700, 250, 75] }
+            "Common_PopupOK"
         ],
         "box_index": 1,
         "action": "Click",

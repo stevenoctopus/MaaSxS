@@ -9,6 +9,7 @@ The screens stay on this machine (tests/screens is in .gitignore: they show
 the player's name); a test whose screen is missing is skipped.
 """
 import sys
+import time
 import unittest
 from pathlib import Path
 
@@ -134,7 +135,7 @@ class DailyDungeon(unittest.TestCase):
         self.assertTrue(near((x + w / 2, y + h / 2), 360, 618, tol=40), r[1])
 
     def test_buy_option(self):
-        shown = lambda c: daily_dungeon.buy_option_shown(c, wait=0)  # noqa: E731
+        shown = lambda c: daily_dungeon.buy_option_shown(c, timeout=0)  # noqa: E731
         self.assertTrue(still.run("dungeon_detail_buy.png", shown))
         self.assertFalse(still.run("dungeon_detail_no_buy.png", shown))  # "Out of daily reward attempts."
 
@@ -161,7 +162,7 @@ class GrandMines(unittest.TestCase):
         def fn(c):
             img = screenshot(c)
             return [gm.link_type(" ".join(gm.ocr(c, "GrandMines_ChatText", img, (x - 4, y - 4, w + 8, h + 8))))
-                    for x, y, w, h in gm.find_links(img)]
+                    for x, y, w, h in gm.find_links(c, img)]
         return still.run(screen, fn)
 
     def test_grand_mine_links(self):
@@ -171,7 +172,7 @@ class GrandMines(unittest.TestCase):
     def test_other_green_links_and_grey_ones(self):
         # A party invite (<Prank Panic...>, over two lines), not a grand mine.
         self.assertEqual(set(self.link_types("resource_hunt_arrived.png")), {None})
-        self.assertEqual(gm.find_links(image("grand_mine_depleted.png")), [])  # grey once tapped
+        self.assertEqual(still.run("grand_mine_depleted.png", lambda c: gm.find_links(c, screenshot(c))), [])  # grey once tapped
 
     def test_link_moved_up_a_line(self):
         self.assertEqual(gm.relocate((304, 1125, 184, 24), [(29, 1071, 245, 24), (304, 1099, 184, 24)]),
@@ -187,14 +188,23 @@ class GrandMines(unittest.TestCase):
         self.assertIsNone(gm.link_type("<Fierce Monster>"))
 
     def test_claim_bars(self):
-        bars = gm.find_bars(image("afk_zone_iron_bars.png"))
+        bars = still.run("afk_zone_iron_bars.png", lambda c: gm.find_bars(c, screenshot(c)))
         self.assertEqual(len(bars), 1)
         self.assertTrue(near(bars[0], 463, 537))
-        bars = sorted(gm.find_bars(image("grand_mine_on_map.png")))
+        bars = sorted(still.run("grand_mine_on_map.png", lambda c: gm.find_bars(c, screenshot(c))))
         self.assertEqual(len(bars), 2)
         self.assertTrue(near(bars[0], 156, 820) and near(bars[1], 361, 716))
-        for screen in ("afk_zone_iron_reward.png", "resource_hunt_arrived.png", "grand_mine_chat_link.png"):
-            self.assertEqual(gm.find_bars(image(screen)), [], screen)
+        # A 2-claim bar (wider segments), next to the Timed Packs icon.
+        bars = still.run("grand_mine_under_minimap.png", lambda c: gm.find_bars(c, screenshot(c)))
+        self.assertEqual(len(bars), 1)
+        self.assertTrue(near(bars[0], 568, 331))
+        bars = still.run("grand_mine_sand_2claims.png", lambda c: gm.find_bars(c, screenshot(c)))
+        self.assertEqual(len(bars), 1)
+        self.assertTrue(near(bars[0], 258, 434))
+        # The Timed Packs icon and the friends button have bar-like yellow; neither is a mine.
+        for screen in ("afk_zone_iron_reward.png", "resource_hunt_arrived.png", "grand_mine_chat_link.png",
+                       "grand_mine_pack_icon.png", "grand_mine_selected.png"):
+            self.assertEqual(still.run(screen, lambda c: gm.find_bars(c, screenshot(c))), [], screen)
 
     def test_flashing_icon(self):
         icons = gm.find_icons(image("resource_hunt_arrived.png"))
@@ -208,10 +218,24 @@ class GrandMines(unittest.TestCase):
         self.assertTrue(gm.at_edge(gm.find_icons(image("resource_hunt_arrived.png"))[0]))
         self.assertFalse(any(gm.at_edge(i) and near(i, 360, 640) for i in gm.find_icons(image("afk_zone_iron_bars.png"))))
 
+    def test_icon_over_explore(self):
+        # Pointing down-right, the icon sits over the Explore button; it's tapped
+        # anyway (it's drawn on top, and Explore asks to confirm).
+        icons = gm.find_icons(image("grand_mine_icon_explore.png"))
+        self.assertTrue(any(near(i, 503, 1230) and gm.at_edge(i) for i in icons), icons)
+
+    def test_icon_search_speed(self):
+        # It runs on every frame while waiting for a flashing icon (6 s after a link).
+        img = image("grand_mine_link_after.png")
+        start = time.time()
+        self.assertTrue(near(gm.find_icons(img)[0], 670, 563))
+        self.assertLess(time.time() - start, 1.5)
+
     def test_jump_without_popup(self):
         # A link to a region next door: no popup, no toast, just a new icon at the edge.
         self.assertTrue(gm.new_edge_icon(image("grand_mine_jump_before.png"), image("grand_mine_jump_after.png")))
         self.assertFalse(gm.new_edge_icon(image("grand_mine_jump_after.png"), image("grand_mine_jump_after.png")))
+        self.assertTrue(gm.new_edge_icon(image("grand_mine_link_before.png"), image("grand_mine_link_after.png")))
         # Pointing down: the icon sits just above the small chat.
         self.assertTrue(gm.new_edge_icon(image("grand_mine_jump2_before.png"), image("grand_mine_jump2_after.png")))
 
@@ -223,7 +247,7 @@ class GrandMines(unittest.TestCase):
     def test_floor_is_not_a_rock(self):
         x, y = gm.find_floor(image("afk_zone_iron_bars.png"))
         self.assertFalse(any(abs(x - bx) < 60 and abs(y - by) < 60
-                             for bx, by in gm.find_bars(image("afk_zone_iron_bars.png"))))
+                             for bx, by in still.run("afk_zone_iron_bars.png", lambda c: gm.find_bars(c, screenshot(c)))))
 
     def test_resource_hunt_checkmark(self):
         rolla, iron = image("resource_hunt_rolla.png"), image("resource_hunt_iron.png")
@@ -244,7 +268,10 @@ class GrandMines(unittest.TestCase):
 
     def test_screens(self):
         checks = {
-            "Screen_WorldMap": ["grand_mine_on_map.png", "resource_hunt_arrived.png", "afk_zone_iron_reward.png"],
+            # icon_explore / selected: a flashing icon covers one Explore label.
+            "Screen_WorldMap": ["grand_mine_on_map.png", "resource_hunt_arrived.png", "afk_zone_iron_reward.png",
+                                "grand_mine_icon_explore.png", "grand_mine_selected.png"],
+            "Screen_ExploreConfirm": ["grand_mine_explore_confirm.png"],
             "Screen_TravelPopup": ["grand_mine_popup.png", "grand_mine_popup_other_map.png", "resource_hunt_popup.png"],
             "Screen_MapExploration": ["resource_hunt_iron.png"],
             "Screen_FullChat": ["chat_full_server_grey_links.png"],
@@ -253,6 +280,7 @@ class GrandMines(unittest.TestCase):
             for screen in screens:
                 self.assertTrue(still.run(screen, lambda c: hit(c, node)), f"{node} on {screen}")
         self.assertFalse(still.run("grand_mine_chat_link_home.png", lambda c: hit(c, "Screen_WorldMap")))
+        self.assertFalse(still.run("grand_mine_explore_confirm.png", lambda c: hit(c, "Screen_WorldMap")))
 
 
 if __name__ == "__main__":

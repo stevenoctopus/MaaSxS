@@ -28,16 +28,12 @@
     // Competition > Arena. Use as "[JumpBack]Arena_ToPage".
     "Arena_ToPage": {
         "next": [
-            "Arena_ToPage_Done",
+            "Screen_ArenaPage",
             "Arena_ToPage_OtherTab",
             "Arena_ToPage_Competition",
             "Arena_ToPage_Journal",
             "[JumpBack]Common_ToJournal"
         ]
-    },
-    "Arena_ToPage_Done": {
-        "recognition": "And",
-        "all_of": ["Screen_ArenaPage"]
     },
     // Rankings, Arena Shop or Goals tab (title but no opponents): Arena tab.
     "Arena_ToPage_OtherTab": {
@@ -46,7 +42,7 @@
         "action": "Click",
         "target": [160, 1185, 130, 60],
         "post_delay": 1500,
-        "next": ["Arena_ToPage_Done"]
+        "next": ["Screen_ArenaPage"]
     },
     "Arena_ToPage_Competition": { // Arena tile on the Competition page
         "recognition": "And",
@@ -57,7 +53,7 @@
         "box_index": 1,
         "action": "Click",
         "post_delay": 1000,
-        "next": ["Arena_ToPage_Done", "Arena_ToPage_OtherTab"]
+        "next": ["Screen_ArenaPage", "Arena_ToPage_OtherTab"]
     },
     "Arena_ToPage_Journal": { // Competition tile on the Journal
         "recognition": "OCR",

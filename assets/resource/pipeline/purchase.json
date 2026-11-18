@@ -17,6 +17,7 @@
     "Common_Purchase_More": { // Qty "+"
         "action": "Click",
         "target": [518, 681, 36, 36],
+        "repeat_delay": 700, // purchase.py sets repeat (taps needed)
         "post_delay": 700
     },
     "Common_Purchase_Purchase": {

@@ -57,7 +57,7 @@ def buy_sets(context: Context, name: str, wanted: int) -> bool:
     """On a realm's page: buy sets so that `wanted` have been bought today
     (a daily total, see agent/purchase.py)."""
     return buy_daily(context, f"Material Realms: {name}", wanted,
-                     "MaterialRealms_Buy_Open", "MaterialRealms_OnRealmAgain") is not None
+                     "MaterialRealms_Buy_Open", "Screen_MaterialTitle") is not None
 
 
 # ---------------------------------------------------------------- using

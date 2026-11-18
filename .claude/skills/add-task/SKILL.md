@@ -19,12 +19,14 @@ A task is a pipeline entry plus, when it loops or reads numbers, one Python cust
    - OCR nodes the agent reads (counts, "N/M"), with tight rois.
    - `focus` messages on the steps worth seeing in the GUI log.
    Comment each section with the path in the game. The game font drops spaces, so OCR patterns use `\s?` between words.
+   Built-ins first (`docs/maafw.md`): `Screen_X` directly in a `next` to end on a screen; shared `[JumpBack]Common_*` steps (`Common_TapToContinue`, `Common_Journal_DailyEvents`) and `Common_PopupOK` in an `all_of`; a node `timeout` to wait; `repeat` for repeated taps; ColorMatch / TemplateMatch for coloured patches and icons.
 
 4. **Agent module** `agent/<task>.py`, imported in `agent/main.py`:
    - Settings: `task_settings(argv)`; options on a settings node: `settings_node(context, node)`.
    - Reads: `screen.py` (`hit`, `read_int`, `read_fraction`, `screenshot`).
    - Runs: `run_times(context, name, entry, n)` or `run_once` in a loop.
    - Buying a daily-limited item: `purchase.buy_daily` (a daily total; the Purchase popup).
+   - Python is for what nodes can't express (numbers, values in log lines, state across screens). The agent has `maafw` and numpy; a new package goes in `agent/requirements.txt`, the only list the GUI installs.
    - Log with `gui.say`. Something only the user can fix (not enough Dawnium or gold, a safety stop) → `common.give_up`, which stops the whole run. Any other failure returns False, and the retry from Home runs once.
 
 5. **GUI options** in `assets/interface.json`: add the task (`name`, `label`, `entry`, `option`) and its options. Defaults are the safe choice (buy nothing, spend nothing). Two options can't both set one node's `custom_action_param`: give the second its own settings node. Describe buy options as a daily total, and say what each option spends.
@@ -49,5 +51,6 @@ For "clean up" or "tidy" requests, also check:
 
 - Copies of a helper already in `screen.py`, `common.py`, `purchase.py` or `track.py`: use the shared one.
 - Steps copied across tasks (a tab tap, a tile): a shared `Common_*` routine, like `Common_ToJournal`.
+- Python doing what a node does (polling, tap loops, colour or icon search): `docs/maafw.md`.
 - Pipeline nodes nothing references (`next`, `on_error`, `all_of`/`any_of`, interface.json, agent code; agent code may build names, e.g. `f"{popup}_Count"`).
 - Tests, rebuild, commit as in step 8.

@@ -38,17 +38,13 @@
     // ---------------------------------------------------------------
     // Get to the quest list from any screen: menu > Quest.
     "DailyQuests_ToList": {
-        "next": ["DailyQuests_ToList_Done", "DailyQuests_ToList_Menu", "[JumpBack]Common_OpenMenu"]
-    },
-    "DailyQuests_ToList_Done": {
-        "recognition": "And",
-        "all_of": ["Screen_QuestList"]
+        "next": ["Screen_QuestList", "DailyQuests_ToList_Menu", "[JumpBack]Common_OpenMenu"]
     },
     "DailyQuests_ToList_Menu": { // Quest button in the menu
         "recognition": "OCR",
         "expected": "^Quest$",
         "roi": [190, 680, 190, 80],
         "action": "Click",
-        "next": ["DailyQuests_ToList_Done"]
+        "next": ["Screen_QuestList"]
     }
 }

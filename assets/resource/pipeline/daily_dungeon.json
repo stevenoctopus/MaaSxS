@@ -37,21 +37,17 @@
     // Use as "[JumpBack]DailyDungeon_ToList", or as a next to end there.
     "DailyDungeon_ToList": {
         "next": [
-            "DailyDungeon_ToList_Done",
+            "Screen_DungeonList",
             "DailyDungeon_ToList_Journal",
             "[JumpBack]Common_ToJournal"
         ]
-    },
-    "DailyDungeon_ToList_Done": {
-        "recognition": "And",
-        "all_of": ["Screen_DungeonList"]
     },
     "DailyDungeon_ToList_Journal": { // open the Daily Dungeon tile
         "recognition": "OCR",
         "expected": "^Daily\\s?Dungeon$",
         "roi": [0, 140, 300, 60],
         "action": "Click",
-        "next": ["DailyDungeon_ToList_Done"]
+        "next": ["Screen_DungeonList"]
     },
 
     // ---------------------------------------------------------------
@@ -128,8 +124,8 @@
         "focus": { "Node.Action.Starting": "Leaving without claiming the rewards" },
         "recognition": "And",
         "all_of": [
-            { "recognition": "OCR", "expected": "not\\s?claimed", "roi": [100, 500, 520, 120] },
-            { "recognition": "OCR", "expected": "^OK$", "roi": [370, 700, 250, 75] }
+            "DailyDungeon_NotClaimed",
+            "Common_PopupOK"
         ],
         "box_index": 1,
         "action": "Click",
@@ -138,7 +134,7 @@
         "next": ["DailyDungeon_BackOnList", "DailyDungeon_UnclaimedExit", "DailyDungeon_Leave"]
     },
 
-    // Daily mode's results: the agent sets DailyDungeon_Results' next to
+    // Daily mode's results: its interface.json case sets DailyDungeon_Results' next to
     // [Claim, LeaveResults, LowGrade, UnclaimedPrompt]. Claim the rewards if
     // the grade is good enough and a reward attempt is left, then tap back.
     // Leaving is only allowed once the button reads "Claimed", no attempts
@@ -161,7 +157,7 @@
         "recognition": "And",
         "all_of": [
             { "recognition": "OCR", "expected": "reward\\s?attempt", "roi": [100, 500, 520, 120] },
-            { "recognition": "OCR", "expected": "^OK$", "roi": [370, 700, 250, 75] }
+            "Common_PopupOK"
         ],
         "box_index": 1,
         "action": "Click",
@@ -213,7 +209,7 @@
     "DailyDungeon_UnclaimedPrompt": {
         "recognition": "And",
         "all_of": [
-            { "recognition": "OCR", "expected": "not\\s?claimed", "roi": [100, 500, 520, 120] },
+            "DailyDungeon_NotClaimed",
             { "recognition": "OCR", "expected": "^Cancel$", "roi": [100, 700, 260, 75] }
         ],
         "box_index": 1,
@@ -221,6 +217,8 @@
         "post_delay": 1500,
         "next": ["DailyDungeon_Claim", "DailyDungeon_LeaveResults"]
     },
+    // "Daily Dungeon rewards not claimed. Exit the dungeon?" (OK / Cancel).
+    "DailyDungeon_NotClaimed": { "recognition": "OCR", "expected": "not\\s?claimed", "roi": [100, 500, 520, 120] },
     "DailyDungeon_BackOnList": {
         "focus": { "Node.Action.Starting": "Run complete" },
         "recognition": "And",
@@ -261,6 +259,13 @@
         "upper": [235, 235, 150],
         "count": 150
     },
+    // The attempts line and its "+" both show (the screen may still be
+    // settling, hence the timeout).
+    "DailyDungeon_BuyShown": {
+        "recognition": "And",
+        "all_of": ["DailyDungeon_Buy_Open", "DailyDungeon_BuyPlus"],
+        "timeout": 4000
+    },
     "DailyDungeon_Buy_Limit": {
         "recognition": "OCR",
         "expected": "Purchase\\s?Limit:\\s?\\d+\\s?/\\s?\\d+",
@@ -274,6 +279,7 @@
     "DailyDungeon_Buy_More": { // slider "+"
         "action": "Click",
         "target": [575, 620, 45, 45],
+        "repeat_delay": 600, // purchase.py sets repeat (taps needed)
         "post_delay": 600
     },
     "DailyDungeon_Buy_Purchase": {
@@ -282,7 +288,7 @@
         "roi": [370, 715, 245, 60],
         "action": "Click",
         "post_delay": 2000,
-        "next": ["DailyDungeon_OnDetail"]
+        "next": ["Screen_DungeonDetail"]
     },
     "DailyDungeon_Buy_Cancel": {
         "recognition": "OCR",
@@ -290,11 +296,7 @@
         "roi": [105, 715, 245, 60],
         "action": "Click",
         "post_delay": 1500,
-        "next": ["DailyDungeon_OnDetail"]
-    },
-    "DailyDungeon_OnDetail": {
-        "recognition": "And",
-        "all_of": ["Screen_DungeonDetail"]
+        "next": ["Screen_DungeonDetail"]
     },
     // Dungeon detail: back to the list.
     "DailyDungeon_DetailBack": {

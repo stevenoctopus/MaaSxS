@@ -29,7 +29,7 @@
     "Common_ToTabBar": {
         "next": [
             "[JumpBack]Common_QuitDialog",
-            "Common_TabBar_Done",
+            "Screen_TabBar",
             "Common_TabBar_ReturnPrompt",
             "Common_TabBar_Notice",
             "Common_TabBar_TapToPlay",
@@ -51,7 +51,7 @@
         "post_delay": 1500,
         "next": [
             "[JumpBack]Common_QuitDialog",
-            "Common_TabBar_Done",
+            "Screen_TabBar",
             "Common_TabBar_ReturnPrompt",
             "Common_TabBar_Notice",
             "Common_TabBar_TapToPlay",
@@ -72,7 +72,7 @@
         "post_delay": 1500,
         "next": [
             "[JumpBack]Common_QuitDialog",
-            "Common_TabBar_Done",
+            "Screen_TabBar",
             "Common_TabBar_ReturnPrompt",
             "Common_TabBar_Notice",
             "Common_TabBar_TapToPlay",
@@ -96,7 +96,7 @@
         "max_hit": 10,
         "next": [
             "[JumpBack]Common_QuitDialog",
-            "Common_TabBar_Done",
+            "Screen_TabBar",
             "Common_TabBar_ReturnPrompt",
             "Common_TabBar_Notice",
             "Common_TabBar_TapToPlay",
@@ -112,10 +112,6 @@
         "on_error": ["Common_TabBar_Back1"]
     },
 
-    "Common_TabBar_Done": {
-        "recognition": "And",
-        "all_of": ["Screen_TabBar"]
-    },
 
     // --- Game start-up (after a crash, disconnect or fresh launch) ---
     "Common_TabBar_Notice": { // close the Notice popup (back arrow)
@@ -147,7 +143,7 @@
         "recognition": "And",
         "all_of": [
             { "recognition": "OCR", "expected": "Return\\s?to\\s?Home", "roi": [100, 540, 520, 90] },
-            { "recognition": "OCR", "expected": "^OK$", "roi": [370, 700, 250, 75] }
+            "Common_PopupOK"
         ],
         "box_index": 1,
         "action": "Click",
@@ -184,7 +180,8 @@
         "post_delay": 1500,
         "next": ["Common_ToTabBar"]
     },
-    // Sub-pages where Android back is safe: menu, Friends, Affection popup,
+    // Sub-pages where Android back is safe: a timed pack offer, menu,
+    // Friends, Affection popup,
     // Crucible pages, Daily Events, Guild Events, Conquest, quests, Map
     // Exploration, the full chat, travel popups (back = Cancel), the world
     // map (back asks "Return to Home?", answered above), and solo battle
@@ -194,6 +191,7 @@
         "recognition": "Or",
         "any_of": [
             "Screen_AffectionPopup",
+            "Screen_PackOffer",
             "Screen_FriendsPage",
             "Screen_MainMenu",
             "Screen_CrucibleTitle",
@@ -209,6 +207,7 @@
             "Screen_MapExploration",
             "Screen_FullChat",
             "Screen_TravelPopup",
+            "Screen_ExploreConfirm",
             "Screen_WorldMap",
             "Screen_StartBattle"
         ],
@@ -261,37 +260,48 @@
     // Material Realms, ...): get to the tab bar, then tap the Journal tab
     // (scroll icon, 2nd from the left). Use as "[JumpBack]Common_ToJournal";
     // the task then taps its own tile.
-    "Common_ToJournal": {
-        "next": ["Common_ToJournal_Done", "Common_ToJournal_Tab", "[JumpBack]Common_ToTabBar"]
-    },
-    "Common_ToJournal_Done": {
+    // Shared steps, used as "[JumpBack]<name>" in a route's next: tap, then
+    // the route looks again from the top of its list.
+    // Results "Tap to Continue" (Crucible, Conquest), e.g. after a crash relaunch.
+    "Common_TapToContinue": {
         "recognition": "And",
-        "all_of": ["Screen_Journal"]
+        "all_of": ["Screen_TapToContinue"],
+        "action": "Click",
+        "post_delay": 1500
+    },
+    // Journal > Daily Events tile (Crucible, Split Mirage).
+    "Common_Journal_DailyEvents": {
+        "recognition": "OCR",
+        "expected": "^Daily\\s?Events$",
+        "roi": [400, 740, 320, 70],
+        "action": "Click"
+    },
+    // A popup's OK button (right of Cancel); use by name in an all_of.
+    "Common_PopupOK": { "recognition": "OCR", "expected": "^OK$", "roi": [370, 700, 250, 75] },
+
+    "Common_ToJournal": {
+        "next": ["Screen_Journal", "Common_ToJournal_Tab", "[JumpBack]Common_ToTabBar"]
     },
     "Common_ToJournal_Tab": {
         "recognition": "And",
         "all_of": ["Screen_TabBar"],
         "action": "Click",
         "target": [175, 1180, 80, 70],
-        "next": ["Common_ToJournal_Done"]
+        "next": ["Screen_Journal"]
     },
 
     // ---------------------------------------------------------------
     // Open the menu (cube button on Home: Friends, Quest, ...).
     // Use as "[JumpBack]Common_OpenMenu".
     "Common_OpenMenu": {
-        "next": ["Common_OpenMenu_Done", "Common_OpenMenu_Home", "[JumpBack]Common_GoHome"]
-    },
-    "Common_OpenMenu_Done": {
-        "recognition": "And",
-        "all_of": ["Screen_MainMenu"]
+        "next": ["Screen_MainMenu", "Common_OpenMenu_Home", "[JumpBack]Common_GoHome"]
     },
     "Common_OpenMenu_Home": {
         "recognition": "And",
         "all_of": ["Screen_HomeLabel", "Screen_HomeMenuButton"],
         "box_index": 1, // click the menu button
         "action": "Click",
-        "next": ["Common_OpenMenu_Done"]
+        "next": ["Screen_MainMenu"]
     },
 
     // ---------------------------------------------------------------

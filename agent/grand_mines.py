@@ -2,7 +2,7 @@
 until the chosen number is claimed or the user stops the run.
 
   Farm (GrandMines_Farm)  {"mines": n or "ALL"}   claims to make (ALL: no end)
-  Afk  (GrandMines_Afk)   {"spot": "iron"}        Resource Hunt resource to wait at
+  Afk  (GrandMines_Afk)   {"spot": "sand"}        Resource Hunt resource to wait at
   GrandMines_Iron / _Sand / _Rolla  {"mine": bool} claim this type or not
 
 The AFK spot: Journal > Map Exploration > Resource Hunt, check the resource,
@@ -28,9 +28,11 @@ stops if energy ever goes down.
 """
 import re
 import time
+import struct
 from pathlib import Path
 
-import cv2
+import zlib
+
 import numpy as np
 from maa.agent.agent_server import AgentServer
 from maa.context import Context
@@ -61,31 +63,62 @@ def log(context: Context, msg: str):
     say(context, "Grand Mines", msg)
 
 
+def save_png(path, image):
+    """Write a BGR screenshot as a PNG (numpy + zlib: no OpenCV needed)."""
+    h, w = image.shape[:2]
+    rows = np.ascontiguousarray(image[:, :, 2::-1]).reshape(h, w * 3)  # BGR -> RGB
+    raw = b"".join(b"\0" + rows[y].tobytes() for y in range(h))
+
+    def chunk(kind, data):
+        return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data))
+    Path(path).write_bytes(b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0))
+                           + chunk(b"IDAT", zlib.compress(raw, 6)) + chunk(b"IEND", b""))
+
+
 def keep(images, what: str):
     """Save screenshots of something that went wrong to debug/grand_mines/."""
     folder = Path("debug") / "grand_mines"
     folder.mkdir(parents=True, exist_ok=True)
     stamp = time.strftime("%Y%m%d-%H%M%S")
     for i, image in enumerate(images):
-        cv2.imwrite(str(folder / f"{stamp}_{what}_{i}.png"), image)
+        save_png(folder / f"{stamp}_{what}_{i}.png", image)
 
 
 # ---------------------------------------------------------------- reading
-# These take a screenshot (BGR numpy array) and need no context, so the
-# tests can run them on saved screens.
+# These read a screenshot (BGR numpy array) with the GrandMines_* nodes in
+# grand_mines.json; the tests run them on saved screens.
 
-def find_links(image):
+def boxes(context: Context, node: str, image):
+    """The boxes (x, y, w, h) of every result node `node` keeps (filtered_results)."""
+    reco = context.run_recognition(node, image)
+    return [tuple(int(v) for v in r.box) for r in (reco.filtered_results if reco and reco.hit else [])]
+
+
+def find_links(context: Context, image):
     """Green links in the small chat: boxes (x, y, w, h), top to bottom.
     Grey links (already mined, or stale) aren't green."""
+    # The green blobs (letters, underline), each grown 7 px sideways and 2 px
+    # up and down; blobs that touch then are one link (one line).
+    grown = [[x - 7, y - 2, x + w + 7, y + h + 2] for x, y, w, h in boxes(context, "GrandMines_Links", image)]
+    merged = True
+    while merged:
+        merged = False
+        for i, a in enumerate(grown):
+            for b in grown[i + 1:]:
+                if a[0] < b[2] and b[0] < a[2] and a[1] < b[3] and b[1] < a[3]:
+                    a[:] = [min(a[0], b[0]), min(a[1], b[1]), max(a[2], b[2]), max(a[3], b[3])]
+                    grown.remove(b)
+                    merged = True
+                    break
+            if merged:
+                break
     x0, y0, w0, h0 = CHAT
-    hsv = cv2.cvtColor(image[y0:y0 + h0, x0:x0 + w0], cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(hsv, (35, 90, 150), (55, 255, 255))
-    # Join the letters and underline of one link (one line) into one box.
-    mask = cv2.dilate(mask, np.ones((5, 15), np.uint8))
-    n, _, stats, _ = cv2.connectedComponentsWithStats(mask)
-    boxes = [(int(x) + x0, int(y) + y0, int(w), int(h)) for x, y, w, h, a in stats[1:]
-             if a > 300 and h >= 12]
-    return sorted(boxes, key=lambda b: (b[1], b[0]))
+    links = []
+    for left, top, right, bottom in grown:
+        left, top, right, bottom = max(left, x0), max(top, y0), min(right, x0 + w0), min(bottom, y0 + h0)
+        if (right - left) * (bottom - top) > 300 and bottom - top >= 12:
+            links.append((left, top, right - left, bottom - top))
+    return sorted(links, key=lambda b: (b[1], b[0]))
 
 
 def relocate(box, boxes):
@@ -101,19 +134,21 @@ def _neutral(px, lo=60, hi=200) -> bool:
     return max(b, g, r) - min(b, g, r) < 25 and lo <= (b + g + r) / 3 <= hi
 
 
-def find_bars(image):
+# Map buttons with bar-like yellow, never mines (x, y, w, h): the minimap,
+# the Timed Packs icon below it (tapping it opens a paid offer), the friends
+# button (left), the tracker widget (bottom left).
+_BAR_SKIP = [(510, 0, 210, 310), (600, 330, 120, 120), (0, 720, 90, 110), (0, 880, 320, 400)]
+
+
+def find_bars(context: Context, image):
     """Mines with claims left: the yellow segments of their claim bars (one
     or more per mine, in a grey pill under the mine). Returns where to tap
     each mine (above its bars), as (x, y)."""
-    sub = image[130:1000]
-    # The bars' yellow, BGR about (103, 207, 204).
-    mask = cv2.inRange(sub, (80, 185, 180), (130, 230, 230))
-    n, _, stats, _ = cv2.connectedComponentsWithStats(mask)
-    segs = [(int(x), int(y) + 130, int(w), int(h)) for x, y, w, h, a in stats[1:]
-            if 12 <= w <= 19 and 4 <= h <= 8 and a >= 55]
+    # Segments are 12-19 px wide on bars of 3 or 4 claims, ~27 px on bars of 2.
+    segs = [b for b in boxes(context, "GrandMines_Bars", image) if 12 <= b[2] <= 30 and 4 <= b[3] <= 8]
     mines = []
     for x, y, w, h in sorted(segs):
-        if x > 510 and y < 310 or x < 320 and y > 880:  # the minimap; the tracker widget's arrows
+        if any(hx <= x < hx + hw and hy <= y < hy + hh for hx, hy, hw, hh in _BAR_SKIP):
             continue
         for m in mines:  # another segment of a bar already found
             if abs(m[1] - y) <= 3 and 0 < x - m[2] <= 70:
@@ -121,50 +156,74 @@ def find_bars(image):
                 break
         else:
             mines.append([x, y, x])  # leftmost x, y, rightmost x
-    # The bars are 3 or 4 segments, 22 px apart, from about 6 px right of
-    # the pill's left end; the mine is centred over the pill, ~35 px up.
+    # The segments start about 6 px right of the pill's left end; the mine is
+    # centred over the pill, ~35 px up.
     return [(left + 30, y - 32) for left, y, _ in mines]
 
 
-def _ring(rb: int):
-    """The flashing icon's frame: a thin black ring of radius rb inside a
-    white band. Everything else is masked out (the picture inside changes)."""
-    s = 2 * (rb + 7) + 1
-    c = s // 2
-    yy, xx = np.mgrid[:s, :s]
-    d = np.hypot(yy - c, xx - c)
-    black = (d >= rb - 1) & (d <= rb + 1)
-    white = (d >= rb + 2.5) & (d <= rb + 5)
-    t = np.full((s, s), 128, np.uint8)
-    t[black], t[white] = 20, 240
-    return t, ((black | white) * 255).astype(np.uint8)
-
-
-_RINGS = [_ring(rb) for rb in range(21, 25)]
 # Buttons with the same frame: the flag (top left), the friends button
 # (left), the tracker widget, its gear and the region timer (bottom left);
-# and the small chat's text. (x, y, w, h)
-_ICON_SKIP = [(0, 110, 110, 100), (0, 720, 90, 90), (0, 880, 320, 175), (0, 1055, 600, 175)]
+# the small chat's text; the back button (bottom left). (x, y, w, h)
+# An icon can sit over Explore (bottom right): tapping it snaps to the mine.
+_ICON_SKIP = [(0, 110, 110, 100), (0, 720, 90, 90), (0, 880, 320, 175), (0, 1055, 600, 110), (0, 1165, 150, 115)]
+
+
+def _ring(rb):
+    """The flashing icon's frame: a black ring (radius rb +-1) in a white band
+    (rb+2.5 to rb+5), and the mask of those pixels (the picture inside changes)."""
+    s = 2 * (rb + 7) + 1
+    d = np.hypot(*(np.mgrid[:s, :s] - s // 2))
+    black, white = (d >= rb - 1) & (d <= rb + 1), (d >= rb + 2.5) & (d <= rb + 5)
+    t = np.where(black, 20.0, np.where(white, 240.0, 0.0))
+    return t, (black | white).astype(np.float64)
+
+
+_RINGS = [_ring(rb) for rb in range(21, 25)]  # the icon's four sizes
+_ICON_TOP = 130  # below the energy bar; the search runs to the screen bottom
+
+
+def _fast_len(n):
+    """The next size with only 2, 3 and 5 as factors (fast FFTs)."""
+    while True:
+        m = n
+        for p in (2, 3, 5):
+            while m % p == 0:
+                m //= p
+        if m == 1:
+            return n
+        n += 1
 
 
 def find_icons(image, threshold=0.965):
     """The flashing icons on the map, best first, as (x, y): the one that
     snaps the camera to a mine (it points to it from the screen edge, or
     sits over it), and the one that points to our own character when it's
-    off screen. They look the same; the caller tells them apart."""
-    # Down to the bottom: an icon pointing down sits above the small chat
-    # (y ~1012), or down past it (bottom right, y ~1166).
-    gray = cv2.cvtColor(image[130:1230], cv2.COLOR_BGR2GRAY)
+    off screen. They look the same; the caller tells them apart.
+
+    Masked normalised cross-correlation (OpenCV's TM_CCORR_NORMED with a
+    mask) of the ring frames, done with FFTs in numpy: real icons score
+    0.965+, other round things on the map under 0.89 (Resource Hunt's circles
+    score 0.96, but icons are only looked for on the world map).
+    MaaFramework's TemplateMatch gives the same scores but took 4 s per
+    screenshot (1 s per masked template), too slow to catch a flashing icon."""
+    gray = image[_ICON_TOP:].astype(np.float64) @ np.array([0.114, 0.587, 0.299])  # BGR -> grey
+    H, W = gray.shape
+    shape = (_fast_len(H + 64), _fast_len(W + 64))
+    f_img, f_sq = np.fft.rfft2(gray, shape), np.fft.rfft2(gray * gray, shape)
     found = []
     for t, m in _RINGS:
-        r = np.nan_to_num(cv2.matchTemplate(gray, t, cv2.TM_CCORR_NORMED, mask=m))
-        half = t.shape[0] // 2
-        for _ in range(4):
-            _, v, _, (x, y) = cv2.minMaxLoc(r)
-            if v < threshold:
+        h, w = t.shape
+        # Correlation is convolution with the flipped kernel; keep the "valid" part.
+        num = np.fft.irfft2(f_img * np.fft.rfft2((t * m)[::-1, ::-1], shape), shape)[h - 1:H, w - 1:W]
+        den = np.fft.irfft2(f_sq * np.fft.rfft2(m[::-1, ::-1], shape), shape)[h - 1:H, w - 1:W]
+        score = num / np.sqrt(np.maximum(den, 1e-9) * (t * t * m).sum())
+        yy, xx = np.mgrid[:score.shape[0], :score.shape[1]]
+        for _ in range(4):  # the best few, 30 px apart
+            y, x = np.unravel_index(np.argmax(score), score.shape)
+            if score[y, x] < threshold:
                 break
-            found.append((v, x + half, y + half + 130))
-            cv2.circle(r, (x, y), 30, 0, -1)
+            found.append((score[y, x], int(x) + h // 2, int(y) + h // 2 + _ICON_TOP))
+            score[(yy - y) ** 2 + (xx - x) ** 2 <= 900] = 0
     icons = []
     for v, x, y in sorted(found, reverse=True):
         if any(bx <= x < bx + bw and by <= y < by + bh for bx, by, bw, bh in _ICON_SKIP):
@@ -195,8 +254,10 @@ def new_edge_icon(before, after) -> bool:
 def find_floor(image, near=CENTRE):
     """A spot of plain floor (no rock, mine or player: flat, grey) near
     `near`, to tap so the character walks over. None if there's none."""
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY).astype(np.float32)
-    sat = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)[:, :, 1]
+    img = image.astype(np.float32)
+    gray = img @ np.float32([0.114, 0.587, 0.299])  # BGR -> grey
+    hi, lo = img.max(axis=2), img.min(axis=2)
+    sat = np.where(hi > 0, (hi - lo) * 255 / np.maximum(hi, 1), 0)  # HSV saturation (0-255)
     best = None
     for y in range(420, 880, 20):
         for x in range(140, 600, 20):
@@ -259,7 +320,8 @@ def energy(context: Context, image):
 
 
 def tap(context: Context, x: int, y: int):
-    context.tasker.controller.post_click(int(x), int(y)).wait()
+    context.run_action("GrandMines_Tap", pipeline_override={
+        "GrandMines_Tap": {"target": [int(x), int(y), 1, 1]}})
 
 
 class Stop(Exception):
@@ -271,7 +333,7 @@ class Run:
         self.c = context
         wanted = str(task_settings(argv).get("mines", "ALL")).strip()
         self.limit = None if wanted.upper() == "ALL" else int(wanted)
-        self.spot = str(settings_node(context, "GrandMines_Afk").get("spot", "iron")).lower()
+        self.spot = str(settings_node(context, "GrandMines_Afk").get("spot", "sand")).lower()
         self.claim = {k: bool(settings_node(context, f"GrandMines_{k.capitalize()}").get("mine", True))
                       for k in TYPES}
         self.claimed = 0
@@ -347,13 +409,19 @@ class Run:
                 tap(self.c, *edge[0])
                 tapped = True
                 time.sleep(1.2)
+                if hit(self.c, "Screen_ExploreConfirm", screenshot(self.c)):
+                    # The icon sat over Explore and the tap reached the button:
+                    # back closes its confirm without spending.
+                    log(self.c, "the tap opened Explore's confirm: closing it")
+                    self.c.run_action("GrandMines_BackKey")
+                    time.sleep(1)
                 self.check()
                 continue
-            if pin_at_centre(image) or find_bars(image):
+            if pin_at_centre(image) or find_bars(self.c, image):
                 return True
             time.sleep(0.5)
         image = screenshot(self.c)
-        return pin_at_centre(image) or bool(find_bars(image))
+        return pin_at_centre(image) or bool(find_bars(self.c, image))
 
     # -- claiming
 
@@ -363,7 +431,7 @@ class Run:
             return
         tried = []
         while not self.done():
-            spots = [s for s in find_bars(screenshot(self.c))
+            spots = [s for s in find_bars(self.c, screenshot(self.c))
                      if all(abs(s[0] - t[0]) > 30 or abs(s[1] - t[1]) > 30 for t in tried)]
             if not spots:
                 return
@@ -388,7 +456,7 @@ class Run:
                     seen.append(text)
             if hit(self.c, "Screen_TravelPopup", image) or not hit(self.c, "Screen_WorldMap", image):
                 break  # a popup or another screen: not something we know
-            near = any(abs(x - spot[0]) <= 30 and abs(y - spot[1]) <= 30 for x, y in find_bars(image))
+            near = any(abs(x - spot[0]) <= 30 and abs(y - spot[1]) <= 30 for x, y in find_bars(self.c, image))
             if near:
                 gone = None
             elif gone is None:
@@ -406,7 +474,7 @@ class Run:
     def next_link(self, image):
         """The first green grand mine link of a wanted type not followed yet:
         (box, type, chat line), or None."""
-        boxes = find_links(image)
+        boxes = find_links(self.c, image)
         texts = [" ".join(ocr(self.c, "GrandMines_ChatText", image, (x - 4, y - 4, w + 8, h + 8)))
                  for x, y, w, h in boxes]
         for i, box in enumerate(boxes):
@@ -437,7 +505,7 @@ class Run:
         before = screenshot(self.c)
         # Reading the chat takes a moment, and a new message pushes the link
         # up a line: find it again (same x and width) where it is now.
-        box = relocate(box, find_links(before))
+        box = relocate(box, find_links(self.c, before))
         if box is None:
             log(self.c, "the link scrolled out of the chat")
             return
@@ -453,7 +521,7 @@ class Run:
             if hit(self.c, "Screen_FullChat", image):
                 log(self.c, "missed the link (the full chat opened): closing it")
                 keep(frames, "missed")
-                self.c.tasker.controller.post_click_key(4).wait()
+                self.c.run_action("GrandMines_BackKey")
                 time.sleep(1)
                 return "missed"
             if hit(self.c, "Screen_TravelPopup", image):
@@ -499,7 +567,7 @@ class Run:
                 if not self.go_afk():
                     return False
                 continue
-            if self.claim.get(self.spot) and find_bars(image):
+            if self.claim.get(self.spot) and find_bars(self.c, image):
                 self.claim_here(self.spot)
                 continue
             link = self.next_link(image)

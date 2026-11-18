@@ -3,8 +3,8 @@ and claim until no reward attempts are left. Runs below the "Claim grade"
 leave without claiming and don't use an attempt.
 
 Starts and ends on the Daily Dungeon list. By default a run leaves its results
-without claiming (Affection mode); CLAIM switches the results screen to
-claiming (see daily_dungeon.json).
+without claiming (Affection mode); the Daily case in interface.json switches
+the results screen to claiming (see daily_dungeon.json).
 """
 import time
 
@@ -15,12 +15,7 @@ from maa.custom_action import CustomAction
 from common import give_up, ok, run_once, task_settings
 from gui import say
 from purchase import buy_daily
-from screen import hit, read_fraction, recognize, screenshot
-
-
-CLAIM = {"DailyDungeon_Results": {"next": [
-    "DailyDungeon_Claim", "DailyDungeon_LeaveResults", "DailyDungeon_LowGrade",
-    "DailyDungeon_UnclaimedPrompt"]}}
+from screen import read_fraction, recognize
 
 
 def log(context: Context, msg: str):
@@ -52,22 +47,16 @@ def buy_attempts(context: Context, wanted: int) -> bool:
     if not buy_option_shown(context):
         log(context, "no extra attempts left to buy today")
     elif buy_daily(context, "Daily Dungeon", wanted, "DailyDungeon_Buy_Open",
-                   "DailyDungeon_OnDetail", popup="DailyDungeon_Buy") is None:
+                   "Screen_DungeonDetail", popup="DailyDungeon_Buy") is None:
         return False
     return ok(context.run_task("DailyDungeon_DetailBack"))
 
 
-def buy_option_shown(context: Context, wait: float = 4) -> bool:
+def buy_option_shown(context: Context, timeout: int = 4000) -> bool:
     """The attempts line and its "+" show on the detail screen (looks again
-    for `wait` seconds while the screen settles)."""
-    end = time.time() + wait
-    while True:
-        image = screenshot(context)
-        if hit(context, "DailyDungeon_Buy_Open", image) and hit(context, "DailyDungeon_BuyPlus", image):
-            return True
-        if time.time() >= end:
-            return False
-        time.sleep(0.5)
+    for `timeout` ms while the screen settles)."""
+    return ok(context.run_task("DailyDungeon_BuyShown", pipeline_override={
+        "DailyDungeon_BuyShown": {"timeout": timeout}}))
 
 
 def find_node(detail, name):
@@ -106,7 +95,7 @@ class DungeonDaily(CustomAction):
                 log(context, "done")
                 return True
             run += 1
-            detail = run_once(context, "Daily Dungeon", "DailyDungeon_Run", f"run {run}", CLAIM)
+            detail = run_once(context, "Daily Dungeon", "DailyDungeon_Run", f"run {run}")
             if detail is None:
                 return False
             grade = low_grade(detail)

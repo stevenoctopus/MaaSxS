@@ -49,8 +49,8 @@ def buy_daily(context: Context, name: str, wanted: int, open_node: str, back_nod
     if count == 0:
         log(f"{bought}/{cap} already bought today, nothing to buy")
         return 0 if close(f"{popup}_Cancel") else None
-    for _ in range(count - 1):  # Qty starts at 1
-        context.run_task(f"{popup}_More")
+    if count > 1:  # Qty starts at 1
+        context.run_task(f"{popup}_More", pipeline_override={f"{popup}_More": {"repeat": count - 1}})
     shown = read_int(context, f"{popup}_Count")
     if shown is not None and shown < count:
         # The game caps the Qty at what you can afford (and we never ask

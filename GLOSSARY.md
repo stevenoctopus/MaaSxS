@@ -58,12 +58,13 @@ custom action does the loop (`ArenaFarm` in `agent/arena.py`).
 
 **Screen check**: a `Screen_*` node in `screens.json` that recognises one
 screen. Defined once, used by name everywhere
-(`"recognition": "And", "all_of": ["Screen_X"]`).
+(`"recognition": "And", "all_of": ["Screen_X"]`, or `Screen_X` itself in a
+`next` to stop there).
 
 **Route**: a task's `<Task>_ToPage` / `_ToMenu` / `_ToList` node, which gets
-to the task's page from any screen: its `next` lists the screens on the way,
-nearest first, then falls back to `[JumpBack]Common_ToJournal` or
-`[JumpBack]Common_ToTabBar`.
+to the task's page from any screen: its `next` starts with the page's own
+`Screen_*` check, lists the screens on the way, nearest first, then falls
+back to `[JumpBack]Common_ToJournal` or `[JumpBack]Common_ToTabBar`.
 
 **Recovery**: `Common_ToTabBar` in `common.json`, getting back to the tab
 bar from anywhere (popups, results, a crash). Known screens get a step;

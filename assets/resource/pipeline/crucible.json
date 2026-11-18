@@ -29,17 +29,13 @@
     // Events > Crucible of Hieromon. Use as "[JumpBack]Crucible_ToMenu".
     "Crucible_ToMenu": {
         "next": [
-            "Crucible_ToMenu_Done",
+            "Screen_CrucibleMenu",
             "Crucible_ToMenu_OtherTab",
-            "Crucible_ToMenu_Results",
+            "[JumpBack]Common_TapToContinue", // results, e.g. after a crash relaunch
             "Crucible_ToMenu_DailyEvents",
-            "Crucible_ToMenu_Journal",
+            "[JumpBack]Common_Journal_DailyEvents",
             "[JumpBack]Common_ToJournal"
         ]
-    },
-    "Crucible_ToMenu_Done": {
-        "recognition": "And",
-        "all_of": ["Screen_CrucibleMenu"]
     },
     // Rankings or Goals tab (title but no Match button): Crucible tab.
     "Crucible_ToMenu_OtherTab": {
@@ -48,28 +44,13 @@
         "action": "Click",
         "target": [160, 1185, 170, 60],
         "post_delay": 1500,
-        "next": ["Crucible_ToMenu_Done"]
-    },
-    // Crucible results (e.g. after a crash relaunch): tap through.
-    "Crucible_ToMenu_Results": {
-        "recognition": "And",
-        "all_of": ["Screen_TapToContinue"],
-        "action": "Click",
-        "post_delay": 1500,
-        "next": ["Crucible_ToMenu_Done", "Crucible_ToMenu_OtherTab", "Crucible_ToMenu_Results"]
+        "next": ["Screen_CrucibleMenu"]
     },
     "Crucible_ToMenu_DailyEvents": { // Crucible of Hieromon tile
         "recognition": "And",
         "all_of": ["Screen_DailyEvents"],
         "action": "Click",
-        "next": ["Crucible_ToMenu_Done", "Crucible_ToMenu_OtherTab"]
-    },
-    "Crucible_ToMenu_Journal": { // Daily Events tile
-        "recognition": "OCR",
-        "expected": "^Daily\\s?Events$",
-        "roi": [400, 740, 320, 70],
-        "action": "Click",
-        "next": ["Crucible_ToMenu_DailyEvents"]
+        "next": ["Screen_CrucibleMenu", "Crucible_ToMenu_OtherTab"]
     },
 
     // ---------------------------------------------------------------
@@ -101,15 +82,8 @@
         "action": "Click",
         "target": [150, 1170, 420, 70], // Tap to Continue
         "post_delay": 1500,
-        "next": ["Crucible_BackOnMenu", "Crucible_TapContinue"]
-    },
-    // The tap didn't take: tap again.
-    "Crucible_TapContinue": {
-        "recognition": "And",
-        "all_of": ["Screen_TapToContinue"],
-        "action": "Click",
-        "post_delay": 1500,
-        "next": ["Crucible_BackOnMenu", "Crucible_TapContinue"]
+        // The tap didn't take: tap again.
+        "next": ["Crucible_BackOnMenu", "[JumpBack]Common_TapToContinue"]
     },
     "Crucible_BackOnMenu": {
         "focus": { "Node.Action.Starting": "Back on the Crucible menu" },

@@ -355,7 +355,7 @@
             "type": "select",
             "label": "AFK spot",
             "description": "The Resource Hunt resource to wait at (Journal > Map Exploration), where most grand mines of that type appear. Links in chat are followed wherever they are.",
-            "default_case": "Iron",
+            "default_case": "Sand",
             "cases": [
                 { "name": "Iron", "pipeline_override": { "GrandMines_Afk": { "custom_action_param": { "spot": "iron" } } } },
                 { "name": "Sand", "pipeline_override": { "GrandMines_Afk": { "custom_action_param": { "spot": "sand" } } } },
@@ -483,6 +483,17 @@
                 {
                     "name": "Daily",
                     "description": "Buy extra reward attempts (optional), then run and claim rewards until no reward attempts are left.",
+                    "pipeline_override": {
+                        // Claim on the results screen (Affection mode leaves without claiming).
+                        "DailyDungeon_Results": {
+                            "next": [
+                                "DailyDungeon_Claim",
+                                "DailyDungeon_LeaveResults",
+                                "DailyDungeon_LowGrade",
+                                "DailyDungeon_UnclaimedPrompt"
+                            ]
+                        }
+                    },
                     "option": [
                         "DungeonBuy",
                         "DungeonGrade"

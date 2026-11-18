@@ -6,14 +6,8 @@
         "begin": [620, 920, 10, 10],
         "end": [80, 920, 10, 10],
         "duration": 600,
-        "post_delay": 1500,
-        "next": ["Common_TrackEnd_2"]
-    },
-    "Common_TrackEnd_2": {
-        "action": "Swipe",
-        "begin": [620, 920, 10, 10],
-        "end": [80, 920, 10, 10],
-        "duration": 600,
+        "repeat": 2,
+        "repeat_delay": 1500,
         "post_delay": 1500
     },
     // Half a screen back towards the start, for scanning from the right end.

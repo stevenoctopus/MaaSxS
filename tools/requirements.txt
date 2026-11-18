@@ -1,1 +1,2 @@
 json-with-comments
+opencv-python-headless<5  # still.py, ocr_dump.py, watch.py, screenshot.py (not the agent)

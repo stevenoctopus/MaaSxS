@@ -28,32 +28,20 @@
     // of Expedition > Conquest. Use as "[JumpBack]Conquest_ToPage".
     "Conquest_ToPage": {
         "next": [
-            "Conquest_ToPage_Done",
-            "Conquest_ToPage_Results",
+            "Screen_ConquestPage",
+            "[JumpBack]Common_TapToContinue", // results, e.g. after a crash relaunch
             "Conquest_ToPage_GuildEvents",
             "Conquest_ToPage_Guild",
             "Conquest_ToPage_TabBar",
             "[JumpBack]Common_ToTabBar"
         ]
     },
-    "Conquest_ToPage_Done": {
-        "recognition": "And",
-        "all_of": ["Screen_ConquestPage"]
-    },
-    // Conquest results (e.g. after a crash relaunch): tap through.
-    "Conquest_ToPage_Results": {
-        "recognition": "And",
-        "all_of": ["Screen_TapToContinue"],
-        "action": "Click",
-        "post_delay": 1500,
-        "next": ["Conquest_ToPage_Done", "Conquest_ToPage_Results"]
-    },
     "Conquest_ToPage_GuildEvents": { // Conquest tile
         "recognition": "And",
         "all_of": ["Screen_GuildEvents"],
         "action": "Click",
         "target": [30, 600, 300, 80],
-        "next": ["Conquest_ToPage_Done"]
+        "next": ["Screen_ConquestPage"]
     },
     // Guild tab: Gate of Expedition building (its label is often covered,
     // so tap the building itself).

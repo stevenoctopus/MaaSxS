@@ -29,16 +29,12 @@
     // Events > Split Mirage. Use as "[JumpBack]SplitMirage_ToMenu".
     "SplitMirage_ToMenu": {
         "next": [
-            "SplitMirage_ToMenu_Done",
+            "Screen_SplitMirageMenu",
             "SplitMirage_ToMenu_OtherTab",
             "SplitMirage_ToMenu_DailyEvents",
-            "SplitMirage_ToMenu_Journal",
+            "[JumpBack]Common_Journal_DailyEvents",
             "[JumpBack]Common_ToJournal"
         ]
-    },
-    "SplitMirage_ToMenu_Done": {
-        "recognition": "And",
-        "all_of": ["Screen_SplitMirageMenu"]
     },
     // Rankings or Goals tab (title but no Match button): Split Mirage tab.
     "SplitMirage_ToMenu_OtherTab": {
@@ -47,21 +43,14 @@
         "action": "Click",
         "target": [160, 1185, 170, 60],
         "post_delay": 1500,
-        "next": ["SplitMirage_ToMenu_Done"]
+        "next": ["Screen_SplitMirageMenu"]
     },
     "SplitMirage_ToMenu_DailyEvents": { // Split Mirage tile, below Crucible's
         "recognition": "OCR",
         "expected": "^Split\\s?Mirage$",
         "roi": [0, 595, 450, 80],
         "action": "Click",
-        "next": ["SplitMirage_ToMenu_Done", "SplitMirage_ToMenu_OtherTab"]
-    },
-    "SplitMirage_ToMenu_Journal": { // Daily Events tile
-        "recognition": "OCR",
-        "expected": "^Daily\\s?Events$",
-        "roi": [400, 740, 320, 70],
-        "action": "Click",
-        "next": ["SplitMirage_ToMenu_DailyEvents"]
+        "next": ["Screen_SplitMirageMenu", "SplitMirage_ToMenu_OtherTab"]
     },
 
     // ---------------------------------------------------------------

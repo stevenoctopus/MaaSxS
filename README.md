@@ -78,7 +78,7 @@ to start the emulator.
 | Material Realms | Sets to buy, Tools to use (each per realm) | Buys tool sets on each realm's page first (*Sets to buy*: 0 to 20 sets of 5 per realm per day, default 0; sets already bought today count, and never past the daily limit), then uses tools in each realm (*Tools to use*: a number or ALL, default ALL). Realms with nothing to buy and no tools (no count badge on the list) aren't opened. ALL turns on Quick Mine / Quick Conquer and uses every tool; a number turns it off and uses exactly that many. |
 | Vendor Booth | General: refreshes, General: buy items, Vault items (8) | Opens the cart on Home. **General**: buys each of the 9 items (gold) that's at least the chosen discount (*buy items*: Always, or 10% to 60% off or more; default Always), then refreshes and buys again (*refreshes*: 0 to 10 per day, default 0; refreshes already used today count). **Vault**: always claims the Free reward, and buys each item set to Buy (default Skip; Destiny Fruit buys both). Items that change daily (row 2 left and middle, row 3 left and middle) are set by position. |
 | Claim daily quests | | Opens the daily quest list and claims every finished quest. Runs last, so it picks up what the other tasks completed. |
-| Grand Mines | Mines to claim, AFK spot, Grand Iron / Sand / Gold Mine | Waits on the world map at the chosen Resource Hunt spot (*AFK spot*: Iron, Sand or Rolla; default Iron) and claims grand mines for free: mines with claim bars on screen, and `<Grand ... Mine>` links players post in the small chat (taps the link, travels, claims every mine with claims left there, comes back). Each type can be set to Skip (default Mine). *Mines to claim*: a number, or ALL (default) to keep going until you press Stop, so put it after everything else. Never taps ore rocks (they cost energy) and stops if energy goes down; stops on anything unknown after a claim (e.g. a daily limit) and asks for a capture. |
+| Grand Mines | Mines to claim, AFK spot, Grand Iron / Sand / Gold Mine | Waits on the world map at the chosen Resource Hunt spot (*AFK spot*: Iron, Sand or Rolla; default Sand) and claims grand mines for free: mines with claim bars on screen, and `<Grand ... Mine>` links players post in the small chat (taps the link, travels, claims every mine with claims left there, comes back). Each type can be set to Skip (default Mine). *Mines to claim*: a number, or ALL (default) to keep going until you press Stop, so put it after everything else. Never taps ore rocks (they cost energy) and stops if energy goes down; stops on anything unknown after a claim (e.g. a daily limit) and asks for a capture. |
 
 Every task:
 
@@ -106,16 +106,22 @@ Every task:
 
 ```
 git clone --recursive git@github.com:stevenoctopus/MaaSxS.git
-python -m pip install maafw -r tools/requirements.txt
+python -m pip install -r agent/requirements.txt -r tools/requirements.txt
 python tools/configure.py          # copies the OCR model from MaaCommonAssets
 ```
+
+The agent needs only `agent/requirements.txt` (MaaFramework, which brings
+numpy), and that list is all the GUI installs. OpenCV is for the dev tools
+(`tools/requirements.txt`). `docs/maafw.md` lists what MaaFramework does
+natively: check it before writing agent Python or adding a package.
 
 - `assets/interface.json`: tasks and options shown in the GUI.
 - `assets/resource/pipeline/`: the screen-by-screen logic.
   - `screens.json`: screen checks, defined once and referenced by name.
   - `common.json`: shared routines: get to the tab bar or Home from anywhere
     (including crash recovery), go to the Journal (`Common_ToJournal`, used
-    by every Journal task), matchmaking, retry.
+    by every Journal task), matchmaking, retry, and shared steps used as
+    `[JumpBack]` (`Common_TapToContinue`, `Common_Journal_DailyEvents`).
   - `purchase.json` and `track.json`: the Purchase popup and reward-track
     nodes, beside `agent/purchase.py` and `agent/track.py`.
   - one file per task, plus `affection.json` for the affection check.
@@ -127,6 +133,9 @@ python tools/configure.py          # copies the OCR model from MaaCommonAssets
   GLOSSARY.md). `purchase.py` handles the Purchase popup (Arena, Daily Dungeon, Material Realms). `track.py` holds the reward-track logic
   shared by Crucible and Split Mirage. `badge.py` straightens the Vendor
   Booth's tilted discount badges so OCR can read them (numpy only).
+  `grand_mines.py` reads the map through the `GrandMines_*` ColorMatch
+  nodes; the flashing icon's ring search is numpy (FFT), as TemplateMatch
+  was too slow for it.
 
 Dev tools:
 
@@ -136,9 +145,16 @@ Dev tools:
 | `python tools/screenshot.py [name]` | saves `debug/screenshots/<name>.png` at 720p |
 | `python tools/ocr_dump.py live` or `<png> [x y w h]` | prints everything OCR reads, with boxes |
 | `python tools/watch.py <session> [--seconds N] [--until REGEX]` | records every screen change with OCR text, for mapping new screens |
-| `python -m unittest discover tests` | checks what the agent reads off saved game screens (discounts, reward tracks, tool badges, ...), that recovery knows every saved screen, and that interface.json matches the pipeline, about 35 s, no emulator needed |
+| `python -m unittest discover tests` | checks what the agent reads off saved game screens (discounts, reward tracks, tool badges, ...), that recovery knows every saved screen, and that interface.json matches the pipeline, about 2 minutes, no emulator needed |
 | `python tools/still.py capture <name>` | saves the emulator's screen to `tests/screens/<name>.png` for a new test (local only: the folder is in `.gitignore`, since screenshots show your character's name) |
 | `python tools/run.py <Task> --override tools/overrides/no_spend.json` | a live run that spends nothing: buys press Cancel, battles do nothing (`tools/overrides/README.md`) |
+| `python tools/sync_schema.py` | refreshes `deps/tools/*.schema.json` for the pinned MaaFramework version |
+
+With Claude Code, the [Everything-Maa](https://github.com/KhazixW2/Everything-Maa)
+plugin adds MaaFramework skills (`maa-wiki` for the protocol, `maa-pipeline-guide`,
+`maa-diagnose` for logs) and MaaMCP, which drives the emulator directly (only
+when you aren't playing). Its `create-maa-project` and Playwright servers
+aren't needed here. The project's own recipe stays the `add-task` skill.
 
 Adding a task: `.claude/skills/add-task/SKILL.md` has the steps.
 
