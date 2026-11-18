@@ -3,6 +3,7 @@
     // Docs: https://maafw.xyz/docs/3.3-ProjectInterfaceV2
     "interface_version": 2,
     "name": "MaaSxS",
+    "icon": "logo.png", // the GUI window icon, copied next to interface.json
     // Project URL and version enable the GUI's update check.
     "github": "https://github.com/stevenoctopus/MaaSxS",
     "version": "0.1.0",
