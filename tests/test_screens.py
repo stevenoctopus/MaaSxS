@@ -22,7 +22,7 @@ import material_realms  # noqa: E402
 import split_mirage  # noqa: E402
 import track  # noqa: E402
 import vendor_booth as vb  # noqa: E402
-from screen import hit, parse_fraction, parse_int, read_int, screenshot  # noqa: E402
+from screen import hit, parse_fraction, parse_int, read_int, recognize, screenshot  # noqa: E402
 
 from still import load  # noqa: E402
 
@@ -124,6 +124,15 @@ class MaterialRealms(unittest.TestCase):
 
 
 class DailyDungeon(unittest.TestCase):
+    def test_latest_dungeon(self):
+        # The middle card; Court of Purification (past) is above, a locked one below.
+        r = still.run("dungeon_list.png", lambda c: (
+            daily_dungeon.latest_dungeon(c),
+            recognize(c, "DailyDungeon_SelectCard").box))
+        self.assertRegex(r[0], r"Temple\s?of\s?Order")
+        x, y, w, h = r[1]
+        self.assertTrue(near((x + w / 2, y + h / 2), 360, 618, tol=40), r[1])
+
     def test_buy_option(self):
         shown = lambda c: daily_dungeon.buy_option_shown(c, wait=0)  # noqa: E731
         self.assertTrue(still.run("dungeon_detail_buy.png", shown))

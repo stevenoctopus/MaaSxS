@@ -37,7 +37,6 @@
             "entry": "DailyDungeon",
             "option": [
                 "Mode",
-                "Dungeon",
                 "Difficulty"
             ]
         },
@@ -488,29 +487,6 @@
                         "DungeonBuy",
                         "DungeonGrade"
                     ]
-                }
-            ]
-        },
-        "Dungeon": {
-            "type": "select",
-            "label": "Dungeon",
-            "default_case": "Riftwatch Fortress",
-            "cases": [
-                {
-                    "name": "Riftwatch Fortress",
-                    "pipeline_override": {
-                        "DailyDungeon_SelectCard": {
-                            "expected": "Riftwatch\\s?Fortress"
-                        }
-                    }
-                },
-                {
-                    "name": "Court of Purification",
-                    "pipeline_override": {
-                        "DailyDungeon_SelectCard": {
-                            "expected": "Court\\s?of\\s?Purification"
-                        }
-                    }
                 }
             ]
         },

@@ -12,6 +12,7 @@ from maa.context import Context
 from maa.custom_action import CustomAction
 
 from common import give_up, ok, run_times, task_settings
+from daily_dungeon import log_latest
 from gui import say
 from screen import parse_fraction
 
@@ -57,5 +58,6 @@ class AffectionFarm(CustomAction):
             if previous is not None and current <= previous:
                 return give_up(context, "Affection", "no affection gained since the last check")
             previous = current
+            log_latest(context, "Affection")  # Affection_Check ends on the list
             if not run_times(context, "Affection", "DailyDungeon_Run", runs):
                 return False

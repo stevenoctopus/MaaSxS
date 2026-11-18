@@ -15,7 +15,7 @@ from maa.custom_action import CustomAction
 from common import give_up, ok, run_once, task_settings
 from gui import say
 from purchase import buy_daily
-from screen import hit, read_fraction, screenshot
+from screen import hit, read_fraction, recognize, screenshot
 
 
 CLAIM = {"DailyDungeon_Results": {"next": [
@@ -27,8 +27,18 @@ def log(context: Context, msg: str):
     say(context, "Daily Dungeon", msg)
 
 
+def latest_dungeon(context: Context, image=None):
+    """On the list: the latest dungeon's name (the middle card), or None."""
+    reco = recognize(context, "DailyDungeon_LatestTitle", image)
+    return reco.best_result.text if reco else None
+
+
+def log_latest(context: Context, name: str = "Daily Dungeon"):
+    say(context, name, f"latest dungeon: {latest_dungeon(context) or '?'}")
+
+
 def buy_attempts(context: Context, wanted: int) -> bool:
-    """On the list: open the chosen dungeon's detail, buy attempts so that
+    """On the list: open the latest dungeon's detail, buy attempts so that
     `wanted` have been bought today (a daily total, see agent/purchase.py),
     and go back to the list."""
     # Open the detail screen (same steps as a run, stopping before Match).
@@ -79,6 +89,7 @@ class DungeonDaily(CustomAction):
         param = task_settings(argv)
         buy = int(param.get("buy", 0))
 
+        log_latest(context)
         if buy > 0 and not buy_attempts(context, buy):
             return False
 

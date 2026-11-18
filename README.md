@@ -70,7 +70,7 @@ to start the emulator.
 
 | Task | Options | What it does |
 |---|---|---|
-| Daily Dungeon | Mode, Dungeon, Difficulty | Runs the chosen dungeon and difficulty. **Daily** (default): buys extra reward attempts with Dawnium (*Buy extra attempts*: 0, 1 or 2, default 2, per day: attempts already bought today count, and never past the game's daily limit), then runs and claims the rewards until no reward attempts are left. *Claim grade* (S, A or higher, B or higher, Any; default S): a run graded lower leaves without claiming, keeping the attempt, and runs again. **Affection**: reads this week's affection (claiming any tokens waiting), runs the dungeons needed to reach the weekly cap (+7 per run), checks again, and repeats until capped. Never claims dungeon rewards, so your reward attempts are kept. Stops if a whole batch earns nothing. |
+| Daily Dungeon | Mode, Difficulty | Runs the latest dungeon (the one in the middle of the list) at the chosen difficulty. **Daily** (default): buys extra reward attempts with Dawnium (*Buy extra attempts*: 0, 1 or 2, default 2, per day: attempts already bought today count, and never past the game's daily limit), then runs and claims the rewards until no reward attempts are left. *Claim grade* (S, A or higher, B or higher, Any; default S): a run graded lower leaves without claiming, keeping the attempt, and runs again. **Affection**: reads this week's affection (claiming any tokens waiting), runs the dungeons needed to reach the weekly cap (+7 per run), checks again, and repeats until capped. Never claims dungeon rewards, so your reward attempts are kept. Stops if a whole batch earns nothing. |
 | Crucible of Hieromon | Mode | **Once**: one run, then claim rewards (the daily); if you already played today, it only claims. Claimed rewards are recognised, so nothing is tapped twice. **All gifts**: reads today's damage track, runs until your highest damage today reaches the last gift box, then claims. **All rewards**: the same, up to the last reward. |
 | Split Mirage | Mode | **Once**: one run, then claim rewards (the daily); if you already played today, it only claims. Claimed rewards are recognised, so nothing is tapped twice. **All gems**: reads today's reward track, runs until your best wave today reaches the last gem, then claims. **All rewards**: the same, up to the last reward. Endless Mode is never used. |
 | Conquest | Runs | **Once** (the daily quest) or **Twice**. Never more than the attempts left today. |
@@ -92,9 +92,6 @@ Every task:
 - **Recovers from crashes and disconnects.** If the game closed or went back to
   its start-up screens, it relaunches the game, gets through the Notice and
   "Tap to Play", and carries on.
-
-Only dungeons shown on the Daily Dungeon list without scrolling are supported
-so far.
 
 ## Troubleshooting
 

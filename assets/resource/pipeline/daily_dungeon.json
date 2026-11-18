@@ -60,15 +60,22 @@
     "DailyDungeon_Run": {
         "next": ["DailyDungeon_SelectCard"]
     },
-    // Tap the chosen dungeon's title. `expected` is set by the "Dungeon"
-    // option. The ROI skips the page header and the bottom tab bar.
+    // Tap the latest dungeon: the list always opens with it in the middle
+    // (past dungeons above, the next one, locked with a countdown, below).
     "DailyDungeon_SelectCard": {
-        "focus": { "Node.Action.Starting": "Opening the dungeon" },
-        "recognition": "OCR",
-        "expected": "Riftwatch\\s?Fortress", // OCR often drops the space in the title font
-        "roi": [0, 110, 720, 1040],
+        "focus": { "Node.Action.Starting": "Opening the latest dungeon" },
+        "recognition": "And",
+        "all_of": ["Screen_DungeonList", "DailyDungeon_LatestTitle"],
+        "box_index": 1, // clicks the title
         "action": "Click",
         "next": ["DailyDungeon_SelectDifficulty"]
+    },
+    // The middle card's title, e.g. "Temple of Order" (OCR often drops
+    // spaces in the title font). Any text: the agent logs it.
+    "DailyDungeon_LatestTitle": {
+        "recognition": "OCR",
+        "expected": "\\S",
+        "roi": [100, 570, 520, 90]
     },
     // Tap the chosen difficulty tab (harmless if already selected).
     // `expected` is set by the "Difficulty" option.

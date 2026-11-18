@@ -1,7 +1,7 @@
 """Run a task from interface.json against the emulator, without the GUI.
 
     python tools/run.py DailyDungeon
-    python tools/run.py DailyDungeon --opt "Dungeon=Court of Purification" --opt Difficulty=Nightmare
+    python tools/run.py DailyDungeon --opt Difficulty=Nightmare
     python tools/run.py Affection_Check     # any pipeline node works as an entry
     python tools/run.py Arena --opt ArenaTickets=3   # input options take the value
 
