@@ -19,7 +19,7 @@ on:
 
 jobs:
   resource:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -48,7 +48,7 @@ jobs:
   tests:
     # The saved-screen, interface and recovery tests (tests/). Free within
     # GitHub's monthly Actions minutes.
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:

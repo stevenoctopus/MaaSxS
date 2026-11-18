@@ -102,8 +102,7 @@
         "next": ["DailyDungeon_Results"]
     },
     // Results ("Drops"). By default (Affection mode): leave without claiming.
-    // Daily mode runs with DailyDungeon_ClaimOverride (agent/daily_dungeon.py),
-    // which claims instead.
+    // Daily mode's case in interface.json sets this next to claim instead.
     "DailyDungeon_Results": {
         "focus": { "Node.Action.Starting": "Battle ended" },
         "recognition": "And",
@@ -193,7 +192,8 @@
     },
     // The run's grade, the big letter in the banner (S, A, B or C). The
     // "Claim grade" option sets which grades are good enough (GoodGrade) and
-    // which aren't (LowGrade); by default every grade is claimed.
+    // which aren't (LowGrade, enabled by those cases); by default every grade
+    // is claimed.
     "DailyDungeon_GoodGrade": {
         "recognition": "OCR",
         "expected": "^[SABC]$",
@@ -202,8 +202,9 @@
     // Too low: leave without claiming (keeps the attempt); the agent runs again.
     "DailyDungeon_LowGrade": {
         "focus": { "Node.Action.Starting": "Grade below the minimum: leaving without claiming" },
+        "enabled": false,
         "recognition": "OCR",
-        "expected": "(?!)", // matches nothing
+        "expected": "^[ABC]$",
         "roi": [230, 160, 260, 170],
         "next": ["DailyDungeon_Leave"]
     },

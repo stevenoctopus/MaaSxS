@@ -177,6 +177,9 @@ def install_python():
         lines.insert(1, "Lib/site-packages")
         pth.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
+    # Start from an empty site-packages: pip --target --upgrade leaves the
+    # old versions' dist-info folders behind (e.g. two numpy versions).
+    shutil.rmtree(site_packages, ignore_errors=True)
     major_minor = "".join(EMBED_PYTHON.split(".")[:2])
     subprocess.check_call([
         sys.executable, "-m", "pip", "install", "--upgrade",

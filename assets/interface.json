@@ -173,7 +173,7 @@
                     "description": "Only claim S runs.",
                     "pipeline_override": {
                         "DailyDungeon_GoodGrade": { "expected": "^S$" },
-                        "DailyDungeon_LowGrade": { "expected": "^[ABC]$" }
+                        "DailyDungeon_LowGrade": { "enabled": true, "expected": "^[ABC]$" }
                     }
                 },
                 {
@@ -181,7 +181,7 @@
                     "description": "Claim S and A runs.",
                     "pipeline_override": {
                         "DailyDungeon_GoodGrade": { "expected": "^[SA]$" },
-                        "DailyDungeon_LowGrade": { "expected": "^[BC]$" }
+                        "DailyDungeon_LowGrade": { "enabled": true, "expected": "^[BC]$" }
                     }
                 },
                 {
@@ -189,7 +189,7 @@
                     "description": "Claim S, A and B runs.",
                     "pipeline_override": {
                         "DailyDungeon_GoodGrade": { "expected": "^[SAB]$" },
-                        "DailyDungeon_LowGrade": { "expected": "^C$" }
+                        "DailyDungeon_LowGrade": { "enabled": true, "expected": "^C$" }
                     }
                 },
                 {

@@ -139,8 +139,12 @@ class DailyDungeon(unittest.TestCase):
         self.assertFalse(still.run("dungeon_detail_no_buy.png", shown))  # "Out of daily reward attempts."
 
     def test_results_grade(self):
+        # LowGrade as the "A or higher" case sets it (only used from next
+        # lists, where its default enabled: false skips it).
+        low = {"DailyDungeon_LowGrade": {"enabled": True, "expected": "^[BC]$"}}
         r = still.run("dungeon_results_s.png", lambda c: [
-            hit(c, n) for n in ("DailyDungeon_Results", "DailyDungeon_GoodGrade", "DailyDungeon_LowGrade")])
+            hit(c, "DailyDungeon_Results"), hit(c, "DailyDungeon_GoodGrade"),
+            hit(c, "DailyDungeon_LowGrade", override=low)])
         self.assertEqual(r, [True, True, False])
 
 

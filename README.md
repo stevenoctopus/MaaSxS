@@ -185,4 +185,6 @@ hand from the Actions tab. Ordinary pushes only run `check.yml` (the
 MaaFramework resource checks and the tests).
 Keep `MAAFW_VERSION` in `.github/workflows/install.yml` and `maafw` in
 `agent/requirements.txt` on the same version. The schema files in
-`deps/tools/` come from MaaFramework; refresh them when upgrading it.
+`deps/tools/` come from that MaaFramework version: after upgrading, run
+`python tools/sync_schema.py` (it downloads them from the pinned tag, not from
+MaaFramework's main branch, which can be ahead).

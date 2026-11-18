@@ -17,7 +17,7 @@ on:
 
 jobs:
   meta:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -58,7 +58,7 @@ jobs:
 
   install:
     needs: meta
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         # Windows only for now. Other builds: macos, linux, android / aarch64.
@@ -137,7 +137,7 @@ jobs:
   changelog:
     name: Generate changelog
     needs: meta
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       release_body: ${{ steps.git-cliff.outputs.content }}
     steps:
@@ -163,7 +163,7 @@ jobs:
   release:
     if: ${{ needs.meta.outputs.is_release == 'true' }}
     needs: [meta, install, changelog]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/download-artifact@v4
         with:
