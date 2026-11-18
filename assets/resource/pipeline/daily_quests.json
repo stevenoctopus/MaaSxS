@@ -9,30 +9,30 @@
     },
     // Quest list: make sure the Daily tab is selected.
     "DailyQuests_OnList": {
-        "focus": { "Node.Action.Starting": "On the quest list" },
         "recognition": "And",
         "all_of": ["Screen_QuestList"],
         "action": "Click",
         "target": [160, 1185, 100, 65], // Daily tab
         "post_delay": 1000,
         "next": ["DailyQuests_Claim", "DailyQuests_Done"],
-        "on_error": ["Common_Retry"]
+        "on_error": ["Common_Retry"],
+        "focus": { "Node.Action.Starting": "On the quest list" }
     },
     "DailyQuests_Claim": {
-        "focus": { "Node.Action.Starting": "Claiming a quest reward" },
         "recognition": "OCR",
-        "expected": "^Claim$",
         "roi": [440, 120, 280, 1040],
+        "expected": "^Claim$",
         "action": "Click",
         "post_delay": 1500,
         "next": ["DailyQuests_Claim", "DailyQuests_Done"],
-        "on_error": ["Common_Retry"]
+        "on_error": ["Common_Retry"],
+        "focus": { "Node.Action.Starting": "Claiming a quest reward" }
     },
     // No Claim button left.
     "DailyQuests_Done": {
-        "focus": { "Node.Action.Starting": "Daily quest rewards claimed" },
         "recognition": "And",
-        "all_of": ["Screen_QuestList"]
+        "all_of": ["Screen_QuestList"],
+        "focus": { "Node.Action.Starting": "Daily quest rewards claimed" }
     },
 
     // ---------------------------------------------------------------
@@ -40,10 +40,11 @@
     "DailyQuests_ToList": {
         "next": ["Screen_QuestList", "DailyQuests_ToList_Menu", "[JumpBack]Common_OpenMenu"]
     },
-    "DailyQuests_ToList_Menu": { // Quest button in the menu
+    "DailyQuests_ToList_Menu": {
+        // Quest button in the menu
         "recognition": "OCR",
-        "expected": "^Quest$",
         "roi": [190, 680, 190, 80],
+        "expected": "^Quest$",
         "action": "Click",
         "next": ["Screen_QuestList"]
     }

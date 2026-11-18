@@ -3,12 +3,12 @@
     // Docs: https://maafw.xyz/docs/3.3-ProjectInterfaceV2
     "interface_version": 2,
     "name": "MaaSxS",
-    "description": "Sword x Staff automation, built on MaaFramework. The emulator must run at 720x1280.",
-    "license": "MIT",
-    "welcome": "Set your emulator to 720x1280 (portrait) before starting.",
     // Project URL and version enable the GUI's update check.
     "github": "https://github.com/stevenoctopus/MaaSxS",
     "version": "0.1.0",
+    "license": "MIT",
+    "welcome": "Set your emulator to 720x1280 (portrait) before starting.",
+    "description": "Sword x Staff automation, built on MaaFramework. The emulator must run at 720x1280.",
     "controller": [
         {
             "name": "Android",
@@ -19,67 +19,49 @@
     "resource": [
         {
             "name": "Global",
-            "path": [
-                "./resource"
-            ]
+            "path": ["./resource"]
         }
     ],
     "agent": {
         "child_exec": "python",
-        "child_args": [
-            "./agent/main.py"
-        ]
+        "child_args": ["./agent/main.py"]
     },
     "task": [
         {
             "name": "DailyDungeon",
             "label": "Daily Dungeon",
             "entry": "DailyDungeon",
-            "option": [
-                "Mode",
-                "Difficulty"
-            ]
+            "option": ["Mode", "Difficulty"]
         },
         {
             "name": "Crucible",
             "label": "Crucible of Hieromon",
             "entry": "Crucible",
-            "option": [
-                "CrucibleMode"
-            ]
+            "option": ["CrucibleMode"]
         },
         {
             "name": "SplitMirage",
             "label": "Split Mirage",
             "entry": "SplitMirage",
-            "option": [
-                "SplitMirageMode"
-            ]
+            "option": ["SplitMirageMode"]
         },
         {
             "name": "Conquest",
             "label": "Conquest",
             "entry": "Conquest",
-            "option": [
-                "ConquestRuns"
-            ]
+            "option": ["ConquestRuns"]
         },
         {
             "name": "Arena",
             "label": "Arena",
             "entry": "Arena",
-            "option": [
-                "ArenaTickets"
-            ]
+            "option": ["ArenaTickets"]
         },
         {
             "name": "MaterialRealms",
             "label": "Material Realms",
             "entry": "MaterialRealms",
-            "option": [
-                "MaterialBuy",
-                "MaterialUse"
-            ]
+            "option": ["MaterialBuy", "MaterialUse"]
         },
         {
             "name": "VendorBooth",
@@ -109,13 +91,7 @@
             "name": "GrandMines",
             "label": "Grand Mines",
             "entry": "GrandMines",
-            "option": [
-                "GrandMinesCount",
-                "GrandMinesAfk",
-                "GrandMinesIron",
-                "GrandMinesSand",
-                "GrandMinesRolla"
-            ]
+            "option": ["GrandMinesCount", "GrandMinesAfk", "GrandMinesIron", "GrandMinesSand", "GrandMinesRolla"]
         }
     ],
     "option": {
@@ -124,7 +100,6 @@
         "DungeonBuy": {
             "type": "select",
             "label": "Buy extra attempts",
-            "default_case": "2",
             "cases": [
                 {
                     "name": "0",
@@ -159,14 +134,14 @@
                         }
                     }
                 }
-            ]
+            ],
+            "default_case": "2"
         },
         // Shown under Daily Dungeon's Daily mode. A run below the grade
         // leaves without claiming (the reward attempt is kept) and runs again.
         "DungeonGrade": {
             "type": "select",
             "label": "Claim grade",
-            "default_case": "S",
             "cases": [
                 {
                     "name": "S",
@@ -196,7 +171,8 @@
                     "name": "Any",
                     "description": "Claim every run."
                 }
-            ]
+            ],
+            "default_case": "S"
         },
         // Both inputs in one option: two options overriding Arena_Farm's
         // custom_action_param would replace each other's param.
@@ -239,14 +215,47 @@
             "label": "Sets to buy",
             "description": "Sets of 5 tools per realm to buy per day, with Dawnium, before using (bought on each realm's page). Sets already bought today count, so running twice won't buy twice. Never past the game's daily limit of 20 per realm.",
             "inputs": [
-                { "name": "ironvein", "label": "Ironvein Pit (hammers)", "default": "0", "pipeline_type": "int", "verify": "^([0-9]|1[0-9]|20)$", "pattern_msg": "Enter 0 to 20" },
-                { "name": "gilded", "label": "Gilded Depths (pickaxes)", "default": "0", "pipeline_type": "int", "verify": "^([0-9]|1[0-9]|20)$", "pattern_msg": "Enter 0 to 20" },
-                { "name": "dread", "label": "Dread Hollow (gloves)", "default": "0", "pipeline_type": "int", "verify": "^([0-9]|1[0-9]|20)$", "pattern_msg": "Enter 0 to 20" },
-                { "name": "dustfall", "label": "Dustfall Dune (shovels)", "default": "0", "pipeline_type": "int", "verify": "^([0-9]|1[0-9]|20)$", "pattern_msg": "Enter 0 to 20" }
+                {
+                    "name": "ironvein",
+                    "label": "Ironvein Pit (hammers)",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^([0-9]|1[0-9]|20)$",
+                    "pattern_msg": "Enter 0 to 20"
+                },
+                {
+                    "name": "gilded",
+                    "label": "Gilded Depths (pickaxes)",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^([0-9]|1[0-9]|20)$",
+                    "pattern_msg": "Enter 0 to 20"
+                },
+                {
+                    "name": "dread",
+                    "label": "Dread Hollow (gloves)",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^([0-9]|1[0-9]|20)$",
+                    "pattern_msg": "Enter 0 to 20"
+                },
+                {
+                    "name": "dustfall",
+                    "label": "Dustfall Dune (shovels)",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^([0-9]|1[0-9]|20)$",
+                    "pattern_msg": "Enter 0 to 20"
+                }
             ],
             "pipeline_override": {
                 "MaterialRealms_Buy": {
-                    "custom_action_param": { "ironvein": "{ironvein}", "gilded": "{gilded}", "dread": "{dread}", "dustfall": "{dustfall}" }
+                    "custom_action_param": {
+                        "ironvein": "{ironvein}",
+                        "gilded": "{gilded}",
+                        "dread": "{dread}",
+                        "dustfall": "{dustfall}"
+                    }
                 }
             }
         },
@@ -255,14 +264,47 @@
             "label": "Tools to use",
             "description": "Per realm: a number, or ALL. ALL turns on Quick Mine / Quick Conquer and uses every tool; a number turns it off and uses exactly that many.",
             "inputs": [
-                { "name": "ironvein", "label": "Ironvein Pit", "default": "ALL", "pipeline_type": "string", "verify": "^(ALL|All|all|\\d+)$", "pattern_msg": "Enter a number or ALL" },
-                { "name": "gilded", "label": "Gilded Depths", "default": "ALL", "pipeline_type": "string", "verify": "^(ALL|All|all|\\d+)$", "pattern_msg": "Enter a number or ALL" },
-                { "name": "dread", "label": "Dread Hollow", "default": "ALL", "pipeline_type": "string", "verify": "^(ALL|All|all|\\d+)$", "pattern_msg": "Enter a number or ALL" },
-                { "name": "dustfall", "label": "Dustfall Dune", "default": "ALL", "pipeline_type": "string", "verify": "^(ALL|All|all|\\d+)$", "pattern_msg": "Enter a number or ALL" }
+                {
+                    "name": "ironvein",
+                    "label": "Ironvein Pit",
+                    "default": "ALL",
+                    "pipeline_type": "string",
+                    "verify": "^(ALL|All|all|\\d+)$",
+                    "pattern_msg": "Enter a number or ALL"
+                },
+                {
+                    "name": "gilded",
+                    "label": "Gilded Depths",
+                    "default": "ALL",
+                    "pipeline_type": "string",
+                    "verify": "^(ALL|All|all|\\d+)$",
+                    "pattern_msg": "Enter a number or ALL"
+                },
+                {
+                    "name": "dread",
+                    "label": "Dread Hollow",
+                    "default": "ALL",
+                    "pipeline_type": "string",
+                    "verify": "^(ALL|All|all|\\d+)$",
+                    "pattern_msg": "Enter a number or ALL"
+                },
+                {
+                    "name": "dustfall",
+                    "label": "Dustfall Dune",
+                    "default": "ALL",
+                    "pipeline_type": "string",
+                    "verify": "^(ALL|All|all|\\d+)$",
+                    "pattern_msg": "Enter a number or ALL"
+                }
             ],
             "pipeline_override": {
                 "MaterialRealms_Use": {
-                    "custom_action_param": { "ironvein": "{ironvein}", "gilded": "{gilded}", "dread": "{dread}", "dustfall": "{dustfall}" }
+                    "custom_action_param": {
+                        "ironvein": "{ironvein}",
+                        "gilded": "{gilded}",
+                        "dread": "{dread}",
+                        "dustfall": "{dustfall}"
+                    }
                 }
             }
         },
@@ -288,49 +330,136 @@
         "VendorDiscount": {
             "type": "select",
             "label": "General: buy items",
-            "default_case": "Always",
             "cases": [
                 { "name": "Always", "description": "Buy all 9 items (gold)." },
-                { "name": "10% off or more", "pipeline_override": { "VendorBooth_General": { "custom_action_param": { "discount": 10 } } } },
-                { "name": "20% off or more", "pipeline_override": { "VendorBooth_General": { "custom_action_param": { "discount": 20 } } } },
-                { "name": "30% off or more", "pipeline_override": { "VendorBooth_General": { "custom_action_param": { "discount": 30 } } } },
-                { "name": "40% off or more", "pipeline_override": { "VendorBooth_General": { "custom_action_param": { "discount": 40 } } } },
-                { "name": "50% off or more", "pipeline_override": { "VendorBooth_General": { "custom_action_param": { "discount": 50 } } } },
-                { "name": "60% off or more", "pipeline_override": { "VendorBooth_General": { "custom_action_param": { "discount": 60 } } } }
-            ]
+                {
+                    "name": "10% off or more",
+                    "pipeline_override": { "VendorBooth_General": { "custom_action_param": { "discount": 10 } } }
+                },
+                {
+                    "name": "20% off or more",
+                    "pipeline_override": { "VendorBooth_General": { "custom_action_param": { "discount": 20 } } }
+                },
+                {
+                    "name": "30% off or more",
+                    "pipeline_override": { "VendorBooth_General": { "custom_action_param": { "discount": 30 } } }
+                },
+                {
+                    "name": "40% off or more",
+                    "pipeline_override": { "VendorBooth_General": { "custom_action_param": { "discount": 40 } } }
+                },
+                {
+                    "name": "50% off or more",
+                    "pipeline_override": { "VendorBooth_General": { "custom_action_param": { "discount": 50 } } }
+                },
+                {
+                    "name": "60% off or more",
+                    "pipeline_override": { "VendorBooth_General": { "custom_action_param": { "discount": 60 } } }
+                }
+            ],
+            "default_case": "Always"
         },
         // Vault items (Dawnium). The Free reward is always claimed.
         "VendorStellatie": {
-            "type": "select", "label": "Vault: Stellatie", "default_case": "Skip",
-            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_Stellatie": { "custom_action_param": { "buy": 1 } } } }]
+            "type": "select",
+            "label": "Vault: Stellatie",
+            "cases": [
+                { "name": "Skip" },
+                {
+                    "name": "Buy",
+                    "pipeline_override": { "VendorBooth_Vault_Stellatie": { "custom_action_param": { "buy": 1 } } }
+                }
+            ],
+            "default_case": "Skip"
         },
         "VendorDestinyFruit": {
-            "type": "select", "label": "Vault: Destiny Fruit", "default_case": "Skip",
-            "cases": [{ "name": "Skip" }, { "name": "Buy", "description": "Both (limit 2).", "pipeline_override": { "VendorBooth_Vault_DestinyFruit": { "custom_action_param": { "buy": 1 } } } }]
+            "type": "select",
+            "label": "Vault: Destiny Fruit",
+            "cases": [
+                { "name": "Skip" },
+                {
+                    "name": "Buy",
+                    "description": "Both (limit 2).",
+                    "pipeline_override": { "VendorBooth_Vault_DestinyFruit": { "custom_action_param": { "buy": 1 } } }
+                }
+            ],
+            "default_case": "Skip"
         },
         "VendorRow2Left": {
-            "type": "select", "label": "Vault: row 2, left", "description": "Changes daily (a tool, e.g. Worn Knuckles).", "default_case": "Skip",
-            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_Row2Left": { "custom_action_param": { "buy": 1 } } } }]
+            "type": "select",
+            "label": "Vault: row 2, left",
+            "description": "Changes daily (a tool, e.g. Worn Knuckles).",
+            "cases": [
+                { "name": "Skip" },
+                {
+                    "name": "Buy",
+                    "pipeline_override": { "VendorBooth_Vault_Row2Left": { "custom_action_param": { "buy": 1 } } }
+                }
+            ],
+            "default_case": "Skip"
         },
         "VendorRow2Middle": {
-            "type": "select", "label": "Vault: row 2, middle", "description": "Changes daily (a tool, e.g. Sand Shovel).", "default_case": "Skip",
-            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_Row2Middle": { "custom_action_param": { "buy": 1 } } } }]
+            "type": "select",
+            "label": "Vault: row 2, middle",
+            "description": "Changes daily (a tool, e.g. Sand Shovel).",
+            "cases": [
+                { "name": "Skip" },
+                {
+                    "name": "Buy",
+                    "pipeline_override": { "VendorBooth_Vault_Row2Middle": { "custom_action_param": { "buy": 1 } } }
+                }
+            ],
+            "default_case": "Skip"
         },
         "VendorRefinedOre": {
-            "type": "select", "label": "Vault: Refined Ore", "default_case": "Skip",
-            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_RefinedOre": { "custom_action_param": { "buy": 1 } } } }]
+            "type": "select",
+            "label": "Vault: Refined Ore",
+            "cases": [
+                { "name": "Skip" },
+                {
+                    "name": "Buy",
+                    "pipeline_override": { "VendorBooth_Vault_RefinedOre": { "custom_action_param": { "buy": 1 } } }
+                }
+            ],
+            "default_case": "Skip"
         },
         "VendorRow3Left": {
-            "type": "select", "label": "Vault: row 3, left", "description": "Changes daily (a badge, e.g. Epic Auroral Badge).", "default_case": "Skip",
-            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_Row3Left": { "custom_action_param": { "buy": 1 } } } }]
+            "type": "select",
+            "label": "Vault: row 3, left",
+            "description": "Changes daily (a badge, e.g. Epic Auroral Badge).",
+            "cases": [
+                { "name": "Skip" },
+                {
+                    "name": "Buy",
+                    "pipeline_override": { "VendorBooth_Vault_Row3Left": { "custom_action_param": { "buy": 1 } } }
+                }
+            ],
+            "default_case": "Skip"
         },
         "VendorRow3Middle": {
-            "type": "select", "label": "Vault: row 3, middle", "description": "Changes daily (e.g. Mandrake).", "default_case": "Skip",
-            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_Row3Middle": { "custom_action_param": { "buy": 1 } } } }]
+            "type": "select",
+            "label": "Vault: row 3, middle",
+            "description": "Changes daily (e.g. Mandrake).",
+            "cases": [
+                { "name": "Skip" },
+                {
+                    "name": "Buy",
+                    "pipeline_override": { "VendorBooth_Vault_Row3Middle": { "custom_action_param": { "buy": 1 } } }
+                }
+            ],
+            "default_case": "Skip"
         },
         "VendorQuestScroll": {
-            "type": "select", "label": "Vault: Quest Scroll", "default_case": "Skip",
-            "cases": [{ "name": "Skip" }, { "name": "Buy", "pipeline_override": { "VendorBooth_Vault_QuestScroll": { "custom_action_param": { "buy": 1 } } } }]
+            "type": "select",
+            "label": "Vault: Quest Scroll",
+            "cases": [
+                { "name": "Skip" },
+                {
+                    "name": "Buy",
+                    "pipeline_override": { "VendorBooth_Vault_QuestScroll": { "custom_action_param": { "buy": 1 } } }
+                }
+            ],
+            "default_case": "Skip"
         },
         // Grand Mines: each option overrides its own node's param.
         "GrandMinesCount": {
@@ -355,29 +484,61 @@
             "type": "select",
             "label": "AFK spot",
             "description": "The Resource Hunt resource to wait at (Journal > Map Exploration), where most grand mines of that type appear. Links in chat are followed wherever they are.",
-            "default_case": "Sand",
             "cases": [
-                { "name": "Iron", "pipeline_override": { "GrandMines_Afk": { "custom_action_param": { "spot": "iron" } } } },
-                { "name": "Sand", "pipeline_override": { "GrandMines_Afk": { "custom_action_param": { "spot": "sand" } } } },
-                { "name": "Rolla", "pipeline_override": { "GrandMines_Afk": { "custom_action_param": { "spot": "rolla" } } } }
-            ]
+                {
+                    "name": "Iron",
+                    "pipeline_override": { "GrandMines_Afk": { "custom_action_param": { "spot": "iron" } } }
+                },
+                {
+                    "name": "Sand",
+                    "pipeline_override": { "GrandMines_Afk": { "custom_action_param": { "spot": "sand" } } }
+                },
+                {
+                    "name": "Rolla",
+                    "pipeline_override": { "GrandMines_Afk": { "custom_action_param": { "spot": "rolla" } } }
+                }
+            ],
+            "default_case": "Sand"
         },
         "GrandMinesIron": {
-            "type": "select", "label": "Grand Iron Mine", "default_case": "Mine",
-            "cases": [{ "name": "Mine" }, { "name": "Skip", "pipeline_override": { "GrandMines_Iron": { "custom_action_param": { "mine": false } } } }]
+            "type": "select",
+            "label": "Grand Iron Mine",
+            "cases": [
+                { "name": "Mine" },
+                {
+                    "name": "Skip",
+                    "pipeline_override": { "GrandMines_Iron": { "custom_action_param": { "mine": false } } }
+                }
+            ],
+            "default_case": "Mine"
         },
         "GrandMinesSand": {
-            "type": "select", "label": "Grand Sand Mine", "default_case": "Mine",
-            "cases": [{ "name": "Mine" }, { "name": "Skip", "pipeline_override": { "GrandMines_Sand": { "custom_action_param": { "mine": false } } } }]
+            "type": "select",
+            "label": "Grand Sand Mine",
+            "cases": [
+                { "name": "Mine" },
+                {
+                    "name": "Skip",
+                    "pipeline_override": { "GrandMines_Sand": { "custom_action_param": { "mine": false } } }
+                }
+            ],
+            "default_case": "Mine"
         },
         "GrandMinesRolla": {
-            "type": "select", "label": "Grand Gold Mine (Rolla)", "default_case": "Mine",
-            "cases": [{ "name": "Mine" }, { "name": "Skip", "pipeline_override": { "GrandMines_Rolla": { "custom_action_param": { "mine": false } } } }]
+            "type": "select",
+            "label": "Grand Gold Mine (Rolla)",
+            "cases": [
+                { "name": "Mine" },
+                {
+                    "name": "Skip",
+                    "pipeline_override": { "GrandMines_Rolla": { "custom_action_param": { "mine": false } } }
+                }
+            ],
+            "default_case": "Mine"
         },
         "ConquestRuns": {
             "type": "select",
             "label": "Runs",
-            "default_case": "Once",
             "cases": [
                 {
                     "name": "Once",
@@ -394,12 +555,12 @@
                         }
                     }
                 }
-            ]
+            ],
+            "default_case": "Once"
         },
         "CrucibleMode": {
             "type": "select",
             "label": "Mode",
-            "default_case": "Once",
             "cases": [
                 {
                     "name": "Once",
@@ -427,12 +588,12 @@
                         }
                     }
                 }
-            ]
+            ],
+            "default_case": "Once"
         },
         "SplitMirageMode": {
             "type": "select",
             "label": "Mode",
-            "default_case": "Once",
             "cases": [
                 {
                     "name": "Once",
@@ -460,12 +621,12 @@
                         }
                     }
                 }
-            ]
+            ],
+            "default_case": "Once"
         },
         "Mode": {
             "type": "select",
             "label": "Mode",
-            "default_case": "Daily",
             "cases": [
                 {
                     "name": "Affection",
@@ -474,15 +635,14 @@
                         // Skip the walk to the list: the affection check
                         // starts from any screen and ends on the list.
                         "DailyDungeon": {
-                            "next": [
-                                "DailyDungeon_AffectionFarm"
-                            ]
+                            "next": ["DailyDungeon_AffectionFarm"]
                         }
                     }
                 },
                 {
                     "name": "Daily",
                     "description": "Buy extra reward attempts (optional), then run and claim rewards until no reward attempts are left.",
+                    "option": ["DungeonBuy", "DungeonGrade"],
                     "pipeline_override": {
                         // Claim on the results screen (Affection mode leaves without claiming).
                         "DailyDungeon_Results": {
@@ -493,18 +653,14 @@
                                 "DailyDungeon_UnclaimedPrompt"
                             ]
                         }
-                    },
-                    "option": [
-                        "DungeonBuy",
-                        "DungeonGrade"
-                    ]
+                    }
                 }
-            ]
+            ],
+            "default_case": "Daily"
         },
         "Difficulty": {
             "type": "select",
             "label": "Difficulty",
-            "default_case": "Purgatory",
             "cases": [
                 {
                     "name": "Normal",
@@ -550,7 +706,8 @@
                         }
                     }
                 }
-            ]
+            ],
+            "default_case": "Purgatory"
         }
     }
 }

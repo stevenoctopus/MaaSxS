@@ -324,6 +324,13 @@ def tap(context: Context, x: int, y: int):
         "GrandMines_Tap": {"target": [int(x), int(y), 1, 1]}})
 
 
+def back(context: Context):
+    """Android back (Common_Back). Its max_hit counts over the whole task, and
+    this one can run for hours: reset it first."""
+    context.clear_hit_count("Common_Back")
+    context.run_action("Common_Back")
+
+
 class Stop(Exception):
     """A safety stop (give_up already called), or the user pressed Stop."""
 
@@ -413,8 +420,7 @@ class Run:
                     # The icon sat over Explore and the tap reached the button:
                     # back closes its confirm without spending.
                     log(self.c, "the tap opened Explore's confirm: closing it")
-                    self.c.run_action("GrandMines_BackKey")
-                    time.sleep(1)
+                    back(self.c)
                 self.check()
                 continue
             if pin_at_centre(image) or find_bars(self.c, image):
@@ -521,8 +527,7 @@ class Run:
             if hit(self.c, "Screen_FullChat", image):
                 log(self.c, "missed the link (the full chat opened): closing it")
                 keep(frames, "missed")
-                self.c.run_action("GrandMines_BackKey")
-                time.sleep(1)
+                back(self.c)
                 return "missed"
             if hit(self.c, "Screen_TravelPopup", image):
                 if not ok(self.c.run_task("GrandMines_Travel")):

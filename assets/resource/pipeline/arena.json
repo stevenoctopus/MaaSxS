@@ -9,11 +9,11 @@
         "on_error": ["Common_Retry"]
     },
     "Arena_OnPage": {
-        "focus": { "Node.Action.Starting": "On the Arena page" },
         "recognition": "And",
         "all_of": ["Screen_ArenaPage"],
         "next": ["Arena_Farm"],
-        "on_error": ["Common_Retry"]
+        "on_error": ["Common_Retry"],
+        "focus": { "Node.Action.Starting": "On the Arena page" }
     },
     // The "Tickets to use" and "Tickets to buy" options set the params.
     "Arena_Farm": {
@@ -44,21 +44,20 @@
         "post_delay": 1500,
         "next": ["Screen_ArenaPage"]
     },
-    "Arena_ToPage_Competition": { // Arena tile on the Competition page
+    "Arena_ToPage_Competition": {
+        // Arena tile on the Competition page
         "recognition": "And",
-        "all_of": [
-            "Screen_CompetitionPage",
-            { "recognition": "OCR", "expected": "^Arena$", "roi": [0, 320, 300, 75] }
-        ],
+        "all_of": ["Screen_CompetitionPage", { "recognition": "OCR", "roi": [0, 320, 300, 75], "expected": "^Arena$" }],
         "box_index": 1,
         "action": "Click",
         "post_delay": 1000,
         "next": ["Screen_ArenaPage", "Arena_ToPage_OtherTab"]
     },
-    "Arena_ToPage_Journal": { // Competition tile on the Journal
+    "Arena_ToPage_Journal": {
+        // Competition tile on the Journal
         "recognition": "OCR",
-        "expected": "^Competition$",
         "roi": [0, 690, 300, 75],
+        "expected": "^Competition$",
         "action": "Click",
         "post_delay": 1000,
         "next": ["Arena_ToPage_Competition"]
@@ -72,21 +71,21 @@
     },
     // The crossed swords of the rightmost opponent.
     "Arena_Swords": {
-        "focus": { "Node.Action.Starting": "Challenging the rightmost opponent" },
         "recognition": "And",
         "all_of": ["Screen_ArenaPage"],
         "action": "Click",
         "target": [592, 862, 60, 60],
         "post_delay": 1500,
-        "next": ["Arena_Challenge"]
+        "next": ["Arena_Challenge"],
+        "focus": { "Node.Action.Starting": "Challenging the rightmost opponent" }
     },
     // "Opponent" popup: Challenge (1 ticket). Pressed once; no retry here,
     // so a slow screen can never spend a second ticket.
     "Arena_Challenge": {
         "recognition": "And",
         "all_of": [
-            { "recognition": "OCR", "expected": "^Opponent$", "roi": [200, 245, 320, 60] },
-            { "recognition": "OCR", "expected": "^Challenge", "roi": [230, 865, 260, 75] }
+            { "recognition": "OCR", "roi": [200, 245, 320, 60], "expected": "^Opponent$" },
+            { "recognition": "OCR", "roi": [230, 865, 260, 75], "expected": "^Challenge" }
         ],
         "box_index": 1,
         "action": "Click",
@@ -96,18 +95,18 @@
     },
     // VICTORY / DEFEAT, "Tap to Continue".
     "Arena_Result": {
-        "focus": { "Node.Action.Starting": "Battle ended" },
         "recognition": "And",
         "all_of": ["Screen_TapToContinue"],
         "action": "Click",
         "post_delay": 1500,
         "timeout": 30000,
-        "next": ["Arena_BackOnPage", "Arena_Result"]
+        "next": ["Arena_BackOnPage", "Arena_Result"],
+        "focus": { "Node.Action.Starting": "Battle ended" }
     },
     "Arena_BackOnPage": {
-        "focus": { "Node.Action.Starting": "Back on the Arena page" },
         "recognition": "And",
-        "all_of": ["Screen_ArenaPage"]
+        "all_of": ["Screen_ArenaPage"],
+        "focus": { "Node.Action.Starting": "Back on the Arena page" }
     },
 
     // ---------------------------------------------------------------
@@ -128,7 +127,7 @@
     // Arena tickets held, top right: "N/20" (OCR adds the "+" after it).
     "Arena_Tickets": {
         "recognition": "OCR",
-        "expected": "^\\d+\\s?/\\s?\\d+",
-        "roi": [495, 28, 100, 45]
+        "roi": [495, 28, 100, 45],
+        "expected": "^\\d+\\s?/\\s?\\d+"
     }
 }

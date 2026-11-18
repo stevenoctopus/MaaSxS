@@ -35,6 +35,9 @@ jobs:
           npm ci
           npx @nekosu/maa-tools check
 
+      - name: Pipeline key order (npm run format to fix)
+        run: npm run format:check
+
       - name: Install maafw
         run: |
           python -m pip install --upgrade pip

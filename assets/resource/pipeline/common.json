@@ -27,6 +27,7 @@
     // in front) and look again.
     // The four next lists below are the same list; keep them in step.
     "Common_ToTabBar": {
+        "timeout": 3000,
         "next": [
             "[JumpBack]Common_QuitDialog",
             "Screen_TabBar",
@@ -41,14 +42,13 @@
             "Common_TabBar_BackOut",
             "Common_TabBar_Battle"
         ],
-        "timeout": 3000,
         "on_error": ["Common_TabBar_Back1"]
     },
     "Common_TabBar_Back1": {
-        "focus": { "Node.Action.Starting": "Unknown screen: pressing back" },
         "action": "ClickKey",
         "key": 4,
         "post_delay": 1500,
+        "timeout": 3000,
         "next": [
             "[JumpBack]Common_QuitDialog",
             "Screen_TabBar",
@@ -63,13 +63,14 @@
             "Common_TabBar_BackOut",
             "Common_TabBar_Battle"
         ],
-        "timeout": 3000,
-        "on_error": ["Common_TabBar_Back2"]
+        "on_error": ["Common_TabBar_Back2"],
+        "focus": { "Node.Action.Starting": "Unknown screen: pressing back" }
     },
     "Common_TabBar_Back2": {
         "action": "ClickKey",
         "key": 4,
         "post_delay": 1500,
+        "timeout": 3000,
         "next": [
             "[JumpBack]Common_QuitDialog",
             "Screen_TabBar",
@@ -84,16 +85,15 @@
             "Common_TabBar_BackOut",
             "Common_TabBar_Battle"
         ],
-        "timeout": 3000,
         "on_error": ["Common_TabBar_StartGame"]
     },
     // max_hit stops an endless loop if the game never shows a known screen.
     "Common_TabBar_StartGame": {
-        "focus": { "Node.Action.Starting": "Game not in front: starting it" },
+        "max_hit": 10,
         "action": "StartApp",
         "package": "com.zjcs.android.us",
         "post_delay": 3000,
-        "max_hit": 10,
+        "timeout": 20000, // the game's splash screen can take a while
         "next": [
             "[JumpBack]Common_QuitDialog",
             "Screen_TabBar",
@@ -108,30 +108,31 @@
             "Common_TabBar_BackOut",
             "Common_TabBar_Battle"
         ],
-        "timeout": 20000, // the game's splash screen can take a while
-        "on_error": ["Common_TabBar_Back1"]
+        "on_error": ["Common_TabBar_Back1"],
+        "focus": { "Node.Action.Starting": "Game not in front: starting it" }
     },
 
-
     // --- Game start-up (after a crash, disconnect or fresh launch) ---
-    "Common_TabBar_Notice": { // close the Notice popup (back arrow)
-        "focus": { "Node.Action.Starting": "Game start-up: closing the Notice" },
+    "Common_TabBar_Notice": {
         "recognition": "And",
         "all_of": ["Screen_Notice"],
         "action": "Click",
         "target": [30, 1185, 90, 70],
         "post_delay": 2000,
-        "next": ["Common_ToTabBar"]
+        "next": ["Common_ToTabBar"],
+        // close the Notice popup (back arrow)
+        "focus": { "Node.Action.Starting": "Game start-up: closing the Notice" }
     },
     "Common_TabBar_TapToPlay": {
-        "focus": { "Node.Action.Starting": "Game start-up: Tap to Play" },
         "recognition": "And",
         "all_of": ["Screen_TapToPlay"],
         "action": "Click",
         "post_delay": 5000,
-        "next": ["Common_ToTabBar"]
+        "next": ["Common_ToTabBar"],
+        "focus": { "Node.Action.Starting": "Game start-up: Tap to Play" }
     },
-    "Common_TabBar_Loading": { // wait
+    "Common_TabBar_Loading": {
+        // wait
         "recognition": "And",
         "all_of": ["Screen_Loading"],
         "post_delay": 3000,
@@ -142,7 +143,7 @@
     "Common_TabBar_ReturnPrompt": {
         "recognition": "And",
         "all_of": [
-            { "recognition": "OCR", "expected": "Return\\s?to\\s?Home", "roi": [100, 540, 520, 90] },
+            { "recognition": "OCR", "roi": [100, 540, 520, 90], "expected": "Return\\s?to\\s?Home" },
             "Common_PopupOK"
         ],
         "box_index": 1,
@@ -150,14 +151,16 @@
         "post_delay": 2000, // the trip home loads for a moment
         "next": ["Common_ToTabBar"]
     },
-    "Common_TabBar_DungeonList": { // back arrow, bottom left
+    "Common_TabBar_DungeonList": {
+        // back arrow, bottom left
         "recognition": "And",
         "all_of": ["Screen_DungeonList"],
         "action": "Click",
         "target": [30, 1185, 90, 70],
         "next": ["Common_ToTabBar"]
     },
-    "Common_TabBar_DungeonDetail": { // back arrow, to the Dungeon list
+    "Common_TabBar_DungeonDetail": {
+        // back arrow, to the Dungeon list
         "recognition": "And",
         "all_of": ["Screen_DungeonDetail"],
         "action": "Click",
@@ -165,7 +168,8 @@
         "post_delay": 1500,
         "next": ["Common_ToTabBar"]
     },
-    "Common_TabBar_DungeonResults": { // back arrow
+    "Common_TabBar_DungeonResults": {
+        // back arrow
         "recognition": "And",
         "all_of": ["Screen_DungeonResults"],
         "action": "Click",
@@ -173,7 +177,8 @@
         "post_delay": 1500,
         "next": ["Common_ToTabBar"]
     },
-    "Common_TabBar_TapToContinue": { // Crucible results: tap through
+    "Common_TabBar_TapToContinue": {
+        // Crucible results: tap through
         "recognition": "And",
         "all_of": ["Screen_TapToContinue"],
         "action": "Click",
@@ -216,13 +221,23 @@
         "post_delay": 1000,
         "next": ["Common_ToTabBar"]
     },
+    // Android back, as a shared step: "[JumpBack]Common_Back" in a next list
+    // (back until a screen shows; max_hit bounds it per task), or
+    // context.run_action("Common_Back") from the agent.
+    "Common_Back": {
+        "max_hit": 5,
+        "pre_delay": 1000,
+        "action": "ClickKey",
+        "key": 4,
+        "post_delay": 1500
+    },
     // A battle can't be left: wait for it to finish.
     "Common_TabBar_Battle": {
-        "focus": { "Node.Action.Starting": "A battle is running: waiting for it to end" },
         "recognition": "And",
         "all_of": ["Screen_Battle"],
         "post_delay": 5000,
-        "next": ["Common_ToTabBar"]
+        "next": ["Common_ToTabBar"],
+        "focus": { "Node.Action.Starting": "A battle is running: waiting for it to end" }
     },
 
     // The game's quit prompt (back on a main tab): always cancel.
@@ -230,8 +245,8 @@
     "Common_QuitDialog": {
         "recognition": "And",
         "all_of": [
-            { "recognition": "OCR", "expected": "Quit the game", "roi": [100, 400, 520, 400] },
-            { "recognition": "OCR", "expected": "^Cancel$", "roi": [100, 650, 260, 130] }
+            { "recognition": "OCR", "roi": [100, 400, 520, 400], "expected": "Quit the game" },
+            { "recognition": "OCR", "roi": [100, 650, 260, 130], "expected": "^Cancel$" }
         ],
         "box_index": 1,
         "action": "Click"
@@ -243,11 +258,12 @@
         "next": ["[JumpBack]Common_QuitDialog", "Common_AtHome", "Common_Home_TapHouse", "[JumpBack]Common_ToTabBar"]
     },
     "Common_AtHome": {
-        "focus": { "Node.Action.Starting": "On Home" },
         "recognition": "And",
-        "all_of": ["Screen_Home"]
+        "all_of": ["Screen_Home"],
+        "focus": { "Node.Action.Starting": "On Home" }
     },
-    "Common_Home_TapHouse": { // house icon, bottom middle
+    "Common_Home_TapHouse": {
+        // house icon, bottom middle
         "recognition": "And",
         "all_of": ["Screen_TabBar"],
         "action": "Click",
@@ -272,12 +288,12 @@
     // Journal > Daily Events tile (Crucible, Split Mirage).
     "Common_Journal_DailyEvents": {
         "recognition": "OCR",
-        "expected": "^Daily\\s?Events$",
         "roi": [400, 740, 320, 70],
+        "expected": "^Daily\\s?Events$",
         "action": "Click"
     },
     // A popup's OK button (right of Cancel); use by name in an all_of.
-    "Common_PopupOK": { "recognition": "OCR", "expected": "^OK$", "roi": [370, 700, 250, 75] },
+    "Common_PopupOK": { "recognition": "OCR", "roi": [370, 700, 250, 75], "expected": "^OK$" },
 
     "Common_ToJournal": {
         "next": ["Screen_Journal", "Common_ToJournal_Tab", "[JumpBack]Common_ToTabBar"]
@@ -313,45 +329,46 @@
         "next": ["Common_Queue_Match"]
     },
     "Common_Queue_Match": {
-        "focus": { "Node.Action.Starting": "Queueing for a match" },
         "recognition": "And",
         "all_of": ["Screen_MatchButton"],
         "action": "Click",
         "post_delay": 1500, // let the button switch to "Cancel"
         "timeout": 600000, // the queue: how long to wait for the accept prompt
-        "next": ["Common_Queue_Accept", "Common_Queue_MaybeDropped"]
+        "next": ["Common_Queue_Accept", "Common_Queue_MaybeDropped"],
+        "focus": { "Node.Action.Starting": "Queueing for a match" }
     },
     "Common_Queue_Accept": {
-        "focus": { "Node.Action.Starting": "Match found: accepting" },
         "recognition": "And",
         "all_of": ["Screen_AcceptButton"],
         "action": "Click",
         "timeout": 600000,
         // The game auto-readies after a few seconds, so the battle may start
         // before we see the Ready button.
-        "next": ["Common_Queue_Ready", "Common_Queue_InBattle", "Common_Queue_Accept", "Common_Queue_MaybeDropped"]
+        "next": ["Common_Queue_Ready", "Common_Queue_InBattle", "Common_Queue_Accept", "Common_Queue_MaybeDropped"],
+        "focus": { "Node.Action.Starting": "Match found: accepting" }
     },
     // Match showing again: dropped from the queue, or just the brief flash
     // while the battle loads. Wait, then look again before pressing Match.
     "Common_Queue_MaybeDropped": {
-        "focus": { "Node.Action.Starting": "Back on Match: waiting, then re-queueing if dropped" },
         "recognition": "And",
         "all_of": ["Screen_MatchButton"],
         "post_delay": 10000,
         "timeout": 600000,
-        "next": ["Common_Queue_Ready", "Common_Queue_InBattle", "Common_Queue_Accept", "Common_Queue_Match"]
+        "next": ["Common_Queue_Ready", "Common_Queue_InBattle", "Common_Queue_Accept", "Common_Queue_Match"],
+        "focus": { "Node.Action.Starting": "Back on Match: waiting, then re-queueing if dropped" }
     },
     "Common_Queue_Ready": {
-        "focus": { "Node.Action.Starting": "Ready" },
         "recognition": "And",
         "all_of": ["Screen_ReadyButton"],
         "action": "Click",
         "timeout": 90000, // "Battle starts in 60s" countdown
-        "next": ["Common_Queue_InBattle"]
+        "next": ["Common_Queue_InBattle"],
+        "focus": { "Node.Action.Starting": "Ready" }
     },
-    "Common_Queue_InBattle": { // done: the battle has started
-        "focus": { "Node.Action.Starting": "Battle in progress" },
+    "Common_Queue_InBattle": {
         "recognition": "And",
-        "all_of": ["Screen_Battle"]
+        "all_of": ["Screen_Battle"],
+        // done: the battle has started
+        "focus": { "Node.Action.Starting": "Battle in progress" }
     }
 }

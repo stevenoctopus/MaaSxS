@@ -8,12 +8,7 @@
     // Only the first step has that fallback: later steps can catch a screen
     // mid-animation, and starting over there would undo progress.
     "Affection_Check": {
-        "next": [
-            "Affection_Claim",
-            "Affection_FriendsPage",
-            "Affection_MenuOpen",
-            "[JumpBack]Common_OpenMenu"
-        ]
+        "next": ["Affection_Claim", "Affection_FriendsPage", "Affection_MenuOpen", "[JumpBack]Common_OpenMenu"]
     },
     "Affection_Where": {
         "next": ["Affection_Claim", "Affection_FriendsPage", "Affection_MenuOpen"]
@@ -37,21 +32,21 @@
     // Affection Tokens popup: always press Claim (harmless when nothing is
     // pending), then read the total.
     "Affection_Claim": {
-        "focus": { "Node.Action.Starting": "Claiming affection tokens" },
         "recognition": "And",
         "all_of": [
             "Screen_AffectionPopup",
-            { "recognition": "OCR", "expected": "^Claim$", "roi": [240, 930, 240, 75] }
+            { "recognition": "OCR", "roi": [240, 930, 240, 75], "expected": "^Claim$" }
         ],
         "box_index": 1,
         "action": "Click",
         "post_delay": 1500, // let the total update
-        "next": ["Affection_Read"]
+        "next": ["Affection_Read"],
+        "focus": { "Node.Action.Starting": "Claiming affection tokens" }
     },
     "Affection_Read": {
         "recognition": "OCR",
-        "expected": "Earned\\s?This\\s?Week:\\s?\\d+\\s?/\\s?\\d+",
         "roi": [100, 310, 520, 60],
+        "expected": "Earned\\s?This\\s?Week:\\s?\\d+\\s?/\\s?\\d+",
         "next": ["DailyDungeon_ToList"]
     }
 }

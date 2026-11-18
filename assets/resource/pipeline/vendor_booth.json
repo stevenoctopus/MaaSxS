@@ -15,11 +15,11 @@
         "on_error": ["Common_Retry"]
     },
     "VendorBooth_OnBooth": {
-        "focus": { "Node.Action.Starting": "In the Vendor Booth" },
         "recognition": "And",
         "all_of": ["Screen_VendorBooth"],
         "next": ["VendorBooth_General"],
-        "on_error": ["Common_Retry"]
+        "on_error": ["Common_Retry"],
+        "focus": { "Node.Action.Starting": "In the Vendor Booth" }
     },
     // Runs the whole task. discount: minimum % off to buy a General item
     // (0 = buy every item).
@@ -36,14 +36,46 @@
         "custom_action_param": { "refreshes": 0 }
     },
     // Settings only, never run: buy this Vault item (1) or not (0).
-    "VendorBooth_Vault_Stellatie": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
-    "VendorBooth_Vault_DestinyFruit": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
-    "VendorBooth_Vault_Row2Left": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
-    "VendorBooth_Vault_Row2Middle": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
-    "VendorBooth_Vault_RefinedOre": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
-    "VendorBooth_Vault_Row3Left": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
-    "VendorBooth_Vault_Row3Middle": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
-    "VendorBooth_Vault_QuestScroll": { "action": "Custom", "custom_action": "VendorBooth", "custom_action_param": { "buy": 0 } },
+    "VendorBooth_Vault_Stellatie": {
+        "action": "Custom",
+        "custom_action": "VendorBooth",
+        "custom_action_param": { "buy": 0 }
+    },
+    "VendorBooth_Vault_DestinyFruit": {
+        "action": "Custom",
+        "custom_action": "VendorBooth",
+        "custom_action_param": { "buy": 0 }
+    },
+    "VendorBooth_Vault_Row2Left": {
+        "action": "Custom",
+        "custom_action": "VendorBooth",
+        "custom_action_param": { "buy": 0 }
+    },
+    "VendorBooth_Vault_Row2Middle": {
+        "action": "Custom",
+        "custom_action": "VendorBooth",
+        "custom_action_param": { "buy": 0 }
+    },
+    "VendorBooth_Vault_RefinedOre": {
+        "action": "Custom",
+        "custom_action": "VendorBooth",
+        "custom_action_param": { "buy": 0 }
+    },
+    "VendorBooth_Vault_Row3Left": {
+        "action": "Custom",
+        "custom_action": "VendorBooth",
+        "custom_action_param": { "buy": 0 }
+    },
+    "VendorBooth_Vault_Row3Middle": {
+        "action": "Custom",
+        "custom_action": "VendorBooth",
+        "custom_action_param": { "buy": 0 }
+    },
+    "VendorBooth_Vault_QuestScroll": {
+        "action": "Custom",
+        "custom_action": "VendorBooth",
+        "custom_action_param": { "buy": 0 }
+    },
 
     // ---------------------------------------------------------------
     // Get to the Vendor Booth from any screen: Home > the cart.
@@ -51,7 +83,8 @@
     "VendorBooth_ToBooth": {
         "next": ["Screen_VendorBooth", "VendorBooth_ToBooth_Cart", "[JumpBack]Common_GoHome"]
     },
-    "VendorBooth_ToBooth_Cart": { // the cart, middle right of Home
+    "VendorBooth_ToBooth_Cart": {
+        // the cart, middle right of Home
         "recognition": "And",
         "all_of": ["Screen_Home"],
         "action": "Click",
@@ -84,20 +117,20 @@
         "recognition": "And",
         "all_of": [
             "Screen_VendorBooth",
-            { "recognition": "OCR", "expected": "^\\d+\\s?/\\s?\\d+$", "roi": [605, 32, 110, 44] },
-            { "recognition": "OCR", "expected": "^(Free|Sold\\s?Out)$", "roi": [40, 270, 180, 160] }
+            { "recognition": "OCR", "roi": [605, 32, 110, 44], "expected": "^\\d+\\s?/\\s?\\d+$" },
+            { "recognition": "OCR", "roi": [40, 270, 180, 160], "expected": "^(Free|Sold\\s?Out)$" }
         ]
     },
     "VendorBooth_RefreshButton": {
         "recognition": "OCR",
-        "expected": "^Refresh$",
-        "roi": [510, 98, 110, 44]
+        "roi": [510, 98, 110, 44],
+        "expected": "^Refresh$"
     },
     // Refreshes left today, in the circle on the Refresh button.
     "VendorBooth_RefreshesLeft": {
         "recognition": "OCR",
-        "expected": "^\\d+$",
-        "roi": [448, 94, 72, 52]
+        "roi": [448, 94, 72, 52],
+        "expected": "^\\d+$"
     },
     "VendorBooth_Refresh": {
         "action": "Click",
@@ -109,15 +142,17 @@
     // One tile of the 3x3 grid. The agent sets the roi / target per tile.
     "VendorBooth_SoldOut": {
         "recognition": "OCR",
-        "expected": "Sold\\s?Out",
-        "roi": [40, 275, 180, 45]
+        "roi": [40, 275, 180, 45],
+        "expected": "Sold\\s?Out"
     },
-    "VendorBooth_Discount": { // "-10%" badge, top left of a tile
+    "VendorBooth_Discount": {
+        // "-10%" badge, top left of a tile
         "recognition": "OCR",
-        "expected": "(\\d+)\\s?%",
-        "roi": [5, 168, 75, 55]
+        "roi": [5, 168, 75, 55],
+        "expected": "(\\d+)\\s?%"
     },
-    "VendorBooth_Buy": { // the price button
+    "VendorBooth_Buy": {
+        // the price button
         "action": "Click",
         "target": [60, 393, 140, 32],
         "post_delay": 1500

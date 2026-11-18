@@ -108,6 +108,7 @@ Every task:
 git clone --recursive git@github.com:stevenoctopus/MaaSxS.git
 python -m pip install -r agent/requirements.txt -r tools/requirements.txt
 python tools/configure.py          # copies the OCR model from MaaCommonAssets
+npm ci                             # maa-tools and Prettier (pipeline checks and key order)
 ```
 
 The agent needs only `agent/requirements.txt` (MaaFramework, which brings
@@ -121,7 +122,8 @@ natively: check it before writing agent Python or adding a package.
   - `common.json`: shared routines: get to the tab bar or Home from anywhere
     (including crash recovery), go to the Journal (`Common_ToJournal`, used
     by every Journal task), matchmaking, retry, and shared steps used as
-    `[JumpBack]` (`Common_TapToContinue`, `Common_Journal_DailyEvents`).
+    `[JumpBack]` (`Common_TapToContinue`, `Common_Journal_DailyEvents`,
+    `Common_Back`).
   - `purchase.json` and `track.json`: the Purchase popup and reward-track
     nodes, beside `agent/purchase.py` and `agent/track.py`.
   - one file per task, plus `affection.json` for the affection check.
@@ -149,6 +151,8 @@ Dev tools:
 | `python tools/still.py capture <name>` | saves the emulator's screen to `tests/screens/<name>.png` for a new test (local only: the folder is in `.gitignore`, since screenshots show your character's name) |
 | `python tools/run.py <Task> --override tools/overrides/no_spend.json` | a live run that spends nothing: buys press Cancel, battles do nothing (`tools/overrides/README.md`) |
 | `python tools/sync_schema.py` | refreshes `deps/tools/*.schema.json` for the pinned MaaFramework version |
+| `npm run format` | sorts every node's keys in MaaFramework's order (recognition, action, `next`, ...; the node order and comments stay); CI checks it with `npm run format:check` |
+| `maa-evidence mla inspect debug --summary --format text` | after a failed run: what MaaFramework's log says happened, node by node ([MaaEvidenceKit](https://github.com/Windsland52/MaaEvidenceKit), `npm install --global maa-evidence-kit`; the `maa-diagnose` skill drives it). The VS Code extension MaaLogAnalyzer shows the same log visually |
 
 With Claude Code, the [Everything-Maa](https://github.com/KhazixW2/Everything-Maa)
 plugin adds MaaFramework skills (`maa-wiki` for the protocol, `maa-pipeline-guide`,

@@ -10,11 +10,11 @@
         "on_error": ["Common_Retry"]
     },
     "SplitMirage_OnMenu": {
-        "focus": { "Node.Action.Starting": "On the Split Mirage menu" },
         "recognition": "And",
         "all_of": ["Screen_SplitMirageMenu"],
         "next": ["SplitMirage_Farm"],
-        "on_error": ["Common_Retry"]
+        "on_error": ["Common_Retry"],
+        "focus": { "Node.Action.Starting": "On the Split Mirage menu" }
     },
     // The mode option sets the param.
     "SplitMirage_Farm": {
@@ -45,10 +45,11 @@
         "post_delay": 1500,
         "next": ["Screen_SplitMirageMenu"]
     },
-    "SplitMirage_ToMenu_DailyEvents": { // Split Mirage tile, below Crucible's
+    "SplitMirage_ToMenu_DailyEvents": {
+        // Split Mirage tile, below Crucible's
         "recognition": "OCR",
-        "expected": "^Split\\s?Mirage$",
         "roi": [0, 595, 450, 80],
+        "expected": "^Split\\s?Mirage$",
         "action": "Click",
         "next": ["Screen_SplitMirageMenu", "SplitMirage_ToMenu_OtherTab"]
     },
@@ -66,18 +67,18 @@
     },
     // Results: "Battle Ended", Waves Cleared, "Tap to Continue".
     "SplitMirage_Results": {
-        "focus": { "Node.Action.Starting": "Battle ended" },
         "recognition": "And",
         "all_of": ["Screen_TapToContinue"],
         "pre_delay": 1500, // let the numbers settle
         "timeout": 600000,
-        "next": ["SplitMirage_Waves", "SplitMirage_TapContinue"]
+        "next": ["SplitMirage_Waves", "SplitMirage_TapContinue"],
+        "focus": { "Node.Action.Starting": "Battle ended" }
     },
     // Waves Cleared (e.g. "12"), shown in the log; then tap to continue.
     "SplitMirage_Waves": {
         "recognition": "OCR",
-        "expected": "^\\d+$",
         "roi": [130, 815, 460, 75],
+        "expected": "^\\d+$",
         "action": "Click",
         "target": [150, 1170, 420, 70], // Tap to Continue
         "post_delay": 1500,
@@ -92,22 +93,24 @@
         "next": ["SplitMirage_BackOnMenu", "SplitMirage_TapContinue"]
     },
     "SplitMirage_BackOnMenu": {
-        "focus": { "Node.Action.Starting": "Back on the Split Mirage menu" },
         "recognition": "And",
-        "all_of": ["Screen_SplitMirageMenu"]
+        "all_of": ["Screen_SplitMirageMenu"],
+        "focus": { "Node.Action.Starting": "Back on the Split Mirage menu" }
     },
 
     // ---------------------------------------------------------------
     // Reward-track helpers used by the agent (agent/track.py).
-    "SplitMirage_Best": { // "Today's Best: Wave ×N"
+    "SplitMirage_Best": {
+        // "Today's Best: Wave ×N"
         "recognition": "OCR",
-        "expected": "Wave\\s?\\S?\\s?\\d+$",
-        "roi": [180, 795, 360, 50]
+        "roi": [180, 795, 360, 50],
+        "expected": "Wave\\s?\\S?\\s?\\d+$"
     },
-    "SplitMirage_TrackValues": { // the wave under each reward, e.g. "10"
+    "SplitMirage_TrackValues": {
+        // the wave under each reward, e.g. "10"
         "recognition": "OCR",
-        "expected": "^\\d+$",
-        "roi": [20, 940, 680, 60]
+        "roi": [20, 940, 680, 60],
+        "expected": "^\\d+$"
     },
     // Gem rewards sit in a bright blue ring (any gem colour); coins in a
     // grey one. The agent sets the roi to the spot above each wave label.
@@ -120,14 +123,6 @@
     },
     // Close whatever claiming opened (rewards popup): back until the menu shows.
     "SplitMirage_CloseToMenu": {
-        "next": ["SplitMirage_BackOnMenu", "SplitMirage_CloseToMenu_Back"]
-    },
-    "SplitMirage_CloseToMenu_Back": {
-        "action": "ClickKey",
-        "key": 4,
-        "pre_delay": 1000,
-        "post_delay": 1500,
-        "max_hit": 5,
-        "next": ["SplitMirage_BackOnMenu", "SplitMirage_CloseToMenu_Back"]
+        "next": ["SplitMirage_BackOnMenu", "[JumpBack]Common_Back"]
     }
 }

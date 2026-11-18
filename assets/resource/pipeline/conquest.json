@@ -9,11 +9,11 @@
         "on_error": ["Common_Retry"]
     },
     "Conquest_OnPage": {
-        "focus": { "Node.Action.Starting": "On the Conquest page" },
         "recognition": "And",
         "all_of": ["Screen_ConquestPage"],
         "next": ["Conquest_Farm"],
-        "on_error": ["Common_Retry"]
+        "on_error": ["Common_Retry"],
+        "focus": { "Node.Action.Starting": "On the Conquest page" }
     },
     // The "Runs" option sets the param.
     "Conquest_Farm": {
@@ -36,7 +36,8 @@
             "[JumpBack]Common_ToTabBar"
         ]
     },
-    "Conquest_ToPage_GuildEvents": { // Conquest tile
+    "Conquest_ToPage_GuildEvents": {
+        // Conquest tile
         "recognition": "And",
         "all_of": ["Screen_GuildEvents"],
         "action": "Click",
@@ -52,7 +53,8 @@
         "target": [520, 740, 110, 120],
         "next": ["Conquest_ToPage_GuildEvents"]
     },
-    "Conquest_ToPage_TabBar": { // Guild tab (shield icon, right of Home)
+    "Conquest_ToPage_TabBar": {
+        // Guild tab (shield icon, right of Home)
         "recognition": "And",
         "all_of": ["Screen_TabBar"],
         "action": "Click",
@@ -66,8 +68,8 @@
     // The agent reads it.
     "Conquest_Attempts": {
         "recognition": "OCR",
-        "expected": "Attempts:\\s?\\d+\\s?/\\s?\\d+",
-        "roi": [200, 25, 330, 50]
+        "roi": [200, 25, 330, 50],
+        "expected": "Attempts:\\s?\\d+\\s?/\\s?\\d+"
     },
 
     // One run, from the Conquest page back to the Conquest page.
@@ -76,19 +78,19 @@
     },
     "Conquest_Challenge": {
         "recognition": "OCR",
-        "expected": "^Challenge$",
         "roi": [220, 940, 280, 80],
+        "expected": "^Challenge$",
         "action": "Click",
         "next": ["Conquest_StartBattle"]
     },
     "Conquest_StartBattle": {
-        "focus": { "Node.Action.Starting": "Battle in progress" },
         "recognition": "And",
         "all_of": ["Screen_StartBattle"],
         "action": "Click",
         "post_delay": 3000,
         "timeout": 20000,
-        "next": ["Conquest_Results", "Conquest_InBattle"]
+        "next": ["Conquest_Results", "Conquest_InBattle"],
+        "focus": { "Node.Action.Starting": "Battle in progress" }
     },
     // The battle (up to 50 rounds): wait for the results.
     "Conquest_InBattle": {
@@ -99,17 +101,17 @@
     },
     // Results: "Battle Ended", DMG Dealt, "Tap to Continue".
     "Conquest_Results": {
-        "focus": { "Node.Action.Starting": "Battle ended" },
         "recognition": "And",
         "all_of": ["Screen_TapToContinue"],
         "pre_delay": 1500,
         "action": "Click",
         "post_delay": 1500,
-        "next": ["Conquest_BackOnPage", "Conquest_Results"]
+        "next": ["Conquest_BackOnPage", "Conquest_Results"],
+        "focus": { "Node.Action.Starting": "Battle ended" }
     },
     "Conquest_BackOnPage": {
-        "focus": { "Node.Action.Starting": "Back on the Conquest page" },
         "recognition": "And",
-        "all_of": ["Screen_ConquestPage"]
+        "all_of": ["Screen_ConquestPage"],
+        "focus": { "Node.Action.Starting": "Back on the Conquest page" }
     }
 }

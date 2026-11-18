@@ -12,11 +12,11 @@
         "on_error": ["Common_Retry"]
     },
     "MaterialRealms_OnList": {
-        "focus": { "Node.Action.Starting": "On the Material Realms list" },
         "recognition": "And",
         "all_of": ["Screen_MaterialList"],
         "next": ["MaterialRealms_Use"],
-        "on_error": ["Common_Retry"]
+        "on_error": ["Common_Retry"],
+        "focus": { "Node.Action.Starting": "On the Material Realms list" }
     },
     // Settings only, never run: sets of 5 tools to buy per realm per day
     // (0 = none). Read by the MaterialRealms action.
@@ -54,10 +54,11 @@
         "post_delay": 1500,
         "next": ["Screen_MaterialList", "MaterialRealms_ToList_Realm"]
     },
-    "MaterialRealms_ToList_Journal": { // Material Realms tile on the Journal
+    "MaterialRealms_ToList_Journal": {
+        // Material Realms tile on the Journal
         "recognition": "OCR",
-        "expected": "^Material\\s?Realms$",
         "roi": [0, 1080, 300, 70],
+        "expected": "^Material\\s?Realms$",
         "action": "Click",
         "post_delay": 1000,
         "next": ["Screen_MaterialList"]
@@ -79,31 +80,33 @@
     // of each tile (no badge = 0 tools). The agent sets the roi per realm.
     "MaterialRealms_ListCount": {
         "recognition": "OCR",
-        "expected": "^\\d+",
-        "roi": [318, 168, 40, 34]
+        "roi": [318, 168, 40, 34],
+        "expected": "^\\d+"
     },
 
     // ---------------------------------------------------------------
     // A realm's page. The agent sets the tile's expected/roi per realm.
     "MaterialRealms_OpenRealm": {
         "recognition": "OCR",
-        "expected": "^Dread\\s?Hollow$",
         "roi": [20, 950, 280, 60],
+        "expected": "^Dread\\s?Hollow$",
         "action": "Click",
         "post_delay": 2000,
         "next": ["MaterialRealms_OnRealm"]
     },
-    "MaterialRealms_OnRealm": { // the tab at the bottom names the realm
+    "MaterialRealms_OnRealm": {
+        // the tab at the bottom names the realm
         "recognition": "And",
         "all_of": [
             "Screen_MaterialTitle",
-            { "recognition": "OCR", "expected": "^Dread\\s?Hollow$", "roi": [150, 1185, 210, 50] }
+            { "recognition": "OCR", "roi": [150, 1185, 210, 50], "expected": "^Dread\\s?Hollow$" }
         ]
     },
-    "MaterialRealms_ToolCount": { // tools held, top right (the far-right counter)
+    "MaterialRealms_ToolCount": {
+        // tools held, top right (the far-right counter)
         "recognition": "OCR",
-        "expected": "^\\d+",
-        "roi": [610, 28, 70, 45]
+        "roi": [610, 28, 70, 45],
+        "expected": "^\\d+"
     },
     // The big tool button: one tap uses 1 tool, or with Quick Mine / Quick
     // Conquer on, enough tools to finish the current mine or monster.
@@ -115,8 +118,8 @@
     // Quick Mine / Quick Conquer is on: its knob is yellow, on the right.
     "MaterialRealms_QuickOn": {
         "recognition": "ColorMatch",
-        "method": 4, // RGB
         "roi": [420, 1038, 40, 36],
+        "method": 4, // RGB
         "lower": [170, 175, 70],
         "upper": [230, 230, 140],
         "count": 60
@@ -126,7 +129,8 @@
         "target": [380, 1040, 70, 30],
         "post_delay": 1000
     },
-    "MaterialRealms_RealmBack": { // back arrow to the list
+    "MaterialRealms_RealmBack": {
+        // back arrow to the list
         "action": "Click",
         "target": [30, 1185, 90, 70],
         "post_delay": 1500,

@@ -6,15 +6,17 @@
     // the agent checks the task's screen after Purchase / Cancel.
     "Common_Purchase_Limit": {
         "recognition": "OCR",
-        "expected": "Purchase\\s?Limit:\\s?\\d+\\s?/\\s?\\d+",
-        "roi": [350, 755, 270, 45]
+        "roi": [350, 755, 270, 45],
+        "expected": "Purchase\\s?Limit:\\s?\\d+\\s?/\\s?\\d+"
     },
-    "Common_Purchase_Count": { // the Qty field
+    "Common_Purchase_Count": {
+        // the Qty field
         "recognition": "OCR",
-        "expected": "^\\d+$",
-        "roi": [220, 670, 280, 55]
+        "roi": [220, 670, 280, 55],
+        "expected": "^\\d+$"
     },
-    "Common_Purchase_More": { // Qty "+"
+    "Common_Purchase_More": {
+        // Qty "+"
         "action": "Click",
         "target": [518, 681, 36, 36],
         "repeat_delay": 700, // purchase.py sets repeat (taps needed)
@@ -22,15 +24,15 @@
     },
     "Common_Purchase_Purchase": {
         "recognition": "OCR",
-        "expected": "^Purchase",
         "roi": [370, 800, 250, 70],
+        "expected": "^Purchase",
         "action": "Click",
         "post_delay": 2000
     },
     "Common_Purchase_Cancel": {
         "recognition": "OCR",
-        "expected": "^Cancel$",
         "roi": [110, 800, 240, 70],
+        "expected": "^Cancel$",
         "action": "Click",
         "post_delay": 1500
     }

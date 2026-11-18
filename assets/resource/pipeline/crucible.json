@@ -10,11 +10,11 @@
         "on_error": ["Common_Retry"]
     },
     "Crucible_OnMenu": {
-        "focus": { "Node.Action.Starting": "On the Crucible menu" },
         "recognition": "And",
         "all_of": ["Screen_CrucibleMenu"],
         "next": ["Crucible_Farm"],
-        "on_error": ["Common_Retry"]
+        "on_error": ["Common_Retry"],
+        "focus": { "Node.Action.Starting": "On the Crucible menu" }
     },
     // The mode option sets the param.
     "Crucible_Farm": {
@@ -46,7 +46,8 @@
         "post_delay": 1500,
         "next": ["Screen_CrucibleMenu"]
     },
-    "Crucible_ToMenu_DailyEvents": { // Crucible of Hieromon tile
+    "Crucible_ToMenu_DailyEvents": {
+        // Crucible of Hieromon tile
         "recognition": "And",
         "all_of": ["Screen_DailyEvents"],
         "action": "Click",
@@ -67,18 +68,18 @@
     },
     // Results: "Battle Ended", Team DMG, "Tap to Continue".
     "Crucible_Results": {
-        "focus": { "Node.Action.Starting": "Battle ended" },
         "recognition": "And",
         "all_of": ["Screen_TapToContinue"],
         "pre_delay": 1500, // let the numbers settle
         "timeout": 600000,
-        "next": ["Crucible_TeamDmg"]
+        "next": ["Crucible_TeamDmg"],
+        "focus": { "Node.Action.Starting": "Battle ended" }
     },
     // Team DMG (e.g. "5.51B"), shown in the log; then tap to continue.
     "Crucible_TeamDmg": {
         "recognition": "OCR",
-        "expected": "^\\d+(\\.\\d+)?[KMB]?$",
         "roi": [45, 728, 280, 50],
+        "expected": "^\\d+(\\.\\d+)?[KMB]?$",
         "action": "Click",
         "target": [150, 1170, 420, 70], // Tap to Continue
         "post_delay": 1500,
@@ -86,22 +87,24 @@
         "next": ["Crucible_BackOnMenu", "[JumpBack]Common_TapToContinue"]
     },
     "Crucible_BackOnMenu": {
-        "focus": { "Node.Action.Starting": "Back on the Crucible menu" },
         "recognition": "And",
-        "all_of": ["Screen_CrucibleTitle"]
+        "all_of": ["Screen_CrucibleTitle"],
+        "focus": { "Node.Action.Starting": "Back on the Crucible menu" }
     },
 
     // ---------------------------------------------------------------
     // Damage-track helpers used by the agent.
-    "Crucible_HighestToday": { // "Highest DMG Today" value, raw digits
+    "Crucible_HighestToday": {
+        // "Highest DMG Today" value, raw digits
         "recognition": "OCR",
-        "expected": "^\\d+$",
-        "roi": [150, 815, 420, 55]
+        "roi": [150, 815, 420, 55],
+        "expected": "^\\d+$"
     },
-    "Crucible_TrackValues": { // reward thresholds under the gifts, e.g. "11.3B"
+    "Crucible_TrackValues": {
+        // reward thresholds under the gifts, e.g. "11.3B"
         "recognition": "OCR",
-        "expected": "^\\d+(\\.\\d+)?[KMB]$",
-        "roi": [20, 955, 680, 45]
+        "roi": [20, 955, 680, 45],
+        "expected": "^\\d+(\\.\\d+)?[KMB]$"
     },
     // Unclaimed gift box icon (blue gift). The agent sets the roi to the spot
     // above each reward label. Claimed rewards show a checkmark instead.
@@ -112,14 +115,6 @@
     // Scrolling the track: Common_TrackEnd / Common_TrackStep (common.json).
     // Close whatever claiming opened (rewards popup): back until the menu shows.
     "Crucible_CloseToMenu": {
-        "next": ["Crucible_BackOnMenu", "Crucible_CloseToMenu_Back"]
-    },
-    "Crucible_CloseToMenu_Back": {
-        "action": "ClickKey",
-        "key": 4,
-        "pre_delay": 1000,
-        "post_delay": 1500,
-        "max_hit": 5,
-        "next": ["Crucible_BackOnMenu", "Crucible_CloseToMenu_Back"]
+        "next": ["Crucible_BackOnMenu", "[JumpBack]Common_Back"]
     }
 }

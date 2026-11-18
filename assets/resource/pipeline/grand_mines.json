@@ -2,17 +2,18 @@
     // Taps the agent places (agent/grand_mines.py sets the target), as nodes
     // so they show in MaaFramework's log.
     "GrandMines_Tap": { "action": "Click" },
-    "GrandMines_BackKey": { "action": "ClickKey", "key": 4 },
 
     // What agent/grand_mines.py looks for on the map (it reads every result).
-    // Claim bars: the yellow segments, RGB about (204, 207, 103), one result
-    // per segment; the agent keeps the bar-sized ones and groups them by mine.
+    // Claim bars: the yellow segments, HSV about (30, 128, 205) (RGB 204,
+    // 207, 103), one result per segment; the agent keeps the bar-sized ones
+    // and groups them by mine. HSV, not RGB: it holds up better when the
+    // rendering shifts colours a little (emulator, graphics settings).
     "GrandMines_Bars": {
         "recognition": "ColorMatch",
-        "method": 4, // RGB
         "roi": [0, 130, 720, 870],
-        "lower": [180, 185, 80],
-        "upper": [230, 230, 130],
+        "method": 40, // HSV
+        "lower": [25, 90, 180],
+        "upper": [35, 150, 235],
         "connected": true,
         "count": 55
     },
@@ -20,8 +21,8 @@
     // the agent joins the blobs of one line into one link.
     "GrandMines_Links": {
         "recognition": "ColorMatch",
-        "method": 40, // HSV
         "roi": [15, 1030, 690, 125],
+        "method": 40, // HSV
         "lower": [35, 90, 150],
         "upper": [55, 255, 255],
         "connected": true,
@@ -45,11 +46,11 @@
     // Grand mines to claim (a number, or "ALL": until stopped). Set by the
     // "Mines to claim" option.
     "GrandMines_Farm": {
-        "focus": { "Node.Action.Starting": "Grand Mines: going to the AFK spot" },
         "action": "Custom",
         "custom_action": "GrandMines",
         "custom_action_param": { "mines": "ALL" },
-        "on_error": ["Common_Retry"]
+        "on_error": ["Common_Retry"],
+        "focus": { "Node.Action.Starting": "Grand Mines: going to the AFK spot" }
     },
     // Settings only, never run (one node per option): the AFK spot, and
     // which grand mine types to claim.
@@ -80,10 +81,11 @@
     "GrandMines_ToHunt": {
         "next": ["Screen_MapExploration", "GrandMines_ToHunt_Journal", "[JumpBack]Common_ToJournal"]
     },
-    "GrandMines_ToHunt_Journal": { // Map Exploration tile on the Journal
+    "GrandMines_ToHunt_Journal": {
+        // Map Exploration tile on the Journal
         "recognition": "OCR",
-        "expected": "^Map\\s?Exploration$",
         "roi": [0, 630, 300, 70],
+        "expected": "^Map\\s?Exploration$",
         "action": "Click",
         "post_delay": 1500,
         "next": ["Screen_MapExploration"]
@@ -109,10 +111,7 @@
     // world map. Not shown when already in that region.
     "GrandMines_Travel": {
         "recognition": "And",
-        "all_of": [
-            "Screen_TravelPopup",
-            "Common_PopupOK"
-        ],
+        "all_of": ["Screen_TravelPopup", "Common_PopupOK"],
         "box_index": 1,
         "action": "Click",
         "post_delay": 3000,
@@ -130,8 +129,8 @@
     // rock: close it (the X) once at the spot.
     "GrandMines_StopTracking": {
         "recognition": "OCR",
-        "expected": "^\\d[\\d.]*[KM]?$",
         "roi": [85, 912, 100, 46],
+        "expected": "^\\d[\\d.]*[KM]?$",
         "action": "Click",
         "target": [54, 894, 28, 28],
         "post_delay": 1000
@@ -154,7 +153,7 @@
     // Energy, top right: "186/300". Claims don't use it; ore rocks do.
     "GrandMines_Energy": {
         "recognition": "OCR",
-        "expected": "\\d+\\s?/\\s?\\d+",
-        "roi": [585, 30, 130, 45]
+        "roi": [585, 30, 130, 45],
+        "expected": "\\d+\\s?/\\s?\\d+"
     }
 }

@@ -1,7 +1,12 @@
 {
   "devDependencies": {
     "@nekosu/maa-tools": "1.0.23",
+    "@nekosu/prettier-plugin-maafw-sort": "^1.1.0",
     "@types/node": "^25.5.2",
-    "prettier-plugin-multiline-arrays": "^3.0.6"
+    "prettier": "^3.10.1"
+  },
+  "scripts": {
+    "format": "prettier --write \"assets/**/*.json\"",
+    "format:check": "prettier --check \"assets/**/*.json\""
   }
 }

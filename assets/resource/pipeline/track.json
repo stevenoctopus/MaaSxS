@@ -22,8 +22,8 @@
     // The agent sets the roi to the middle of the icon above each label.
     "Common_TrackClaimed": {
         "recognition": "ColorMatch",
-        "method": 4, // RGB
         "roi": [59, 893, 36, 36],
+        "method": 4, // RGB
         "lower": [180, 185, 70],
         "upper": [230, 230, 135],
         "count": 250
@@ -32,8 +32,8 @@
     // is already at its right end. The agent sets the roi.
     "Common_TrackNoBar": {
         "recognition": "ColorMatch",
-        "method": 4, // RGB
         "roi": [674, 916, 16, 10],
+        "method": 4, // RGB
         "lower": [205, 205, 205],
         "upper": [240, 240, 240],
         "count": 150

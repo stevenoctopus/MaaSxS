@@ -8,11 +8,11 @@
         "on_error": ["Common_Retry"]
     },
     "DailyDungeon_OnList": {
-        "focus": { "Node.Action.Starting": "On the Daily Dungeon list" },
         "recognition": "And",
         "all_of": ["Screen_DungeonList"],
         "next": ["DailyDungeon_DailyFarm"],
-        "on_error": ["Common_Retry"]
+        "on_error": ["Common_Retry"],
+        "focus": { "Node.Action.Starting": "On the Daily Dungeon list" }
     },
     // Affection mode: check the weekly total, run until the cap, recheck and
     // top up, never claiming rewards. Logic lives in agent/affection.py.
@@ -36,16 +36,13 @@
     // Get to the Daily Dungeon list from any screen: tab bar > Journal > tile.
     // Use as "[JumpBack]DailyDungeon_ToList", or as a next to end there.
     "DailyDungeon_ToList": {
-        "next": [
-            "Screen_DungeonList",
-            "DailyDungeon_ToList_Journal",
-            "[JumpBack]Common_ToJournal"
-        ]
+        "next": ["Screen_DungeonList", "DailyDungeon_ToList_Journal", "[JumpBack]Common_ToJournal"]
     },
-    "DailyDungeon_ToList_Journal": { // open the Daily Dungeon tile
+    "DailyDungeon_ToList_Journal": {
+        // open the Daily Dungeon tile
         "recognition": "OCR",
-        "expected": "^Daily\\s?Dungeon$",
         "roi": [0, 140, 300, 60],
+        "expected": "^Daily\\s?Dungeon$",
         "action": "Click",
         "next": ["Screen_DungeonList"]
     },
@@ -59,34 +56,34 @@
     // Tap the latest dungeon: the list always opens with it in the middle
     // (past dungeons above, the next one, locked with a countdown, below).
     "DailyDungeon_SelectCard": {
-        "focus": { "Node.Action.Starting": "Opening the latest dungeon" },
         "recognition": "And",
         "all_of": ["Screen_DungeonList", "DailyDungeon_LatestTitle"],
         "box_index": 1, // clicks the title
         "action": "Click",
-        "next": ["DailyDungeon_SelectDifficulty"]
+        "next": ["DailyDungeon_SelectDifficulty"],
+        "focus": { "Node.Action.Starting": "Opening the latest dungeon" }
     },
     // The middle card's title, e.g. "Temple of Order" (OCR often drops
     // spaces in the title font). Any text: the agent logs it.
     "DailyDungeon_LatestTitle": {
         "recognition": "OCR",
-        "expected": "\\S",
-        "roi": [100, 570, 520, 90]
+        "roi": [100, 570, 520, 90],
+        "expected": "\\S"
     },
     // Tap the chosen difficulty tab (harmless if already selected).
     // `expected` is set by the "Difficulty" option.
     "DailyDungeon_SelectDifficulty": {
         "recognition": "OCR",
-        "expected": "^Hard$",
         "roi": [150, 1180, 570, 80],
+        "expected": "^Hard$",
         "action": "Click",
         "next": ["DailyDungeon_DifficultySelected"]
     },
     // Confirm: the detail title reads "<Dungeon> - <Difficulty>".
     "DailyDungeon_DifficultySelected": {
         "recognition": "OCR",
-        "expected": "Hard$",
         "roi": [100, 180, 520, 65],
+        "expected": "Hard$",
         "next": ["DailyDungeon_InRun", "[JumpBack]Common_Queue"]
     },
     // The run is ~5 floors with room maps between them; the map votes
@@ -100,12 +97,12 @@
     // Results ("Drops"). By default (Affection mode): leave without claiming.
     // Daily mode's case in interface.json sets this next to claim instead.
     "DailyDungeon_Results": {
-        "focus": { "Node.Action.Starting": "Battle ended" },
         "recognition": "And",
         "all_of": ["Screen_DungeonResults"],
         "pre_delay": 1500,
         "timeout": 30000,
-        "next": ["DailyDungeon_Leave"]
+        "next": ["DailyDungeon_Leave"],
+        "focus": { "Node.Action.Starting": "Battle ended" }
     },
     // Tap back. With reward attempts left this asks "rewards not claimed.
     // Exit the dungeon?", answered by DailyDungeon_UnclaimedExit. The tap is
@@ -120,18 +117,16 @@
         "timeout": 30000,
         "next": ["DailyDungeon_BackOnList", "DailyDungeon_UnclaimedExit", "DailyDungeon_Leave"]
     },
-    "DailyDungeon_UnclaimedExit": { // exit without claiming: OK
-        "focus": { "Node.Action.Starting": "Leaving without claiming the rewards" },
+    "DailyDungeon_UnclaimedExit": {
         "recognition": "And",
-        "all_of": [
-            "DailyDungeon_NotClaimed",
-            "Common_PopupOK"
-        ],
+        "all_of": ["DailyDungeon_NotClaimed", "Common_PopupOK"],
         "box_index": 1,
         "action": "Click",
         "post_delay": 1500,
         "timeout": 30000,
-        "next": ["DailyDungeon_BackOnList", "DailyDungeon_UnclaimedExit", "DailyDungeon_Leave"]
+        "next": ["DailyDungeon_BackOnList", "DailyDungeon_UnclaimedExit", "DailyDungeon_Leave"],
+        // exit without claiming: OK
+        "focus": { "Node.Action.Starting": "Leaving without claiming the rewards" }
     },
 
     // Daily mode's results: its interface.json case sets DailyDungeon_Results' next to
@@ -141,22 +136,22 @@
     // are left, or the grade is too low: the Claim button appears a moment
     // after "Drops", and leaving early would forfeit the rewards.
     "DailyDungeon_Claim": {
-        "focus": { "Node.Action.Starting": "Claiming the rewards (uses 1 reward attempt)" },
         "recognition": "And",
         "all_of": [
-            { "recognition": "OCR", "expected": "^Claim\\s?Rewards$", "roi": [360, 1180, 320, 75] },
-            { "recognition": "OCR", "expected": "Attempts:\\s?[1-9]", "roi": [370, 1135, 300, 45] },
+            { "recognition": "OCR", "roi": [360, 1180, 320, 75], "expected": "^Claim\\s?Rewards$" },
+            { "recognition": "OCR", "roi": [370, 1135, 300, 45], "expected": "Attempts:\\s?[1-9]" },
             "DailyDungeon_GoodGrade"
         ], // clicks the first: Claim Rewards
         "action": "Click",
         "post_delay": 1500,
-        "next": ["DailyDungeon_ClaimConfirm"]
+        "next": ["DailyDungeon_ClaimConfirm"],
+        "focus": { "Node.Action.Starting": "Claiming the rewards (uses 1 reward attempt)" }
     },
     // "Spend 1 reward attempt(s) to claim these dungeon rewards 1 time(s)?"
     "DailyDungeon_ClaimConfirm": {
         "recognition": "And",
         "all_of": [
-            { "recognition": "OCR", "expected": "reward\\s?attempt", "roi": [100, 500, 520, 120] },
+            { "recognition": "OCR", "roi": [100, 500, 520, 120], "expected": "reward\\s?attempt" },
             "Common_PopupOK"
         ],
         "box_index": 1,
@@ -175,8 +170,8 @@
             {
                 "recognition": "Or",
                 "any_of": [
-                    { "recognition": "OCR", "expected": "^Claimed$", "roi": [360, 1180, 320, 75] },
-                    { "recognition": "OCR", "expected": "Attempts:\\s?0\\s?/", "roi": [370, 1135, 300, 45] }
+                    { "recognition": "OCR", "roi": [360, 1180, 320, 75], "expected": "^Claimed$" },
+                    { "recognition": "OCR", "roi": [370, 1135, 300, 45], "expected": "Attempts:\\s?0\\s?/" }
                 ]
             }
         ],
@@ -192,17 +187,17 @@
     // is claimed.
     "DailyDungeon_GoodGrade": {
         "recognition": "OCR",
-        "expected": "^[SABC]$",
-        "roi": [230, 160, 260, 170]
+        "roi": [230, 160, 260, 170],
+        "expected": "^[SABC]$"
     },
     // Too low: leave without claiming (keeps the attempt); the agent runs again.
     "DailyDungeon_LowGrade": {
-        "focus": { "Node.Action.Starting": "Grade below the minimum: leaving without claiming" },
         "enabled": false,
         "recognition": "OCR",
-        "expected": "^[ABC]$",
         "roi": [230, 160, 260, 170],
-        "next": ["DailyDungeon_Leave"]
+        "expected": "^[ABC]$",
+        "next": ["DailyDungeon_Leave"],
+        "focus": { "Node.Action.Starting": "Grade below the minimum: leaving without claiming" }
     },
     // "Daily Dungeon rewards not claimed. Exit the dungeon?": in Daily mode
     // never exit, go back and claim.
@@ -210,7 +205,7 @@
         "recognition": "And",
         "all_of": [
             "DailyDungeon_NotClaimed",
-            { "recognition": "OCR", "expected": "^Cancel$", "roi": [100, 700, 260, 75] }
+            { "recognition": "OCR", "roi": [100, 700, 260, 75], "expected": "^Cancel$" }
         ],
         "box_index": 1,
         "action": "Click",
@@ -218,11 +213,11 @@
         "next": ["DailyDungeon_Claim", "DailyDungeon_LeaveResults"]
     },
     // "Daily Dungeon rewards not claimed. Exit the dungeon?" (OK / Cancel).
-    "DailyDungeon_NotClaimed": { "recognition": "OCR", "expected": "not\\s?claimed", "roi": [100, 500, 520, 120] },
+    "DailyDungeon_NotClaimed": { "recognition": "OCR", "roi": [100, 500, 520, 120], "expected": "not\\s?claimed" },
     "DailyDungeon_BackOnList": {
-        "focus": { "Node.Action.Starting": "Run complete" },
         "recognition": "And",
-        "all_of": ["Screen_DungeonList"]
+        "all_of": ["Screen_DungeonList"],
+        "focus": { "Node.Action.Starting": "Run complete" }
     },
 
     // ---------------------------------------------------------------
@@ -230,8 +225,8 @@
     // "Daily Reward Attempts: N/2" on the list.
     "DailyDungeon_ListAttempts": {
         "recognition": "OCR",
-        "expected": "Attempts:\\s?\\d+\\s?/\\s?\\d+",
-        "roi": [230, 30, 260, 45]
+        "roi": [230, 30, 260, 45],
+        "expected": "Attempts:\\s?\\d+\\s?/\\s?\\d+"
     },
     // Dungeon detail: the "+" next to "Daily Reward Attempts: N/2" (or "Out of
     // daily reward attempts." at 0) opens Purchase.
@@ -239,8 +234,8 @@
     // fails after the timeout and the agent carries on without buying.
     "DailyDungeon_Buy_Open": {
         "recognition": "OCR",
-        "expected": "Daily\\s?Reward\\s?Attempts|Out\\s?of\\s?daily\\s?reward",
         "roi": [180, 1005, 360, 55],
+        "expected": "Daily\\s?Reward\\s?Attempts|Out\\s?of\\s?daily\\s?reward",
         "action": "Click",
         "target": [520, 1008, 55, 50], // the "+" (just right of the text)
         "post_delay": 1500,
@@ -253,8 +248,8 @@
     // reward attempts."): nothing left to buy.
     "DailyDungeon_BuyPlus": {
         "recognition": "ColorMatch",
-        "method": 4, // RGB
         "roi": [515, 1013, 50, 40],
+        "method": 4, // RGB
         "lower": [170, 175, 60],
         "upper": [235, 235, 150],
         "count": 150
@@ -268,15 +263,17 @@
     },
     "DailyDungeon_Buy_Limit": {
         "recognition": "OCR",
-        "expected": "Purchase\\s?Limit:\\s?\\d+\\s?/\\s?\\d+",
-        "roi": [360, 670, 280, 45]
+        "roi": [360, 670, 280, 45],
+        "expected": "Purchase\\s?Limit:\\s?\\d+\\s?/\\s?\\d+"
     },
-    "DailyDungeon_Buy_Count": { // "Attempt ×N/M": how many will be bought
+    "DailyDungeon_Buy_Count": {
+        // "Attempt ×N/M": how many will be bought
         "recognition": "OCR",
-        "expected": "Attempt\\s?\\S?\\s?\\d+\\s?/\\s?\\d+",
-        "roi": [95, 565, 220, 45]
+        "roi": [95, 565, 220, 45],
+        "expected": "Attempt\\s?\\S?\\s?\\d+\\s?/\\s?\\d+"
     },
-    "DailyDungeon_Buy_More": { // slider "+"
+    "DailyDungeon_Buy_More": {
+        // slider "+"
         "action": "Click",
         "target": [575, 620, 45, 45],
         "repeat_delay": 600, // purchase.py sets repeat (taps needed)
@@ -284,16 +281,16 @@
     },
     "DailyDungeon_Buy_Purchase": {
         "recognition": "OCR",
-        "expected": "^Purchase$",
         "roi": [370, 715, 245, 60],
+        "expected": "^Purchase$",
         "action": "Click",
         "post_delay": 2000,
         "next": ["Screen_DungeonDetail"]
     },
     "DailyDungeon_Buy_Cancel": {
         "recognition": "OCR",
-        "expected": "^Cancel$",
         "roi": [105, 715, 245, 60],
+        "expected": "^Cancel$",
         "action": "Click",
         "post_delay": 1500,
         "next": ["Screen_DungeonDetail"]
