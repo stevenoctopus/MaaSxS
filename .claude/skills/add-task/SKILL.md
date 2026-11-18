@@ -35,7 +35,7 @@ A task is a pipeline entry plus, when it loops or reads numbers, one Python cust
 
 7. **Live check** with `python tools/run.py <Task> --opt "Option=Case" --override tools/overrides/no_spend.json`: Purchase presses Cancel, battles do nothing. Add the task's own run/buy nodes to a copy of that file if it spends something new. Done when the agent log lines show the route, the reads and the run loop working. Spend only with the user's OK.
 
-8. **Finish**: README task table row and any new tool; new terms in `GLOSSARY.md`; ask the user to close the GUI, then `cd tools; python install.py v0.1.3 win x86_64`; commit and push.
+8. **Finish**: README task table row and any new tool; new terms in `GLOSSARY.md`; ask the user to close the GUI, then `cd tools; python install.py v0.1.4 win x86_64`; commit and push.
 
 These steps are defaults: where a feature doesn't fit them, follow the game and say why in the pipeline comments.
 

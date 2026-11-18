@@ -8,7 +8,7 @@ MaaSxS automates the game Sword x Staff with MaaFramework (pipeline JSON + a Pyt
 - Terms: GLOSSARY.md. Decisions: docs/adr/.
 - Tests: `python -m unittest discover tests` (no emulator). Live checks: `tools/run.py` with `tools/overrides/no_spend.json`.
 - The emulator is the user's game: use it only when they aren't playing.
-- Rebuild the GUI (`cd tools; python install.py v0.1.3 win x86_64`) after changing `assets/` or `agent/`, with the GUI closed: ask the user to close it.
+- Rebuild the GUI (`cd tools; python install.py v0.1.4 win x86_64`) after changing `assets/` or `agent/`, with the GUI closed: ask the user to close it.
 
 ## Agent skills
 

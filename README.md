@@ -222,7 +222,7 @@ The game font sometimes merges words ("Riftwatch Fortress" reads as
 
 1. Extract the MaaFramework release (`MAA-win-x86_64-*.zip`) into `deps/`.
 2. Extract the MFAAvalonia release into `install/`, without its `runtimes/` folder.
-3. `cd tools; python install.py v0.1.0 win x86_64` (close the GUI first: it locks its DLLs).
+3. `cd tools; python install.py v0.1.4 win x86_64` (the latest release tag; close the GUI first: it locks its DLLs).
    On Windows this also puts an embedded Python 3.12 with `maafw` in `install/python/`
    and points the agent at it.
 4. Run `install/MFAAvalonia.exe`.
