@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- MaaSxS mascot: a chibi Akane (fan art), drawn in SVG. -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="60%">
+      <stop offset="0" stop-color="#FFF4FA"/>
+      <stop offset="1" stop-color="#DCE1FB"/>
+    </radialGradient>
+    <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFC4DC"/>
+      <stop offset="1" stop-color="#F08DB8"/>
+    </linearGradient>
+    <linearGradient id="iris" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2F5226"/>
+      <stop offset="0.55" stop-color="#5E8F3E"/>
+      <stop offset="1" stop-color="#A9D37A"/>
+    </linearGradient>
+    <linearGradient id="dress" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5568B8"/>
+      <stop offset="1" stop-color="#3A4787"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F3D58A"/>
+      <stop offset="1" stop-color="#C39A45"/>
+    </linearGradient>
+    <linearGradient id="gem" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E3CCFF"/>
+      <stop offset="1" stop-color="#8A55D8"/>
+    </linearGradient>
+    <clipPath id="mouth">
+      <path d="M230 276 Q256 314 282 276 Q256 284 230 276 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- badge -->
+  <circle cx="256" cy="262" r="232" fill="url(#bg)"/>
+  <circle cx="256" cy="262" r="232" fill="none" stroke="#C9CFF3" stroke-width="6"/>
+
+  <!-- back hair and twin-tails: outline pass, then fill pass -->
+  <g fill="#C8648F">
+    <ellipse cx="256" cy="196" rx="134" ry="124"/>
+    <circle cx="126" cy="218" r="52"/><circle cx="98" cy="258" r="44"/>
+    <circle cx="138" cy="286" r="42"/><circle cx="92" cy="208" r="34"/>
+    <circle cx="386" cy="218" r="52"/><circle cx="414" cy="258" r="44"/>
+    <circle cx="374" cy="286" r="42"/><circle cx="420" cy="208" r="34"/>
+  </g>
+  <g fill="url(#hair)">
+    <ellipse cx="256" cy="196" rx="129" ry="119"/>
+    <circle cx="126" cy="218" r="47"/><circle cx="98" cy="258" r="39"/>
+    <circle cx="138" cy="286" r="37"/><circle cx="92" cy="208" r="29"/>
+    <circle cx="386" cy="218" r="47"/><circle cx="414" cy="258" r="39"/>
+    <circle cx="374" cy="286" r="37"/><circle cx="420" cy="208" r="29"/>
+  </g>
+  <!-- curl shading on the twin-tails -->
+  <g fill="none" stroke="#E07AA6" stroke-width="4" stroke-linecap="round">
+    <path d="M92 250 Q104 236 120 244"/><path d="M118 292 Q132 280 146 290"/><path d="M90 206 Q100 196 112 202"/>
+    <path d="M420 250 Q408 236 392 244"/><path d="M394 292 Q380 280 366 290"/><path d="M422 206 Q412 196 400 202"/>
+  </g>
+
+  <!-- legs and shoes -->
+  <g stroke="#7A5560" stroke-width="3">
+    <rect x="226" y="452" width="22" height="38" rx="8" fill="#FFE3D6"/>
+    <rect x="264" y="452" width="22" height="38" rx="8" fill="#FFE3D6"/>
+  </g>
+  <g stroke="#6A6F8A" stroke-width="3">
+    <ellipse cx="236" cy="494" rx="20" ry="10" fill="#FAFAFF"/>
+    <ellipse cx="276" cy="494" rx="20" ry="10" fill="#FAFAFF"/>
+  </g>
+  <g stroke="url(#gold)" stroke-width="4" stroke-linecap="round" fill="none">
+    <path d="M226 478 L246 486"/><path d="M286 478 L266 486"/>
+  </g>
+
+  <!-- coat (back) and hood -->
+  <path d="M192 318 Q168 400 146 468 Q256 486 366 468 Q344 400 320 318 Z" fill="#F7F8FC" stroke="#6A6F8A" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M170 330 Q256 284 342 330 Q304 352 256 350 Q208 352 170 330 Z" fill="#ECEEF6" stroke="#6A6F8A" stroke-width="4" stroke-linejoin="round"/>
+
+  <!-- dress -->
+  <path d="M214 334 L298 334 L332 456 Q256 472 180 456 Z" fill="url(#dress)" stroke="#2C356A" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M182 456 Q200 474 218 459 Q237 476 256 461 Q275 476 294 459 Q312 474 330 456" fill="none" stroke="url(#gold)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M256 404 Q240 424 248 440 Q256 432 256 424 Q256 432 264 440 Q272 424 256 404 Z" fill="url(#gold)"/>
+
+  <!-- coat front panels with gold trim -->
+  <path d="M196 326 Q176 402 158 470 L196 472 Q204 400 222 336 Z" fill="#F7F8FC" stroke="#6A6F8A" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M316 326 Q336 402 354 470 L316 472 Q308 400 290 336 Z" fill="#F7F8FC" stroke="#6A6F8A" stroke-width="4" stroke-linejoin="round"/>
+  <g fill="none" stroke="url(#gold)" stroke-width="5" stroke-linecap="round">
+    <path d="M219 340 Q203 402 196 466"/><path d="M293 340 Q309 402 316 466"/>
+  </g>
+
+  <!-- right arm, down -->
+  <path d="M308 340 Q352 364 366 418 L334 430 Q326 392 298 374 Z" fill="#F7F8FC" stroke="#6A6F8A" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M333 424 L366 412" stroke="#4C5FA8" stroke-width="9" stroke-linecap="round"/>
+  <path d="M333 424 L366 412" stroke="url(#gold)" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="352" cy="440" rx="13" ry="15" fill="#FFE3D6" stroke="#7A5560" stroke-width="3"/>
+
+  <!-- left arm, waving -->
+  <path d="M206 342 Q162 334 146 300 L120 316 Q146 368 200 382 Z" fill="#F7F8FC" stroke="#6A6F8A" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M120 316 L146 300" stroke="#4C5FA8" stroke-width="10" stroke-linecap="round"/>
+  <path d="M120 316 L146 300" stroke="url(#gold)" stroke-width="3" stroke-linecap="round"/>
+  <g fill="#FFE3D6" stroke="#7A5560" stroke-width="3" stroke-linejoin="round">
+    <path d="M118 302 Q104 296 106 276 Q108 262 116 264 L118 280 L120 258 Q126 252 130 260 L128 282 L134 262 Q140 258 142 266 L138 288 Q146 280 150 286 Q146 300 134 308 Q126 310 118 302 Z"/>
+  </g>
+  <g fill="none" stroke="#FFC9B8" stroke-width="3" stroke-linecap="round">
+    <path d="M88 262 Q82 274 88 286"/><path d="M76 256 Q66 274 76 292"/>
+  </g>
+
+  <!-- neck, choker, brooch -->
+  <rect x="242" y="300" width="28" height="30" fill="#F6D2C4" stroke="#7A5560" stroke-width="3"/>
+  <rect x="238" y="312" width="36" height="9" rx="4" fill="url(#gold)" stroke="#A47E34" stroke-width="2"/>
+  <path d="M256 336 Q236 324 238 344 Q240 358 256 370 Q272 358 274 344 Q276 324 256 336 Z" fill="url(#gold)" stroke="#A47E34" stroke-width="3"/>
+  <path d="M256 338 L266 350 L256 362 L246 350 Z" fill="url(#gem)" stroke="#5B3A9A" stroke-width="2"/>
+  <path d="M256 370 L256 392" stroke="url(#gold)" stroke-width="4" stroke-linecap="round"/>
+  <rect x="251" y="388" width="10" height="14" rx="4" fill="url(#gold)"/>
+
+  <!-- face -->
+  <ellipse cx="256" cy="226" rx="104" ry="94" fill="#FFE8DD" stroke="#7A5560" stroke-width="4"/>
+
+  <!-- eyes -->
+  <g transform="translate(208 238)">
+    <ellipse rx="24" ry="30" fill="url(#iris)" stroke="#3A2830" stroke-width="3"/>
+    <ellipse cy="3" rx="11" ry="15" fill="#1F3618"/>
+    <circle cx="-8" cy="-10" r="8" fill="#fff"/><circle cx="9" cy="12" r="4" fill="#fff"/>
+    <path d="M-30 -14 Q-6 -42 24 -28" fill="none" stroke="#3A2830" stroke-width="6" stroke-linecap="round"/>
+    <path d="M-29 -15 L-37 -10" stroke="#3A2830" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(304 238)">
+    <ellipse rx="24" ry="30" fill="url(#iris)" stroke="#3A2830" stroke-width="3"/>
+    <ellipse cy="3" rx="11" ry="15" fill="#1F3618"/>
+    <circle cx="-8" cy="-10" r="8" fill="#fff"/><circle cx="9" cy="12" r="4" fill="#fff"/>
+    <path d="M30 -14 Q6 -42 -24 -28" fill="none" stroke="#3A2830" stroke-width="6" stroke-linecap="round"/>
+    <path d="M29 -15 L37 -10" stroke="#3A2830" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- blush, nose, mouth -->
+  <g fill="#FF8FA8" opacity="0.5">
+    <ellipse cx="176" cy="276" rx="20" ry="10"/><ellipse cx="336" cy="276" rx="20" ry="10"/>
+  </g>
+  <g stroke="#F07A95" stroke-width="2.5" stroke-linecap="round" opacity="0.7">
+    <path d="M166 278 L172 270"/><path d="M176 280 L182 272"/><path d="M186 278 L192 270"/>
+    <path d="M326 278 L332 270"/><path d="M336 280 L342 272"/><path d="M346 278 L352 270"/>
+  </g>
+  <circle cx="256" cy="262" r="2.5" fill="#E8A99A"/>
+  <path d="M230 276 Q256 314 282 276 Q256 284 230 276 Z" fill="#7E2F3E"/>
+  <ellipse cx="256" cy="302" rx="15" ry="9" fill="#F27D8F" clip-path="url(#mouth)"/>
+  <path d="M230 276 Q256 314 282 276 Q256 284 230 276 Z" fill="none" stroke="#5A2430" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- bangs and side locks -->
+  <g fill="url(#hair)" stroke="#C8648F" stroke-width="4" stroke-linejoin="round">
+    <path d="M148 206 Q150 118 256 108 Q362 118 364 206 L344 180 L328 214 L304 174 L280 208 L262 168 L240 208 L214 172 L192 214 L174 182 Z"/>
+    <path d="M152 186 Q136 246 166 300 Q170 252 178 206 Z"/>
+    <path d="M360 186 Q376 246 346 300 Q342 252 334 206 Z"/>
+  </g>
+  <g fill="none" stroke="#FFE3EE" stroke-width="5" stroke-linecap="round" opacity="0.9">
+    <path d="M196 138 Q214 126 234 124"/><path d="M286 128 Q300 130 312 136"/>
+  </g>
+
+  <!-- ahoge -->
+  <path d="M252 112 Q234 74 266 58 Q250 82 262 110" fill="url(#hair)" stroke="#C8648F" stroke-width="4" stroke-linejoin="round"/>
+
+  <!-- leaf tiara -->
+  <path d="M172 126 Q256 82 340 126" fill="none" stroke="#A47E34" stroke-width="13" stroke-linecap="round"/>
+  <path d="M172 126 Q256 82 340 126" fill="none" stroke="url(#gold)" stroke-width="8" stroke-linecap="round"/>
+  <g fill="url(#gold)" stroke="#A47E34" stroke-width="3" stroke-linejoin="round">
+    <path d="M0 0 Q-15 -26 -4 -58 Q14 -30 0 0 Z" transform="translate(208 108) rotate(-22)"/>
+    <path d="M0 0 Q-15 -26 4 -58 Q14 -30 0 0 Z" transform="translate(304 108) rotate(22)"/>
+    <path d="M0 0 Q-12 -20 -2 -42 Q11 -22 0 0 Z" transform="translate(180 122) rotate(-40)"/>
+    <path d="M0 0 Q-11 -22 2 -42 Q12 -20 0 0 Z" transform="translate(332 122) rotate(40)"/>
+  </g>
+  <circle cx="256" cy="98" r="11" fill="none" stroke="#A47E34" stroke-width="9"/>
+  <circle cx="256" cy="98" r="11" fill="none" stroke="url(#gold)" stroke-width="5"/>
+</svg>

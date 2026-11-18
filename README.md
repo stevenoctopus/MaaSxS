@@ -1,16 +1,44 @@
+<!-- markdownlint-disable MD033 MD041 -->
+<div align="center">
+
+<img alt="MaaSxS: a chibi Akane waving" src="docs/images/logo.svg" width="256" height="256" />
+
 # MaaSxS
 
-Automation for the mobile game **Sword x Staff** (Android, on a PC emulator).
-It plays Daily Dungeon runs (including farming weekly affection), the
-Crucible of Hieromon, Split Mirage, Conquest, Arena and Material Realms, and
-claims your daily quests,
-starting from whatever screen the game is on,
-and recovers if the game crashes or disconnects.
+_A daily-tasks helper for **Sword x Staff**, powered by [MaaFramework](https://github.com/MaaXYZ/MaaFramework)_
 
-Built on [MaaFramework](https://github.com/MaaXYZ/MaaFramework), with the
-[MFAAvalonia](https://github.com/SweetSmellFox/MFAAvalonia) GUI.
+<p>
+  <img alt="Python" src="https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white" />
+  <a href="https://github.com/MaaXYZ/MaaFramework"><img alt="MaaFramework 5.15" src="https://img.shields.io/badge/MaaFramework-5.15-ff79b0" /></a>
+  <img alt="Platform: Windows" src="https://img.shields.io/badge/platform-Windows-blueviolet" />
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/stevenoctopus/MaaSxS" /></a>
+  <br />
+  <a href="https://github.com/stevenoctopus/MaaSxS/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/stevenoctopus/MaaSxS?label=release&color=4c5fa8" /></a>
+  <a href="https://github.com/stevenoctopus/MaaSxS/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/stevenoctopus/MaaSxS/total?color=d9b45a" /></a>
+  <a href="https://github.com/stevenoctopus/MaaSxS/actions/workflows/check.yml"><img alt="Checks" src="https://img.shields.io/github/actions/workflow/status/stevenoctopus/MaaSxS/check.yml?branch=main&label=checks" /></a>
+  <img alt="Commit activity" src="https://img.shields.io/github/commit-activity/m/stevenoctopus/MaaSxS" />
+  <a href="https://github.com/stevenoctopus/MaaSxS/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/stevenoctopus/MaaSxS?style=social" /></a>
+</p>
 
-## Setup (Windows)
+Powered by [MaaFramework](https://github.com/MaaXYZ/MaaFramework) and [MFAAvalonia](https://github.com/SweetSmellFox/MFAAvalonia)
+
+</div>
+
+## ✨ What it does
+
+MaaSxS plays Sword x Staff's daily chores for you on a PC emulator:
+
+- ⚔️ **Daily Dungeon**: runs the latest dungeon, buys extra reward attempts, and claims only the grades you want, or farms weekly affection
+- 🔥 **Crucible of Hieromon** and 🪞 **Split Mirage**: plays, then claims the reward track
+- 🏰 **Conquest** and 🏟️ **Arena**: your daily attempts and tickets
+- ⛏️ **Material Realms** and **Grand Mines**: uses your tools, and claims free grand mines from the map and from chat links
+- 🛒 **Vendor Booth**: buys discounted items and Vault rewards
+- 📜 **Daily quests**: claims everything the other tasks finished
+
+It starts from whatever screen the game is on, never spends Dawnium unless
+you set it to, and recovers if the game crashes or disconnects.
+
+## 📥 Setup (Windows)
 
 ### 1. Set up the emulator
 
@@ -66,7 +94,7 @@ MuMu, the path is `C:\Program Files\Netease\MuMuPlayer\nx_main\MuMuNxMain.exe`
 with the launch argument `-v 0` (instance 0), and set the before-tasks action
 to start the emulator.
 
-## Tasks
+## 📋 Tasks
 
 | Task | Options | What it does |
 |---|---|---|
@@ -93,7 +121,7 @@ Every task:
   its start-up screens, it relaunches the game, gets through the Notice and
   "Tap to Play", and carries on.
 
-## Troubleshooting
+## 🩺 Troubleshooting
 
 - **Taps land in the wrong place**: check the emulator resolution is
   720 x 1280 portrait.
@@ -102,7 +130,7 @@ Every task:
 - **Anything else**: open an issue with the logs (the `logs` and `debug`
   folders next to `MFAAvalonia.exe`) and a screenshot of where it got stuck.
 
-## Development
+## 🛠️ Development
 
 ```
 git clone --recursive git@github.com:stevenoctopus/MaaSxS.git
@@ -208,3 +236,15 @@ Keep `MAAFW_VERSION` in `.github/workflows/install.yml` and `maafw` in
 `deps/tools/` come from that MaaFramework version: after upgrading, run
 `python tools/sync_schema.py` (it downloads them from the pinned tag, not from
 MaaFramework's main branch, which can be ahead).
+
+## 🙏 Thanks
+
+- [MaaFramework](https://github.com/MaaXYZ/MaaFramework): the image-recognition automation framework MaaSxS is built on
+- [MFAAvalonia](https://github.com/SweetSmellFox/MFAAvalonia): the GUI
+- [MaaPracticeBoilerplate](https://github.com/MaaXYZ/MaaPracticeBoilerplate): the project template
+
+## ⚠️ Disclaimer
+
+MaaSxS is an unofficial fan project, not affiliated with or endorsed by the
+makers of Sword x Staff. The mascot is fan art of Akane; the character and
+the game belong to their owners. Use it at your own risk.
