@@ -360,10 +360,12 @@
             ],
             "default_case": "Always"
         },
-        // Vault items (Dawnium). The Free reward is always claimed.
+        // Vault items (Dawnium). The Free reward is always claimed. Row 1
+        // middle was Stellatie when this option was named; it changes too.
         "VendorStellatie": {
             "type": "select",
-            "label": "Vault: Stellatie",
+            "label": "Vault: row 1, middle",
+            "description": "Changes (e.g. Stellatie, or a badge).",
             "cases": [
                 { "name": "Skip" },
                 {

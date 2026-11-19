@@ -87,11 +87,12 @@
         "next": ["DailyDungeon_InRun", "[JumpBack]Common_Queue"]
     },
     // The run is ~5 floors with room maps between them; the map votes
-    // itself, so we just wait for the results screen.
+    // itself, so we just wait for the results screen. A Purgatory boss can
+    // still be fighting after 5 minutes.
     "DailyDungeon_InRun": {
         "recognition": "And",
         "all_of": ["Screen_Battle"],
-        "timeout": 300000,
+        "timeout": 900000,
         "next": ["DailyDungeon_Results"]
     },
     // Results ("Drops"). By default (Affection mode): leave without claiming.
@@ -230,17 +231,24 @@
     },
     // Dungeon detail: the "+" next to "Daily Reward Attempts: N/2" (or "Out of
     // daily reward attempts." at 0) opens Purchase.
-    // Once today's purchases are used up, no popup opens: this node then
-    // fails after the timeout and the agent carries on without buying.
+    // Once today's purchases are used up (while bought attempts are still
+    // unclaimed the "+" still shows), no popup opens, only a toast.
     "DailyDungeon_Buy_Open": {
         "recognition": "OCR",
         "roi": [180, 1005, 360, 55],
         "expected": "Daily\\s?Reward\\s?Attempts|Out\\s?of\\s?daily\\s?reward",
         "action": "Click",
         "target": [520, 1008, 55, 50], // the "+" (just right of the text)
-        "post_delay": 1500,
+        "post_delay": 300, // the toast fades after about 2 s
         "timeout": 4000,
-        "next": ["DailyDungeon_Buy_Limit"]
+        "next": ["DailyDungeon_Buy_Limit", "DailyDungeon_Buy_Refused"]
+    },
+    // Toast, either "Out of daily reward attempts. Unable to purchase." (two
+    // lines) or "Out of daily reward attempts for purchases."
+    "DailyDungeon_Buy_Refused": {
+        "recognition": "OCR",
+        "roi": [60, 290, 600, 80],
+        "expected": "Out\\s?of\\s?daily\\s?reward|Unable\\s?to"
     },
     // Purchase popup: "Daily Purchase Limit: U/L" (bought today / limit).
     // The "+" after "Daily Reward Attempts: N/M" (yellow-green circle).

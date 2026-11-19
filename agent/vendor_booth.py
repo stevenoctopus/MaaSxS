@@ -36,7 +36,7 @@ class VaultItem:
 
 FREE = VaultItem(0, "", "Free reward", 1)  # always claimed
 VAULT = [
-    VaultItem(1, "vault_stellatie", "Stellatie", 1),
+    VaultItem(1, "vault_stellatie", "row 1, middle", 1),  # was Stellatie; changes
     VaultItem(2, "vault_destiny_fruit", "Destiny Fruit", 2),
     VaultItem(3, "vault_row2_left", "row 2, left", 1),
     VaultItem(4, "vault_row2_middle", "row 2, middle", 1),

@@ -81,6 +81,20 @@ class VendorBooth(unittest.TestCase):
             hit(c, "VendorBooth_OnVault"), hit(c, "VendorBooth_OnGeneral"), vb.sold_out(c, 0)))
         self.assertEqual(r, (True, False, True))  # Free already claimed
 
+    def test_vault_limits(self):
+        # A fresh day's stock (the daily slots hold other items than in
+        # vendor_vault.png); every tile's "Purchase Limit: N" matches VAULT.
+        def limits(c):
+            out = []
+            for item in vb.VAULT:  # not Free: its Sold Out banner covers the limit
+                x0, y0 = vb.TILES[item.tile]
+                out.append(read_int(c, "VendorBooth_SoldOut", override={"VendorBooth_SoldOut": {
+                    "roi": [x0, y0 + 165, 200, 35], "expected": "Purchase\\s?Limit"}}))
+            return out
+        for screen in ["vendor_vault.png", "vendor_vault_fresh.png"]:
+            with self.subTest(screen=screen):
+                self.assertEqual(still.run(screen, limits), [item.limit for item in vb.VAULT])
+
 
 class RewardTrack(unittest.TestCase):
     def read(self, screen, ev):
@@ -110,6 +124,14 @@ class RewardTrack(unittest.TestCase):
         self.assertEqual(still.run("split_mirage_track_end.png",
                                    lambda c: track.read_best(c, split_mirage.SPLIT_MIRAGE)), 12)
 
+    def test_fresh_day_best_is_zero(self):
+        # Before any run today the menus show 0, which Once mode treats as
+        # "not played yet" (it only skips the run on a non-zero best).
+        for screen, ev in [("crucible_menu_fresh.png", crucible.CRUCIBLE),
+                           ("split_mirage_menu_fresh.png", split_mirage.SPLIT_MIRAGE)]:
+            with self.subTest(screen=screen):
+                self.assertEqual(still.run(screen, lambda c: track.read_best(c, ev)), 0)
+
 
 class MaterialRealms(unittest.TestCase):
     def badges(self, screen):
@@ -138,6 +160,25 @@ class DailyDungeon(unittest.TestCase):
         shown = lambda c: daily_dungeon.buy_option_shown(c, timeout=0)  # noqa: E731
         self.assertTrue(still.run("dungeon_detail_buy.png", shown))
         self.assertFalse(still.run("dungeon_detail_no_buy.png", shown))  # "Out of daily reward attempts."
+        self.assertFalse(still.run("dungeon_detail_all_done.png", shown))  # all bought and claimed
+
+    def test_detail_attempts(self):
+        # After buying, the first run starts from the detail screen.
+        self.assertEqual(still.run("dungeon_detail_unclaimed.png", daily_dungeon.detail_attempts), 4)
+        self.assertEqual(still.run("dungeon_detail_all_done.png", daily_dungeon.detail_attempts), 0)
+
+    def test_bought_but_unclaimed(self):
+        # "Daily Reward Attempts: 4/2": today's 2 bought, none claimed. The "+"
+        # still shows; tapping it gives a toast instead of the popup.
+        r = still.run("dungeon_detail_unclaimed.png", lambda c: (
+            daily_dungeon.buy_option_shown(c, timeout=0), hit(c, "DailyDungeon_Buy_Refused")))
+        self.assertEqual(r, (True, False))
+        for screen in ["dungeon_detail_refused.png",     # "... Unable to purchase."
+                       "dungeon_detail_refused_2.png"]:  # "... for purchases."
+            with self.subTest(screen=screen):
+                r = still.run(screen, lambda c: (
+                    hit(c, "DailyDungeon_Buy_Refused"), hit(c, "DailyDungeon_Buy_Limit")))
+                self.assertEqual(r, (True, False))
 
     def test_results_grade(self):
         # LowGrade as the "A or higher" case sets it (only used from next

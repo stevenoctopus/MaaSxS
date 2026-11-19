@@ -14,12 +14,14 @@ from task import Task
 
 
 def buy_daily(t: Task, wanted: int, open_node: str, back_node: str,
-              popup: str = "Common_Purchase", item: str = "") -> int:
+              popup: str = "Common_Purchase", item: str = "", refused: str = None) -> int:
     """Buy so that `wanted` have been bought today, within the daily limit.
 
     open_node  taps the "+" that opens the popup
     back_node  recognises the task's screen once the popup has closed
     item       what's bought, to start log lines with (e.g. a realm's name)
+    refused    a node in open_node's next that recognises the game refusing
+               instead of opening the popup (a toast): nothing to buy
 
     Returns how many were bought (0: nothing to buy; the popup isn't opened
     when wanted is 0). Anything else ends the task: not enough Dawnium is a
@@ -36,7 +38,10 @@ def buy_daily(t: Task, wanted: int, open_node: str, back_node: str,
         close(f"{popup}_Cancel")
         t.fail(prefix + why)
 
-    t.run(open_node, fail=prefix + "the purchase popup didn't open")
+    opened = t.run(open_node, fail=prefix + "the purchase popup didn't open")
+    if refused and any(n.name == refused for n in opened.nodes or []):
+        t.log(f"{prefix}the game allows no more purchases today, nothing to buy")
+        return 0
     limit = read_fraction(t.c, f"{popup}_Limit")
     if limit is None:
         cancel_and_fail("could not read the purchase limit; not buying")
