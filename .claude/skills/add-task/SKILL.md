@@ -22,14 +22,16 @@ A task is a pipeline entry plus, when it loops or reads numbers, one Python cust
    Built-ins first (`docs/maafw.md`): `Screen_X` directly in a `next` to end on a screen; shared `[JumpBack]Common_*` steps (`Common_TapToContinue`, `Common_Journal_DailyEvents`) and `Common_PopupOK` in an `all_of`; a node `timeout` to wait; `repeat` for repeated taps; ColorMatch / TemplateMatch for coloured patches and icons.
 
 4. **Agent module** `agent/<task>.py`, imported in `agent/main.py`:
-   - Settings: `task_settings(argv)`; options on a settings node: `settings_node(context, node)`.
-   - Reads: `screen.py` (`hit`, `read_int`, `read_fraction`, `screenshot`).
-   - Runs: `run_times(context, name, entry, n)` or `run_once` in a loop.
-   - Buying a daily-limited item: `purchase.buy_daily` (a daily total; the Purchase popup).
+   - The action: `@task("<Task>Farm", "<Task name>") def <task>(t: Task)` (`agent/task.py`). Returning means success.
+   - Settings: `t.settings["key"]`, one dict from the task's own node and its settings nodes. No defaults in Python: they're the pipeline nodes' params.
+   - Reads: `screen.py` (`hit`, `read_int`, `read_fraction`, `screenshot`) with `t.c`; `t.need(value, "could not read …")` for a reading the task can't go on without.
+   - Runs: `t.run_times(entry, n)`, or `t.step(entry, label)` in a loop; `t.run(entry, fail="…")` for a step that must work; `t.check()` in a loop of your own (the Stop button).
+   - Buying a daily-limited item: `purchase.buy_daily(t, …)` (a daily total; the Purchase popup).
    - Python is for what nodes can't express (numbers, values in log lines, state across screens). The agent has `maafw` and numpy; a new package goes in `agent/requirements.txt`, the only list the GUI installs.
-   - Log with `gui.say`. Something only the user can fix (not enough Dawnium or gold, a safety stop) → `common.give_up`, which stops the whole run. Any other failure returns False, and the retry from Home runs once.
+   - Log with `t.log`. Something only the user can fix (not enough Dawnium or gold, a safety stop) → `t.give_up(why)`, which stops the whole run. Any other failure → `t.fail(why)`, and the retry from Home runs once.
+   - Readers take a `context` and an image, so tests can show them saved screens; flows take `t`.
 
-5. **GUI options** in `assets/interface.json`: add the task (`name`, `label`, `entry`, `option`) and its options. Defaults are the safe choice (buy nothing, spend nothing). Two options can't both set one node's `custom_action_param`: give the second its own settings node. Describe buy options as a daily total, and say what each option spends.
+5. **GUI options** in `assets/interface.json`: add the task (`name`, `label`, `entry`, `option`) and its options. Defaults are the safe choice (buy nothing, spend nothing). Two options can't both set one node's `custom_action_param`: give the second its own settings node (a node with the same `custom_action`). Setting keys are unique across a task's nodes, and each option's default matches its node's param (the tests check both). Describe buy options as a daily total, and say what each option spends.
 
 6. **Tests** in `tests/test_screens.py`: one test per new reading on the saved screens (each count, badge, page check). `tests/screens/` is in `.gitignore` (screenshots show the player's name): never commit them; tests whose screen is missing skip. `python -m unittest discover tests` must pass; it also checks interface.json against the pipeline, that every Custom action is registered, and that recovery knows every saved screen.
 
@@ -49,7 +51,7 @@ These steps are defaults: where a feature doesn't fit them, follow the game and 
 
 For "clean up" or "tidy" requests, also check:
 
-- Copies of a helper already in `screen.py`, `common.py`, `purchase.py` or `track.py`: use the shared one.
+- Copies of a helper already in `screen.py`, `task.py`, `purchase.py` or `track.py`: use the shared one.
 - Steps copied across tasks (a tab tap, a tile): a shared `Common_*` routine, like `Common_ToJournal`.
 - Python doing what a node does (polling, tap loops, colour or icon search): `docs/maafw.md`.
 - Pipeline nodes nothing references (`next`, `on_error`, `all_of`/`any_of`, interface.json, agent code; agent code may build names, e.g. `f"{popup}_Count"`).

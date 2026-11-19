@@ -8,18 +8,12 @@ the results screen to claiming (see daily_dungeon.json).
 """
 import time
 
-from maa.agent.agent_server import AgentServer
 from maa.context import Context
-from maa.custom_action import CustomAction
 
-from common import give_up, ok, run_once, task_settings
-from gui import say
+from common import ok
 from purchase import buy_daily
 from screen import read_fraction, recognize
-
-
-def log(context: Context, msg: str):
-    say(context, "Daily Dungeon", msg)
+from task import Task, task
 
 
 def latest_dungeon(context: Context, image=None):
@@ -28,28 +22,25 @@ def latest_dungeon(context: Context, image=None):
     return reco.best_result.text if reco else None
 
 
-def log_latest(context: Context, name: str = "Daily Dungeon"):
-    say(context, name, f"latest dungeon: {latest_dungeon(context) or '?'}")
+def log_latest(t: Task):
+    t.log(f"latest dungeon: {latest_dungeon(t.c) or '?'}")
 
 
-def buy_attempts(context: Context, wanted: int) -> bool:
+def buy_attempts(t: Task, wanted: int):
     """On the list: open the latest dungeon's detail, buy attempts so that
     `wanted` have been bought today (a daily total, see agent/purchase.py),
     and go back to the list."""
     # Open the detail screen (same steps as a run, stopping before Match).
-    if not ok(context.run_task("DailyDungeon_SelectCard", pipeline_override={
-            "DailyDungeon_DifficultySelected": {"next": []}})):
-        log(context, "could not open the dungeon")
-        return False
+    t.run("DailyDungeon_SelectCard", {"DailyDungeon_DifficultySelected": {"next": []}},
+          fail="could not open the dungeon")
 
     # The "+" isn't shown once today's attempts are bought and claimed.
     # TODO: check what it shows while rewards are still claimable.
-    if not buy_option_shown(context):
-        log(context, "no extra attempts left to buy today")
-    elif buy_daily(context, "Daily Dungeon", wanted, "DailyDungeon_Buy_Open",
-                   "Screen_DungeonDetail", popup="DailyDungeon_Buy") is None:
-        return False
-    return ok(context.run_task("DailyDungeon_DetailBack"))
+    if not buy_option_shown(t.c):
+        t.log("no extra attempts left to buy today")
+    else:
+        buy_daily(t, wanted, "DailyDungeon_Buy_Open", "Screen_DungeonDetail", popup="DailyDungeon_Buy")
+    t.run("DailyDungeon_DetailBack", fail="could not get back to the list")
 
 
 def buy_option_shown(context: Context, timeout: int = 4000) -> bool:
@@ -72,37 +63,27 @@ def low_grade(detail):
     return reco.best_result.text if reco and reco.best_result else "?"
 
 
-@AgentServer.custom_action("DungeonDaily")
-class DungeonDaily(CustomAction):
-    def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
-        param = task_settings(argv)
-        buy = int(param.get("buy", 0))
+@task("DungeonDaily", "Daily Dungeon")
+def dungeon_daily(t: Task):
+    log_latest(t)
+    if t.settings["buy"] > 0:
+        buy_attempts(t, t.settings["buy"])
 
-        log_latest(context)
-        if buy > 0 and not buy_attempts(context, buy):
-            return False
-
-        run = 0
-        while True:
-            time.sleep(1.5)  # the list updates its count a moment after we land
-            attempts = read_fraction(context, "DailyDungeon_ListAttempts")
-            if attempts is None:
-                log(context, "could not read the reward attempts")
-                return False
-            left = attempts[0]
-            log(context, f"{left} reward attempt(s) left")
-            if left == 0:
-                log(context, "done")
-                return True
-            run += 1
-            detail = run_once(context, "Daily Dungeon", "DailyDungeon_Run", f"run {run}")
-            if detail is None:
-                return False
-            grade = low_grade(detail)
-            if grade is not None:
-                log(context, f"run {run}: grade {grade} is below the minimum, not claimed; running again")
-                continue
-            # Safety stop: attempts were left but the run didn't claim, so
-            # running more won't help.
-            if find_node(detail, "DailyDungeon_ClaimConfirm") is None:
-                return give_up(context, "Daily Dungeon", f"run {run} didn't claim its rewards though attempts were left")
+    run = 0
+    while True:
+        time.sleep(1.5)  # the list updates its count a moment after we land
+        left = t.need(read_fraction(t.c, "DailyDungeon_ListAttempts"), "could not read the reward attempts")[0]
+        t.log(f"{left} reward attempt(s) left")
+        if left == 0:
+            t.log("done")
+            return
+        run += 1
+        detail = t.step("DailyDungeon_Run", f"run {run}")
+        grade = low_grade(detail)
+        if grade is not None:
+            t.log(f"run {run}: grade {grade} is below the minimum, not claimed; running again")
+            continue
+        # Safety stop: attempts were left but the run didn't claim, so
+        # running more won't help.
+        if find_node(detail, "DailyDungeon_ClaimConfirm") is None:
+            t.give_up(f"run {run} didn't claim its rewards though attempts were left")

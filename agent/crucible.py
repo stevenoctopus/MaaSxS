@@ -5,11 +5,7 @@ on the damage track.
 """
 import re
 
-from maa.agent.agent_server import AgentServer
-from maa.context import Context
-from maa.custom_action import CustomAction
-
-from common import task_settings
+from task import Task, task
 from track import TrackEvent, farm
 
 VALUE_RE = re.compile(r"^(\d+(?:\.\d+)?)([KMB]?)$")
@@ -35,8 +31,6 @@ CRUCIBLE = TrackEvent(
 )
 
 
-@AgentServer.custom_action("CrucibleFarm")
-class CrucibleFarm(CustomAction):
-    def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
-        param = task_settings(argv)
-        return farm(context, CRUCIBLE, param.get("mode", "once"))
+@task("CrucibleFarm", CRUCIBLE.name)
+def crucible(t: Task):
+    farm(t, CRUCIBLE)

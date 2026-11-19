@@ -155,17 +155,22 @@ natively: check it before writing agent Python or adding a package.
   - `purchase.json` and `track.json`: the Purchase popup and reward-track
     nodes, beside `agent/purchase.py` and `agent/track.py`.
   - one file per task, plus `affection.json` for the affection check.
-- `agent/`: Python custom actions (loops, reading numbers), registered with
-  `@AgentServer.custom_action` (a new task module also needs an import in
-  `main.py`; the tests catch a missing one). `screen.py` reads the screen
-  (hits, numbers, "N/M"). `common.py` holds the run loop every "run N
-  times" task uses and reads a task's settings (see Settings node in
-  GLOSSARY.md). `purchase.py` handles the Purchase popup (Arena, Daily Dungeon, Material Realms). `track.py` holds the reward-track logic
+- `agent/`: Python custom actions (loops, reading numbers). A task's
+  action is a function registered with `@task("<CustomAction>", "<log
+  name>")` from `task.py`, which hands it a Task: its settings (one dict,
+  from its own node and its Settings nodes), logging, running nodes, and
+  ending the task (a failure, or a Safety stop). A new task module also
+  needs an import in `main.py`; the tests catch a missing one. `common.py`
+  holds Retry from Home. `screen.py` reads the screen (hits, numbers,
+  "N/M"). `purchase.py` handles the Purchase popup (Arena, Daily Dungeon, Material Realms). `track.py` holds the reward-track logic
   shared by Crucible and Split Mirage. `badge.py` straightens the Vendor
   Booth's tilted discount badges so OCR can read them (numpy only).
   `grand_mines.py` reads the map through the `GrandMines_*` ColorMatch
-  nodes; the flashing icon's ring search is numpy (FFT), as TemplateMatch
-  was too slow for it.
+  nodes into one Frame per screenshot (the flashing icon's ring search is
+  numpy FFT, as TemplateMatch was too slow for it); what the frames after a
+  tap mean (`ClaimWatch`, `link_result`) is kept apart from the waiting and
+  tapping, so `tests/test_grand_mines.py` can check it. `snapshots.py`
+  saves debug screenshots.
 
 Dev tools:
 

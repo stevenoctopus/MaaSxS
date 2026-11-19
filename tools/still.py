@@ -21,6 +21,7 @@ import unittest
 from pathlib import Path
 
 import cv2
+import numpy as np
 from maa.controller import CustomController
 from maa.custom_action import CustomAction
 from maa.define import LoggingLevelEnum
@@ -34,14 +35,16 @@ sys.path.insert(0, str(ROOT / "agent"))
 
 # Importing maa.agent reloads MaaFramework as an agent server, which breaks the
 # Tasker used here. The agent modules only need its decorators, so stand in an
-# AgentServer that only records the names, before they're imported.
+# AgentServer that only records them, before they're imported.
 class _AgentServer:
-    actions = set()
+    actions = {}  # name -> class
 
     @staticmethod
     def custom_action(name):
-        _AgentServer.actions.add(name)
-        return lambda cls: cls
+        def record(cls):
+            _AgentServer.actions[name] = cls
+            return cls
+        return record
 
     custom_recognition = custom_action
 
@@ -52,10 +55,10 @@ sys.modules.setdefault("maa.agent", types.ModuleType("maa.agent"))
 sys.modules["maa.agent.agent_server"] = _stub
 
 
-def agent_actions() -> set:
-    """Names of the custom actions agent/main.py registers."""
+def agent_actions() -> dict:
+    """The custom actions agent/main.py registers: name -> class."""
     import main  # noqa: F401  (imports every task module, like the GUI's agent)
-    return set(_AgentServer.actions)
+    return dict(_AgentServer.actions)
 
 
 class StillController(CustomController):
@@ -117,9 +120,10 @@ class Still:
         if not self.tasker.inited:
             raise RuntimeError("tasker failed to start")
 
-    def run(self, screen: str, fn):
-        """fn(context) with tests/screens/<screen> on the screen; returns its result."""
-        self.controller.image = load(screen)
+    def run(self, screen, fn):
+        """fn(context) with tests/screens/<screen> on the screen (None: a black
+        screen, for what doesn't look at it); returns its result."""
+        self.controller.image = load(screen) if screen else np.zeros((1280, 720, 3), np.uint8)
         self.probe.fn, self.probe.result, self.probe.error = fn, None, None
         self.tasker.post_task(self.HOOK).wait()
         if self.probe.error:

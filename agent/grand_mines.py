@@ -3,7 +3,7 @@ until the chosen number is claimed or the user stops the run.
 
   Farm (GrandMines_Farm)  {"mines": n or "ALL"}   claims to make (ALL: no end)
   Afk  (GrandMines_Afk)   {"spot": "sand"}        Resource Hunt resource to wait at
-  GrandMines_Iron / _Sand / _Rolla  {"mine": bool} claim this type or not
+  GrandMines_Iron / _Sand / _Rolla  {"claim_iron": bool, ...} claim this type or not
 
 The AFK spot: Journal > Map Exploration > Resource Hunt, check the resource,
 Go >>, "Enter <region> to explore?" OK, tap the flashing icon (the camera
@@ -28,19 +28,14 @@ stops if energy ever goes down.
 """
 import re
 import time
-import struct
-from pathlib import Path
-
-import zlib
+from functools import cached_property
 
 import numpy as np
-from maa.agent.agent_server import AgentServer
 from maa.context import Context
-from maa.custom_action import CustomAction
 
-from common import give_up, ok, settings_node, task_settings
-from gui import say
 from screen import hit, parse_fraction, screenshot
+from snapshots import keep
+from task import Task, task
 
 TYPES = ("iron", "sand", "rolla")
 # Resource Hunt: x of each resource's circle (y 350). Essence (281) is not a grand mine.
@@ -57,31 +52,6 @@ DEPLETED_RE = re.compile(r"depleted", re.I)
 CLAIM_TIMEOUT = 60  # s: a claim that neither lands nor goes away
 GONE_FOR = 3        # s: bars gone this long with no toast = lost
 STATUS_EVERY = 600  # s between "watching" log lines
-
-
-def log(context: Context, msg: str):
-    say(context, "Grand Mines", msg)
-
-
-def save_png(path, image):
-    """Write a BGR screenshot as a PNG (numpy + zlib: no OpenCV needed)."""
-    h, w = image.shape[:2]
-    rows = np.ascontiguousarray(image[:, :, 2::-1]).reshape(h, w * 3)  # BGR -> RGB
-    raw = b"".join(b"\0" + rows[y].tobytes() for y in range(h))
-
-    def chunk(kind, data):
-        return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data))
-    Path(path).write_bytes(b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0))
-                           + chunk(b"IDAT", zlib.compress(raw, 6)) + chunk(b"IEND", b""))
-
-
-def keep(images, what: str):
-    """Save screenshots of something that went wrong to debug/grand_mines/."""
-    folder = Path("debug") / "grand_mines"
-    folder.mkdir(parents=True, exist_ok=True)
-    stamp = time.strftime("%Y%m%d-%H%M%S")
-    for i, image in enumerate(images):
-        save_png(folder / f"{stamp}_{what}_{i}.png", image)
 
 
 # ---------------------------------------------------------------- reading
@@ -233,22 +203,10 @@ def find_icons(image, threshold=0.965):
     return icons
 
 
-def pin_at_centre(image) -> bool:
-    """The camera is on a mine: its icon sits at the screen centre."""
-    return any(abs(x - CENTRE[0]) <= 25 and abs(y - CENTRE[1]) <= 25 for x, y in find_icons(image))
-
-
 def at_edge(icon) -> bool:
     """An icon pinned to the screen edge, pointing to something off screen."""
     x, y = icon
     return x < 90 or x > 630 or y < 230 or y > 900
-
-
-def new_edge_icon(before, after) -> bool:
-    """An icon at the screen edge in `after` that isn't in `before`."""
-    old = [i for i in find_icons(before) if at_edge(i)]
-    return any(at_edge(i) and all(abs(i[0] - o[0]) > 25 or abs(i[1] - o[1]) > 25 for o in old)
-               for i in find_icons(after))
 
 
 def find_floor(image, near=CENTRE):
@@ -331,34 +289,167 @@ def back(context: Context):
     context.run_action("Common_Back")
 
 
-class Stop(Exception):
-    """A safety stop (give_up already called), or the user pressed Stop."""
+class Frame:
+    """One screenshot of the map, and what's on it: each thing is read once,
+    the first time it's asked for. `context` can be None for what only
+    needs the image (icons)."""
 
+    def __init__(self, context: Context, image, at: float = None):
+        self.c, self.image = context, image
+        self.at = time.time() if at is None else at
+
+    @cached_property
+    def bars(self):
+        return find_bars(self.c, self.image)
+
+    @cached_property
+    def icons(self):
+        return find_icons(self.image)
+
+    @cached_property
+    def links(self):
+        return find_links(self.c, self.image)
+
+    @cached_property
+    def toasts(self):
+        return toasts(self.c, self.image)
+
+    @cached_property
+    def energy(self):
+        return energy(self.c, self.image)
+
+    @cached_property
+    def on_map(self) -> bool:
+        return hit(self.c, "Screen_WorldMap", self.image)
+
+    @cached_property
+    def travel_popup(self) -> bool:
+        return hit(self.c, "Screen_TravelPopup", self.image)
+
+    @cached_property
+    def full_chat(self) -> bool:
+        return hit(self.c, "Screen_FullChat", self.image)
+
+    @property
+    def reward(self):
+        """Our reward toast ("Raw Ore x4.77K"), or None."""
+        return next((t.strip() for t in self.toasts if REWARD_RE.search(t.strip())), None)
+
+    @property
+    def depleted(self) -> bool:
+        """"Ore tracking disabled due to depleted reserves.": mined out."""
+        return any(DEPLETED_RE.search(t) for t in self.toasts)
+
+    @property
+    def reached(self) -> bool:
+        """"You have reached the target region." after an instant jump."""
+        return any("target region" in t for t in self.toasts)
+
+    @property
+    def edge_icons(self):
+        """Icons pinned to the screen edge, pointing to something off screen."""
+        return [i for i in self.icons if at_edge(i)]
+
+    @property
+    def pin_at_centre(self) -> bool:
+        """The camera is on a mine: its icon sits at the screen centre."""
+        return any(abs(x - CENTRE[0]) <= 25 and abs(y - CENTRE[1]) <= 25 for x, y in self.icons)
+
+
+def new_edge_icon(before: Frame, after: Frame) -> bool:
+    """An icon at the screen edge in `after` that isn't in `before`."""
+    return any(all(abs(i[0] - o[0]) > 25 or abs(i[1] - o[1]) > 25 for o in before.edge_icons)
+               for i in after.edge_icons)
+
+
+# ---------------------------------------------------------------- judging
+# What the frames after a tap mean. No waiting or tapping here, so the tests
+# can feed them saved screens, or stand-in frames, in order.
+
+CLAIMED, LOST, UNKNOWN = "claimed", "lost", "unknown"
+
+
+class ClaimWatch:
+    """Watching a claim after tapping the mine at `spot` (at time `tapped`).
+    see(frame) for each new frame returns CLAIMED (our reward toast), LOST
+    (the bars there gone for GONE_FOR s with no toast: someone else took the
+    last claim), UNKNOWN (a popup or another screen, or CLAIM_TIMEOUT s with
+    neither), or None: keep watching."""
+
+    def __init__(self, spot, tapped: float):
+        self.spot, self.tapped = spot, tapped
+        self.gone_since = None
+        self.toasts = []    # every toast seen, for the log
+        self.reward = None  # the reward toast, once CLAIMED
+
+    def see(self, frame: Frame):
+        for text in frame.toasts:
+            if text not in self.toasts:
+                self.toasts.append(text)
+        if frame.reward:
+            self.reward = frame.reward
+            return CLAIMED
+        if frame.travel_popup or not frame.on_map:
+            return UNKNOWN
+        if any(abs(x - self.spot[0]) <= 30 and abs(y - self.spot[1]) <= 30 for x, y in frame.bars):
+            self.gone_since = None
+        elif self.gone_since is None:
+            self.gone_since = frame.at
+        elif frame.at - self.gone_since >= GONE_FOR:
+            return LOST
+        if frame.at - self.tapped >= CLAIM_TIMEOUT:
+            return UNKNOWN
+        return None
+
+
+MISSED, TRAVEL, DEPLETED, ARRIVED = "missed", "travel", "depleted", "arrived"
+
+
+def link_result(before: Frame, frame: Frame, travelled: bool):
+    """After tapping a chat link (`before`: the frame just before the tap):
+    MISSED (the full chat opened), TRAVEL (the "Travel to <region> now?"
+    popup), DEPLETED (mined out), ARRIVED, or None: keep watching.
+
+    Arrived: on the map, after travelling; or with no popup (same region, or
+    a region next to it: an instant jump), "You have reached the target
+    region." or just a flashing icon at the edge that wasn't there before."""
+    if frame.full_chat:
+        return MISSED
+    if frame.travel_popup:
+        return TRAVEL
+    if frame.depleted:
+        return DEPLETED
+    if (travelled or frame.reached or new_edge_icon(before, frame)) and frame.on_map:
+        return ARRIVED
+    return None
+
+
+# ---------------------------------------------------------------- the run
 
 class Run:
-    def __init__(self, context: Context, argv: CustomAction.RunArg):
-        self.c = context
-        wanted = str(task_settings(argv).get("mines", "ALL")).strip()
+    def __init__(self, t: Task):
+        self.t, self.c = t, t.c
+        wanted = str(t.settings["mines"]).strip()
         self.limit = None if wanted.upper() == "ALL" else int(wanted)
-        self.spot = str(settings_node(context, "GrandMines_Afk").get("spot", "sand")).lower()
-        self.claim = {k: bool(settings_node(context, f"GrandMines_{k.capitalize()}").get("mine", True))
-                      for k in TYPES}
+        self.spot = str(t.settings["spot"]).lower()
+        self.claim = {k: bool(t.settings[f"claim_{k}"]) for k in TYPES}
         self.claimed = 0
         self.seen = {}        # link_key -> times tried this run
         self.energy = None    # the last energy read
 
+    def frame(self) -> Frame:
+        return Frame(self.c, screenshot(self.c))
+
     # -- guards
 
-    def check(self, image=None):
+    def check(self, frame: Frame = None):
         """Stop requested, or energy went down (a tap hit an ore rock)."""
-        if self.c.tasker.stopping:
-            raise Stop()
-        e = energy(self.c, screenshot(self.c) if image is None else image)
+        self.t.check()
+        e = (frame or self.frame()).energy
         if e is not None and self.energy is not None and e < self.energy:
-            e = energy(self.c, screenshot(self.c))  # read again: one misread mustn't stop the run
+            e = self.frame().energy  # read again: one misread mustn't stop the run
             if e is not None and e < self.energy:
-                give_up(self.c, "Grand Mines", f"energy went down ({self.energy} -> {e}): a tap may have hit an ore rock")
-                raise Stop()
+                self.t.give_up(f"energy went down ({self.energy} -> {e}): a tap may have hit an ore rock")
         if e is not None:
             self.energy = e  # it goes up by itself over time
 
@@ -367,33 +458,24 @@ class Run:
 
     # -- the AFK spot
 
-    def go_afk(self) -> bool:
-        if not ok(self.c.run_task("GrandMines_ToHunt")):
-            log(self.c, "could not get to Map Exploration")
-            return False
+    def go_afk(self):
+        self.t.run("GrandMines_ToHunt", fail="could not get to Map Exploration")
         if not hunt_checked(screenshot(self.c), self.spot):
             x = HUNT_X[self.spot]
-            self.c.run_task("GrandMines_HuntPick", pipeline_override={
-                "GrandMines_HuntPick": {"target": [x - 15, HUNT_Y - 15, 30, 30]}})
+            self.t.run("GrandMines_HuntPick", {"GrandMines_HuntPick": {"target": [x - 15, HUNT_Y - 15, 30, 30]}})
             if not hunt_checked(screenshot(self.c), self.spot):
-                log(self.c, f"could not select {self.spot} on Resource Hunt")
-                return False
-        if not ok(self.c.run_task("GrandMines_HuntGo")):
-            log(self.c, "could not travel to the Resource Hunt region")
-            return False
+                self.t.fail(f"could not select {self.spot} on Resource Hunt")
+        self.t.run("GrandMines_HuntGo", fail="could not travel to the Resource Hunt region")
         if not self.snap(wait=8):
-            log(self.c, "no icon pointing to the AFK spot")
-            return False
-        image = screenshot(self.c)
-        floor = find_floor(image)
+            self.t.fail("no icon pointing to the AFK spot")
+        floor = find_floor(screenshot(self.c))
         if floor:
             tap(self.c, *floor)  # the character walks over: shorter walks win races
             time.sleep(1)
         # Close Resource Hunt's tracker: its icon would be taken for a link's.
-        self.c.run_task("GrandMines_StopTracking")
+        self.t.run("GrandMines_StopTracking")
         self.check()
-        log(self.c, f"waiting at the {self.spot} spot")
-        return True
+        self.t.log(f"waiting at the {self.spot} spot")
 
     def snap(self, wait: float) -> bool:
         """Get the camera onto the mine the flashing icon points to. Only
@@ -406,11 +488,11 @@ class Run:
         end = time.time() + wait
         tried, tapped = [], False
         while time.time() < end:
-            image = screenshot(self.c)
-            if tapped and pin_at_centre(image):
+            frame = self.frame()
+            if tapped and frame.pin_at_centre:
                 return True
-            edge = [i for i in find_icons(image) if at_edge(i)
-                    and all(abs(i[0] - t[0]) > 25 or abs(i[1] - t[1]) > 25 for t in tried)]
+            edge = [i for i in frame.edge_icons
+                    if all(abs(i[0] - t[0]) > 25 or abs(i[1] - t[1]) > 25 for t in tried)]
             if edge:
                 tried.append(edge[0])
                 tap(self.c, *edge[0])
@@ -419,15 +501,15 @@ class Run:
                 if hit(self.c, "Screen_ExploreConfirm", screenshot(self.c)):
                     # The icon sat over Explore and the tap reached the button:
                     # back closes its confirm without spending.
-                    log(self.c, "the tap opened Explore's confirm: closing it")
+                    self.t.log("the tap opened Explore's confirm: closing it")
                     back(self.c)
                 self.check()
                 continue
-            if pin_at_centre(image) or find_bars(self.c, image):
+            if frame.pin_at_centre or frame.bars:
                 return True
             time.sleep(0.5)
-        image = screenshot(self.c)
-        return pin_at_centre(image) or bool(find_bars(self.c, image))
+        frame = self.frame()
+        return frame.pin_at_centre or bool(frame.bars)
 
     # -- claiming
 
@@ -437,7 +519,7 @@ class Run:
             return
         tried = []
         while not self.done():
-            spots = [s for s in find_bars(self.c, screenshot(self.c))
+            spots = [s for s in self.frame().bars
                      if all(abs(s[0] - t[0]) > 30 or abs(s[1] - t[1]) > 30 for t in tried)]
             if not spots:
                 return
@@ -447,41 +529,32 @@ class Run:
 
     def claim_one(self, spot):
         tap(self.c, *spot)
-        start, gone, seen = time.time(), None, []
-        while time.time() - start < CLAIM_TIMEOUT:
+        watch = ClaimWatch(spot, time.time())
+        while True:
             time.sleep(0.5)
-            image = screenshot(self.c)
-            self.check(image)
-            for text in toasts(self.c, image):
-                if REWARD_RE.search(text.strip()):
-                    self.claimed += 1
-                    goal = f"/{self.limit}" if self.limit else ""
-                    log(self.c, f"claimed {text.strip()} ({self.claimed}{goal})")
-                    return
-                if text not in seen:
-                    seen.append(text)
-            if hit(self.c, "Screen_TravelPopup", image) or not hit(self.c, "Screen_WorldMap", image):
-                break  # a popup or another screen: not something we know
-            near = any(abs(x - spot[0]) <= 30 and abs(y - spot[1]) <= 30 for x, y in find_bars(self.c, image))
-            if near:
-                gone = None
-            elif gone is None:
-                gone = time.time()
-            elif time.time() - gone >= GONE_FOR:
-                log(self.c, "someone else got there first")
+            frame = self.frame()
+            self.check(frame)
+            result = watch.see(frame)
+            if result == CLAIMED:
+                self.claimed += 1
+                goal = f"/{self.limit}" if self.limit else ""
+                self.t.log(f"claimed {watch.reward} ({self.claimed}{goal})")
                 return
-        give_up(self.c, "Grand Mines", "unknown result after tapping a grand mine (daily limit?): "
-                "please capture the screen (python tools/still.py capture grand_mine_unknown)"
-                + (f"; messages seen: {seen}" if seen else ""))
-        raise Stop()
+            if result == LOST:
+                self.t.log("someone else got there first")
+                return
+            if result == UNKNOWN:
+                self.t.give_up("unknown result after tapping a grand mine (daily limit?): "
+                               "please capture the screen (python tools/still.py capture grand_mine_unknown)"
+                               + (f"; messages seen: {watch.toasts}" if watch.toasts else ""))
 
     # -- chat links
 
-    def next_link(self, image):
+    def next_link(self, frame: Frame):
         """The first green grand mine link of a wanted type not followed yet:
         (box, type, chat line), or None."""
-        boxes = find_links(self.c, image)
-        texts = [" ".join(ocr(self.c, "GrandMines_ChatText", image, (x - 4, y - 4, w + 8, h + 8)))
+        boxes = frame.links
+        texts = [" ".join(ocr(self.c, "GrandMines_ChatText", frame.image, (x - 4, y - 4, w + 8, h + 8)))
                  for x, y, w, h in boxes]
         for i, box in enumerate(boxes):
             text = texts[i]
@@ -492,12 +565,13 @@ class Run:
             if not kind:
                 continue
             x, y, w, h = box
-            line = link_key(" ".join(ocr(self.c, "GrandMines_ChatText", image, (CHAT[0], y - 6, CHAT[2], h + 12))), kind)
+            line = link_key(" ".join(ocr(self.c, "GrandMines_ChatText", frame.image,
+                                         (CHAT[0], y - 6, CHAT[2], h + 12))), kind)
             if self.seen.get(line, 0) >= 2:  # followed, or missed twice
                 continue
             self.seen[line] = self.seen.get(line, 0) + 1
             if kind not in self.claim:
-                log(self.c, f"skipping a link to an unknown mine type: {text.strip()}")
+                self.t.log(f"skipping a link to an unknown mine type: {text.strip()}")
                 continue
             if not self.claim[kind]:
                 continue
@@ -505,96 +579,89 @@ class Run:
         return None
 
     def follow(self, box, kind):
-        """Tap a link and claim what's there. Returns \"missed\" if the tap
+        """Tap a link and claim what's there. Returns MISSED if the tap
         missed the link (it can be tried once more)."""
-        log(self.c, f"following a Grand {kind.capitalize()} Mine link")
-        before = screenshot(self.c)
+        self.t.log(f"following a Grand {kind.capitalize()} Mine link")
+        before = self.frame()
         # Reading the chat takes a moment, and a new message pushes the link
         # up a line: find it again (same x and width) where it is now.
-        box = relocate(box, find_links(self.c, before))
+        box = relocate(box, before.links)
         if box is None:
-            log(self.c, "the link scrolled out of the chat")
-            return
+            self.t.log("the link scrolled out of the chat")
+            return None
         x, y, w, h = box
         # The box includes the underline: tap the middle of the letters.
         # Anywhere else in the chat opens the full chat.
         tap(self.c, x + w // 2, y + h // 2 - 3)
-        end, moved, frames = time.time() + 6, False, [before]
+        end, travelled, frames = time.time() + 6, False, [before]
+
+        def keep_frames(what):
+            keep("grand_mines", [f.image for f in frames] + [screenshot(self.c)], what)
+
         while time.time() < end:
             time.sleep(0.5)
-            image = screenshot(self.c)
-            frames = frames[:1] + frames[-4:] + [image]  # the one before the tap, and the latest
-            if hit(self.c, "Screen_FullChat", image):
-                log(self.c, "missed the link (the full chat opened): closing it")
-                keep(frames, "missed")
+            frame = self.frame()
+            frames = frames[:1] + frames[-4:] + [frame]  # the one before the tap, and the latest
+            result = link_result(before, frame, travelled)
+            if result == MISSED:
+                self.t.log("missed the link (the full chat opened): closing it")
+                keep_frames("missed")
                 back(self.c)
-                return "missed"
-            if hit(self.c, "Screen_TravelPopup", image):
-                if not ok(self.c.run_task("GrandMines_Travel")):
-                    log(self.c, "could not travel there")
-                    return
-                moved, end = True, time.time() + 8
+                return MISSED
+            if result == TRAVEL:
+                if not self.t.run("GrandMines_Travel"):
+                    self.t.log("could not travel there")
+                    return None
+                travelled, end = True, time.time() + 8
                 continue
-            texts = toasts(self.c, image)
-            if any(DEPLETED_RE.search(t) for t in texts):
-                log(self.c, "already mined out")
-                return
-            # Arrived: after the popup; or with no popup (same region, or a
-            # region next to it: an instant jump), "You have reached the
-            # target region." or just a flashing icon at the edge that wasn't
-            # there before the tap.
-            arrived = moved or any("target region" in t for t in texts) or new_edge_icon(before, image)
-            if arrived and hit(self.c, "Screen_WorldMap", image):
+            if result == DEPLETED:
+                self.t.log("already mined out")
+                return None
+            if result == ARRIVED:
                 if not self.snap(wait=6):
-                    log(self.c, "arrived, but found no icon pointing to the mine")
-                    keep(frames + [screenshot(self.c)], "noicon")
-                    return
+                    self.t.log("arrived, but found no icon pointing to the mine")
+                    keep_frames("noicon")
+                    return None
                 claims = self.claimed
                 self.claim_here(kind)
                 if self.claimed == claims:
-                    log(self.c, "no claims left there")
-                return
-        log(self.c, "nothing happened after tapping the link (stale)" if not moved
-            else "travelled, but the map didn't show")
-        keep(frames + [screenshot(self.c)], "link")
+                    self.t.log("no claims left there")
+                return None
+        self.t.log("nothing happened after tapping the link (stale)" if not travelled
+                   else "travelled, but the map didn't show")
+        keep_frames("link")
+        return None
 
     # -- the loop
 
-    def run(self) -> bool:
-        if not self.go_afk():
-            return False
+    def run(self):
+        self.go_afk()
         last_status = time.time()
         while not self.done():
-            image = screenshot(self.c)
-            self.check(image)
-            if not hit(self.c, "Screen_WorldMap", image):
-                log(self.c, "not on the map: going back to the AFK spot")
-                if not self.go_afk():
-                    return False
+            frame = self.frame()
+            self.check(frame)
+            if not frame.on_map:
+                self.t.log("not on the map: going back to the AFK spot")
+                self.go_afk()
                 continue
-            if self.claim.get(self.spot) and find_bars(self.c, image):
+            if self.claim.get(self.spot) and frame.bars:
                 self.claim_here(self.spot)
                 continue
-            link = self.next_link(image)
+            link = self.next_link(frame)
             if link:
                 box, kind, line = link
-                if self.follow(box, kind) != "missed":
+                if self.follow(box, kind) != MISSED:
                     self.seen[line] = 2  # done with it
-                if not self.done() and not self.go_afk():
-                    return False
+                if not self.done():
+                    self.go_afk()
                 continue
             if time.time() - last_status >= STATUS_EVERY:
-                log(self.c, f"watching chat, {self.claimed} claimed")
+                self.t.log(f"watching chat, {self.claimed} claimed")
                 last_status = time.time()
             time.sleep(1)
-        log(self.c, f"done: {self.claimed} claimed")
-        return True
+        self.t.log(f"done: {self.claimed} claimed")
 
 
-@AgentServer.custom_action("GrandMines")
-class GrandMines(CustomAction):
-    def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
-        try:
-            return Run(context, argv).run()
-        except Stop:
-            return False
+@task("GrandMines", "Grand Mines")
+def grand_mines(t: Task):
+    Run(t).run()

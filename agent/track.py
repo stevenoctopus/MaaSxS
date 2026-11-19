@@ -19,14 +19,13 @@ from typing import Callable
 
 from maa.context import Context
 
-from common import run_once
-from gui import say
 from screen import hit, recognize, screenshot
+from task import Task
 
 
 @dataclass
 class TrackEvent:
-    name: str                      # for the log
+    name: str                      # the task's name, for the log
     marked: str                    # what the marked rewards are, e.g. "gift box"
     parse: Callable[[str], float]  # OCR text -> score (None if not a score)
     fmt: Callable[[float], str]    # score -> text for the log
@@ -99,77 +98,74 @@ def read_best(context: Context, ev: TrackEvent):
     return ev.parse(reco.best_result.text) if reco else None
 
 
-def claim_rewards(context: Context, ev: TrackEvent):
-    best = read_best(context, ev)
+def claim_rewards(t: Task, ev: TrackEvent):
+    best = read_best(t.c, ev)
     if best is None:
-        say(context, ev.name, "could not read today's best, skipping claim")
+        t.log("could not read today's best, skipping claim")
         return
 
     def highest_reached(view):
         reached = [(v, box, claimed) for v, box, _, claimed in view if v <= best]
         return reached[-1] if reached else None
 
-    found = scan_from_end(context, ev, highest_reached)
+    found = scan_from_end(t.c, ev, highest_reached)
     if found is None:
-        say(context, ev.name, "no reward reached yet")
+        t.log("no reward reached yet")
         return
     value, (x, y, w, _), claimed = found
     if claimed:
-        say(context, ev.name, f"rewards up to {ev.fmt(value)} already claimed")
+        t.log(f"rewards up to {ev.fmt(value)} already claimed")
         return
-    say(context, ev.name, f"claiming (tapping the {ev.fmt(value)} reward)")
-    context.run_action("Common_TrackTap", [x + w // 2 - 20, y - 60, 40, 40])
-    context.run_task(ev.close)
+    t.log(f"claiming (tapping the {ev.fmt(value)} reward)")
+    t.c.run_action("Common_TrackTap", [x + w // 2 - 20, y - 60, 40, 40])
+    t.run(ev.close)
 
 
-def find_target(context: Context, ev: TrackEvent, mode):
+def find_target(t: Task, ev: TrackEvent, mode):
     """Score needed for this mode, from today's track. None = nothing left to aim for."""
     if mode == "all":
-        found = scan_from_end(context, ev, lambda view: view[-1][0] if view else None)
-        say(context, ev.name, f"last reward: {ev.fmt(found)}" if found else "could not read the reward track")
+        found = scan_from_end(t.c, ev, lambda view: view[-1][0] if view else None)
+        t.log(f"last reward: {ev.fmt(found)}" if found else "could not read the reward track")
         return found
     # Claimed rewards show a checkmark instead of their icon, so no marked
     # icon left on the track means every marked reward is already claimed.
     found = scan_from_end(
-        context, ev, lambda view: max((v for v, _, m, _ in view if m), default=None))
-    say(context, ev.name, f"last {ev.marked}: {ev.fmt(found)}" if found else f"no unclaimed {ev.marked} on the track")
+        t.c, ev, lambda view: max((v for v, _, m, _ in view if m), default=None))
+    t.log(f"last {ev.marked}: {ev.fmt(found)}" if found else f"no unclaimed {ev.marked} on the track")
     return found
 
 
-def farm(context: Context, ev: TrackEvent, mode: str) -> bool:
-    """Run per `mode` (once | marked | all), then claim. Starts and ends on the menu."""
-    def log(msg):
-        say(context, ev.name, msg)
-
+def farm(t: Task, ev: TrackEvent):
+    """Run per the task's mode (once | marked | all), then claim. Starts and
+    ends on the menu."""
+    mode = t.settings["mode"]
     target = None
     if mode == "once":
         # Already played today (a best score shows): just claim.
-        best = read_best(context, ev)
+        best = read_best(t.c, ev)
         if best:
-            log(f"already played today (best: {ev.fmt(best)}), not running again")
-            claim_rewards(context, ev)
-            log("done")
-            return True
+            t.log(f"already played today (best: {ev.fmt(best)}), not running again")
+            claim_rewards(t, ev)
+            t.log("done")
+            return
     else:
-        target = find_target(context, ev, mode)
+        target = find_target(t, ev, mode)
         if target is None:
-            claim_rewards(context, ev)
-            return True
-        log(f"target: {ev.fmt(target)} today")
+            claim_rewards(t, ev)
+            return
+        t.log(f"target: {ev.fmt(target)} today")
 
     run = 0
     while True:
         if target is not None:
-            best = read_best(context, ev)
-            log(f"today's best: {ev.fmt(best) if best is not None else 'unreadable'}")
+            best = read_best(t.c, ev)
+            t.log(f"today's best: {ev.fmt(best) if best is not None else 'unreadable'}")
             if best is not None and best >= target:
-                log("target reached")
+                t.log("target reached")
                 break
         run += 1
-        if run_once(context, ev.name, ev.run, f"run {run}") is None:
-            return False
+        t.step(ev.run, f"run {run}")
         if mode == "once":
             break
-    claim_rewards(context, ev)
-    log("done")
-    return True
+    claim_rewards(t, ev)
+    t.log("done")

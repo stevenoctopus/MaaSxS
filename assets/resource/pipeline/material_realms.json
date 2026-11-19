@@ -23,13 +23,13 @@
     "MaterialRealms_Buy": {
         "action": "Custom",
         "custom_action": "MaterialRealms",
-        "custom_action_param": { "ironvein": 0, "gilded": 0, "dread": 0, "dustfall": 0 }
+        "custom_action_param": { "buy_ironvein": 0, "buy_gilded": 0, "buy_dread": 0, "buy_dustfall": 0 }
     },
     // Tools to use per realm (a number, or "ALL"); runs the whole task.
     "MaterialRealms_Use": {
         "action": "Custom",
         "custom_action": "MaterialRealms",
-        "custom_action_param": { "ironvein": "ALL", "gilded": "ALL", "dread": "ALL", "dustfall": "ALL" },
+        "custom_action_param": { "use_ironvein": "ALL", "use_gilded": "ALL", "use_dread": "ALL", "use_dustfall": "ALL" },
         "on_error": ["Common_Retry"]
     },
 

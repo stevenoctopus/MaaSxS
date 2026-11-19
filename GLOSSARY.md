@@ -76,7 +76,12 @@ knows every saved screen.
 goes Home and starts the task over once (`RetryFromHome` in
 `agent/common.py`). For unexpected failures.
 
-**Safety stop**: `common.give_up()`: logs "Stopped: <reason>" and stops the
+**Task module**: `agent/task.py`. A task's custom action is a function
+registered with `@task(...)`; it gets a Task (`t`) for its settings,
+logging, running nodes and ending the task: `t.fail()` for a failure (Retry
+from Home runs), `t.give_up()` for a Safety stop.
+
+**Safety stop**: `t.give_up()`: logs "Stopped: <reason>" and stops the
 whole run, with no retry, for what only the user can fix (not enough Dawnium
 or gold, or running more won't help). Later tasks don't run either
 (`ContinueRunningWhenError` is off).
@@ -84,8 +89,14 @@ or gold, or running more won't help). Later tasks don't run either
 **Settings node**: a pipeline node that only holds settings for a task, in
 its `custom_action_param`, e.g. `VendorBooth_Refreshes`,
 `VendorBooth_Vault_*`, `MaterialRealms_Buy`. Needed because two GUI options
-can't both set the same node's param. Read with `common.settings_node()`;
-a task's own node's settings with `common.task_settings()`.
+can't both set the same node's param. It names its task's `custom_action`
+(it's never run itself), which is how `t.settings` finds it: one dict of the
+task's own node's settings and its Settings nodes', so keys are unique
+across them (`buy_ironvein`, `vault_stellatie`, `claim_iron`).
+
+**Frame** (Grand Mines): one screenshot of the map and what's on it
+(claim bars, flashing icons, chat links, toasts, energy), each read once.
+`ClaimWatch` and `link_result` judge the frames after a tap.
 
 **Saved screen**: a real screenshot in `tests/screens/`, captured with
 `python tools/still.py capture <name>`. Kept on the machine, not in git

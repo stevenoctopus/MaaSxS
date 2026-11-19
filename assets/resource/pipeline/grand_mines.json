@@ -62,17 +62,17 @@
     "GrandMines_Iron": {
         "action": "Custom",
         "custom_action": "GrandMines",
-        "custom_action_param": { "mine": true }
+        "custom_action_param": { "claim_iron": true }
     },
     "GrandMines_Sand": {
         "action": "Custom",
         "custom_action": "GrandMines",
-        "custom_action_param": { "mine": true }
+        "custom_action_param": { "claim_sand": true }
     },
     "GrandMines_Rolla": {
         "action": "Custom",
         "custom_action": "GrandMines",
-        "custom_action_param": { "mine": true }
+        "custom_action_param": { "claim_rolla": true }
     },
 
     // ---------------------------------------------------------------

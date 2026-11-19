@@ -3,40 +3,18 @@ agent/purchase.py), then challenge the rightmost opponent `tickets` times,
 limited by the tickets held ("N/20" at the top of the Arena page)."""
 import time
 
-from maa.agent.agent_server import AgentServer
-from maa.context import Context
-from maa.custom_action import CustomAction
-
-from common import run_times, task_settings
-from gui import say
 from purchase import buy_daily
 from screen import read_fraction
+from task import Task, task
 
 
-def log(context: Context, msg: str):
-    say(context, "Arena", msg)
+@task("ArenaFarm", "Arena")
+def arena(t: Task):
+    if buy_daily(t, t.settings["buy"], "Arena_Buy_Open", "Arena_BackOnPage"):
+        time.sleep(1.5)  # the ticket count updates a moment after buying
 
-
-@AgentServer.custom_action("ArenaFarm")
-class ArenaFarm(CustomAction):
-    def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
-        param = task_settings(argv)
-        wanted = int(param.get("tickets", 2))
-        buy = int(param.get("buy", 0))
-
-        bought = buy_daily(context, "Arena", buy, "Arena_Buy_Open", "Arena_BackOnPage")
-        if bought is None:
-            return False
-        if bought:
-            time.sleep(1.5)  # the ticket count updates a moment after buying
-
-        held = read_fraction(context, "Arena_Tickets")
-        if held is None:
-            log(context, "could not read the arena tickets")
-            return False
-        runs = min(wanted, held[0])
-        log(context, f"{held[0]} ticket(s), using {runs}")
-        if not run_times(context, "Arena", "Arena_Run", runs, noun="challenge"):
-            return False
-        log(context, "done")
-        return True
+    held = t.need(read_fraction(t.c, "Arena_Tickets"), "could not read the arena tickets")
+    runs = min(t.settings["tickets"], held[0])
+    t.log(f"{held[0]} ticket(s), using {runs}")
+    t.run_times("Arena_Run", runs, noun="challenge")
+    t.log("done")

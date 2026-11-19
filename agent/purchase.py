@@ -9,62 +9,56 @@ Its nodes are named <popup>_Limit, _Count, _More, _Purchase and _Cancel.
 Arena and Material Realms share one set (Common_Purchase_*); Daily Dungeon
 has its own (DailyDungeon_Buy_*).
 """
-from maa.context import Context
-
-from common import give_up, ok
-from gui import say
 from screen import read_fraction, read_int
+from task import Task
 
 
-def buy_daily(context: Context, name: str, wanted: int, open_node: str, back_node: str,
-              popup: str = "Common_Purchase"):
+def buy_daily(t: Task, wanted: int, open_node: str, back_node: str,
+              popup: str = "Common_Purchase", item: str = "") -> int:
     """Buy so that `wanted` have been bought today, within the daily limit.
 
-    name       log prefix, e.g. "Arena"
     open_node  taps the "+" that opens the popup
     back_node  recognises the task's screen once the popup has closed
+    item       what's bought, to start log lines with (e.g. a realm's name)
 
     Returns how many were bought (0: nothing to buy; the popup isn't opened
-    when wanted is 0), or None if something went wrong (logged).
+    when wanted is 0). Anything else ends the task: not enough Dawnium is a
+    Safety stop, the rest are failures (all logged).
     """
     if wanted <= 0:
         return 0
-
-    def log(msg):
-        say(context, name, msg)
+    prefix = f"{item}: " if item else ""
 
     def close(node):  # Purchase or Cancel, then check we're back
-        return ok(context.run_task(node)) and ok(context.run_task(back_node))
+        return t.run(node) and t.run(back_node)
 
-    if not ok(context.run_task(open_node)):
-        log("the purchase popup didn't open")
-        return None
-    limit = read_fraction(context, f"{popup}_Limit")
-    if limit is None:
-        log("could not read the purchase limit; not buying")
+    def cancel_and_fail(why):
         close(f"{popup}_Cancel")
-        return None
+        t.fail(prefix + why)
+
+    t.run(open_node, fail=prefix + "the purchase popup didn't open")
+    limit = read_fraction(t.c, f"{popup}_Limit")
+    if limit is None:
+        cancel_and_fail("could not read the purchase limit; not buying")
     bought, cap = limit
     count = max(0, min(wanted, cap) - bought)
     if count == 0:
-        log(f"{bought}/{cap} already bought today, nothing to buy")
-        return 0 if close(f"{popup}_Cancel") else None
+        t.log(f"{prefix}{bought}/{cap} already bought today, nothing to buy")
+        if not close(f"{popup}_Cancel"):
+            t.fail(prefix + "could not close the purchase popup")
+        return 0
     if count > 1:  # Qty starts at 1
-        context.run_task(f"{popup}_More", pipeline_override={f"{popup}_More": {"repeat": count - 1}})
-    shown = read_int(context, f"{popup}_Count")
+        t.run(f"{popup}_More", {f"{popup}_More": {"repeat": count - 1}})
+    shown = read_int(t.c, f"{popup}_Count")
     if shown is not None and shown < count:
         # The game caps the Qty at what you can afford (and we never ask
         # past today's limit), so a Qty stuck below ours is short Dawnium.
         close(f"{popup}_Cancel")
-        give_up(context, name, f"not enough Dawnium: set to have {wanted} bought today, "
-                               f"{bought} bought, the popup allows only {shown} more")
-        return None
+        t.give_up(f"{prefix}not enough Dawnium: set to have {wanted} bought today, "
+                  f"{bought} bought, the popup allows only {shown} more")
     if shown != count:
-        log(f"the purchase popup shows {shown}, expected {count}; not buying")
-        close(f"{popup}_Cancel")
-        return None
-    log(f"buying {count} ({bought}/{cap} bought today)")
+        cancel_and_fail(f"the purchase popup shows {shown}, expected {count}; not buying")
+    t.log(f"{prefix}buying {count} ({bought}/{cap} bought today)")
     if not close(f"{popup}_Purchase"):
-        log("the purchase didn't go through")
-        return None
+        t.fail(prefix + "the purchase didn't go through")
     return count

@@ -7,7 +7,7 @@ Vault items (Dawnium). Starts in the Vendor Booth, on any tab.
            today (refreshes already used today count). The current items are
            bought from first, then each refresh's.
   Vault    the Free reward is always claimed; (VendorBooth_Vault_<item>)
-           {"buy": 1} buys that item up to its limit.
+           {"vault_<item>": 1} buys that item up to its limit.
 
 Buying is instant: a tile turns "Sold Out". Discounts are read from the
 tilted "-N%" badge at a tile's top left (agent/badge.py).
@@ -15,14 +15,12 @@ tilted "-N%" badge at a tile's top left (agent/badge.py).
 from dataclasses import dataclass
 
 import numpy as np
-from maa.agent.agent_server import AgentServer
 from maa.context import Context
-from maa.custom_action import CustomAction
 
 import badge
-from common import give_up, ok, settings_node, task_settings
-from gui import say
+from common import ok
 from screen import hit, read_int, screenshot
+from task import Task, task
 
 # Top left of each tile of the 3x3 grid, row by row.
 TILES = [(x0, y0) for y0 in (188, 470, 753) for x0 in (30, 260, 490)]
@@ -31,27 +29,23 @@ BADGE_W, BADGE_H = 75, 55
 @dataclass
 class VaultItem:
     tile: int     # index in TILES
-    setting: str  # its settings node is VendorBooth_Vault_<setting> ({"buy": 1} buys it)
+    setting: str  # its setting (1 buys it), on its node VendorBooth_Vault_<Item>
     name: str     # for the log
     limit: int    # purchase limit
 
 
 FREE = VaultItem(0, "", "Free reward", 1)  # always claimed
 VAULT = [
-    VaultItem(1, "Stellatie", "Stellatie", 1),
-    VaultItem(2, "DestinyFruit", "Destiny Fruit", 2),
-    VaultItem(3, "Row2Left", "row 2, left", 1),
-    VaultItem(4, "Row2Middle", "row 2, middle", 1),
-    VaultItem(5, "RefinedOre", "Refined Ore", 1),
-    VaultItem(6, "Row3Left", "row 3, left", 1),
-    VaultItem(7, "Row3Middle", "row 3, middle", 1),
-    VaultItem(8, "QuestScroll", "Quest Scroll", 1),
+    VaultItem(1, "vault_stellatie", "Stellatie", 1),
+    VaultItem(2, "vault_destiny_fruit", "Destiny Fruit", 2),
+    VaultItem(3, "vault_row2_left", "row 2, left", 1),
+    VaultItem(4, "vault_row2_middle", "row 2, middle", 1),
+    VaultItem(5, "vault_refined_ore", "Refined Ore", 1),
+    VaultItem(6, "vault_row3_left", "row 3, left", 1),
+    VaultItem(7, "vault_row3_middle", "row 3, middle", 1),
+    VaultItem(8, "vault_quest_scroll", "Quest Scroll", 1),
 ]
 MAX_REFRESHES = 10
-
-
-def log(context: Context, msg: str):
-    say(context, "Vendor Booth", msg)
 
 
 def sold_out(context: Context, tile: int, image=None) -> bool:
@@ -95,84 +89,67 @@ def go_tab(context: Context, tab: str) -> bool:
 
 # ---------------------------------------------------------------- General
 
-def buy_page(context: Context, min_off: int) -> bool:
-    image = screenshot(context)
+def buy_page(t: Task, min_off: int):
+    image = screenshot(t.c)
     bought, skipped = [], []
     for tile in range(9):
-        if sold_out(context, tile, image):
+        if sold_out(t.c, tile, image):
             continue
-        off = discount(context, image, tile)
+        off = discount(t.c, image, tile)
         if min_off > 0 and (off is None or off < min_off):
             skipped.append("?" if off is None else f"{off}%")
             continue
-        if not buy(context, tile, 1, "VendorBooth_OnGeneral"):
-            return give_up(context, "Vendor Booth", f"could not buy General item {tile + 1} (not enough gold?)")
+        if not buy(t.c, tile, 1, "VendorBooth_OnGeneral"):
+            t.give_up(f"could not buy General item {tile + 1} (not enough gold?)")
         bought.append(f"{off}%" if off else "full price")
     msg = f"bought {len(bought)}"
     if bought:
         msg += f" ({', '.join(bought)})"
     if skipped:
         msg += f", skipped {len(skipped)} under {min_off}% off ({', '.join(skipped)})"
-    log(context, msg)
-    return True
+    t.log(msg)
 
 
 def read_left(context: Context):
     return read_int(context, "VendorBooth_RefreshesLeft")
 
 
-def general(context: Context, min_off: int, wanted: int) -> bool:
-    if not go_tab(context, "General"):
-        log(context, "could not open the General tab")
-        return False
-    left = read_left(context)
-    if left is None:
-        log(context, "could not read the refreshes left")
-        return False
+def general(t: Task, min_off: int, wanted: int):
+    if not go_tab(t.c, "General"):
+        t.fail("could not open the General tab")
+    left = t.need(read_left(t.c), "could not read the refreshes left")
     used = MAX_REFRESHES - left
     todo = max(0, min(wanted, MAX_REFRESHES) - used)
-    log(context, f"General: {used} refresh(es) used today, {todo} to do")
-    if not buy_page(context, min_off):
-        return False
+    t.log(f"General: {used} refresh(es) used today, {todo} to do")
+    buy_page(t, min_off)
     for n in range(todo):
-        if context.tasker.stopping:
-            log(context, "stop requested")
-            return False
-        context.run_task("VendorBooth_Refresh")
-        now = read_left(context)
+        t.check()
+        t.run("VendorBooth_Refresh")
+        now = read_left(t.c)
         if now is None or now >= left:
-            return give_up(context, "Vendor Booth", "the refresh didn't go through (not enough gold?)")
+            t.give_up("the refresh didn't go through (not enough gold?)")
         left = now
-        log(context, f"refreshed ({n + 1}/{todo})")
-        if not buy_page(context, min_off):
-            return False
-    return True
+        t.log(f"refreshed ({n + 1}/{todo})")
+        buy_page(t, min_off)
 
 
 # ---------------------------------------------------------------- Vault
 
-def vault(context: Context) -> bool:
-    if not go_tab(context, "Vault"):
-        log(context, "could not open the Vault tab")
-        return False
-    wanted = [item for item in VAULT
-              if int(settings_node(context, f"VendorBooth_Vault_{item.setting}").get("buy", 0))]
+def vault(t: Task):
+    if not go_tab(t.c, "Vault"):
+        t.fail("could not open the Vault tab")
+    wanted = [item for item in VAULT if t.settings[item.setting]]
     for item in [FREE] + wanted:
-        if sold_out(context, item.tile):
-            log(context, f"Vault: {item.name} already bought")
+        if sold_out(t.c, item.tile):
+            t.log(f"Vault: {item.name} already bought")
             continue
-        if not buy(context, item.tile, item.limit, "VendorBooth_OnVault"):
-            return give_up(context, "Vendor Booth", f"Vault: could not buy {item.name} (not enough Dawnium?)")
-        log(context, f"Vault: bought {item.name}")
-    return True
+        if not buy(t.c, item.tile, item.limit, "VendorBooth_OnVault"):
+            t.give_up(f"Vault: could not buy {item.name} (not enough Dawnium?)")
+        t.log(f"Vault: bought {item.name}")
 
 
-@AgentServer.custom_action("VendorBooth")
-class VendorBooth(CustomAction):
-    def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
-        min_off = int(task_settings(argv).get("discount", 0))
-        refreshes = int(settings_node(context, "VendorBooth_Refreshes").get("refreshes", 0))
-        if not (general(context, min_off, refreshes) and vault(context)):
-            return False
-        log(context, "done")
-        return True
+@task("VendorBooth", "Vendor Booth")
+def vendor_booth(t: Task):
+    general(t, t.settings["discount"], t.settings["refreshes"])
+    vault(t)
+    t.log("done")

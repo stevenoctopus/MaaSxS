@@ -7,57 +7,37 @@
 """
 import math
 
-from maa.agent.agent_server import AgentServer
-from maa.context import Context
-from maa.custom_action import CustomAction
-
-from common import give_up, ok, run_times, task_settings
 from daily_dungeon import log_latest
-from gui import say
 from screen import parse_fraction
+from task import Task, task
 
 
-def log(context: Context, msg: str):
-    say(context, "Affection", msg)
-
-
-def check_affection(context: Context):
-    """Run Affection_Check; return (current, cap) or None."""
-    detail = context.run_task("Affection_Check")
-    if not ok(detail):
-        log(context, "affection check failed")
-        return None
+def check_affection(t: Task):
+    """Run Affection_Check: (current, cap)."""
+    detail = t.run("Affection_Check", fail="affection check failed")
     for node in detail.nodes:
         if node.name == "Affection_Read" and node.recognition and node.recognition.hit:
             total = parse_fraction(node.recognition.best_result.text)
             if total:
                 return total
-    log(context, "could not read the affection total")
-    return None
+    t.fail("could not read the affection total")
 
 
-@AgentServer.custom_action("AffectionFarm")
-class AffectionFarm(CustomAction):
-    def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
-        param = task_settings(argv)
-        per_run = int(param.get("per_run", 7))
-
-        previous = None
-        while True:
-            total = check_affection(context)
-            if total is None:
-                return False
-            current, cap = total
-            runs = math.ceil(max(0, cap - current) / per_run)
-            log(context, f"{current}/{cap}, {runs} run(s) needed")
-            if runs == 0:
-                log(context, "weekly cap reached")
-                return True
-            # Safety stop: a whole batch that earned nothing means affection
-            # isn't counting, so running more won't help.
-            if previous is not None and current <= previous:
-                return give_up(context, "Affection", "no affection gained since the last check")
-            previous = current
-            log_latest(context, "Affection")  # Affection_Check ends on the list
-            if not run_times(context, "Affection", "DailyDungeon_Run", runs):
-                return False
+@task("AffectionFarm", "Affection")
+def affection(t: Task):
+    per_run = t.settings["per_run"]
+    previous = None
+    while True:
+        current, cap = check_affection(t)
+        runs = math.ceil(max(0, cap - current) / per_run)
+        t.log(f"{current}/{cap}, {runs} run(s) needed")
+        if runs == 0:
+            t.log("weekly cap reached")
+            return
+        # Safety stop: a whole batch that earned nothing means affection
+        # isn't counting, so running more won't help.
+        if previous is not None and current <= previous:
+            t.give_up("no affection gained since the last check")
+        previous = current
+        log_latest(t)  # Affection_Check ends on the list
+        t.run_times("DailyDungeon_Run", runs)

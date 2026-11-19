@@ -153,6 +153,11 @@ def image(screen):
     return load(screen)
 
 
+def frame(screen):
+    """A Grand Mines frame of a saved screen, for what needs only the image."""
+    return gm.Frame(None, load(screen))
+
+
 def near(point, x, y, tol=15):
     return abs(point[0] - x) <= tol and abs(point[1] - y) <= tol
 
@@ -209,11 +214,11 @@ class GrandMines(unittest.TestCase):
     def test_flashing_icon(self):
         icons = gm.find_icons(image("resource_hunt_arrived.png"))
         self.assertTrue(near(icons[0], 670, 567), icons)
-        self.assertFalse(gm.pin_at_centre(image("resource_hunt_arrived.png")))
+        self.assertFalse(frame("resource_hunt_arrived.png").pin_at_centre)
         self.assertTrue(near(gm.find_icons(image("grand_mine_same_map.png"))[0], 670, 440))
         self.assertTrue(near(gm.find_icons(image("grand_mine_icon_bottom.png"))[0], 670, 1167))  # past the chat
-        self.assertTrue(gm.pin_at_centre(image("grand_mine_on_map.png")))
-        self.assertTrue(gm.pin_at_centre(image("afk_zone_iron_bars.png")))
+        self.assertTrue(frame("grand_mine_on_map.png").pin_at_centre)
+        self.assertTrue(frame("afk_zone_iron_bars.png").pin_at_centre)
         # Only edge icons get tapped: the Resource Hunt pin sits on an ore rock.
         self.assertTrue(gm.at_edge(gm.find_icons(image("resource_hunt_arrived.png"))[0]))
         self.assertFalse(any(gm.at_edge(i) and near(i, 360, 640) for i in gm.find_icons(image("afk_zone_iron_bars.png"))))
@@ -233,11 +238,11 @@ class GrandMines(unittest.TestCase):
 
     def test_jump_without_popup(self):
         # A link to a region next door: no popup, no toast, just a new icon at the edge.
-        self.assertTrue(gm.new_edge_icon(image("grand_mine_jump_before.png"), image("grand_mine_jump_after.png")))
-        self.assertFalse(gm.new_edge_icon(image("grand_mine_jump_after.png"), image("grand_mine_jump_after.png")))
-        self.assertTrue(gm.new_edge_icon(image("grand_mine_link_before.png"), image("grand_mine_link_after.png")))
+        self.assertTrue(gm.new_edge_icon(frame("grand_mine_jump_before.png"), frame("grand_mine_jump_after.png")))
+        self.assertFalse(gm.new_edge_icon(frame("grand_mine_jump_after.png"), frame("grand_mine_jump_after.png")))
+        self.assertTrue(gm.new_edge_icon(frame("grand_mine_link_before.png"), frame("grand_mine_link_after.png")))
         # Pointing down: the icon sits just above the small chat.
-        self.assertTrue(gm.new_edge_icon(image("grand_mine_jump2_before.png"), image("grand_mine_jump2_after.png")))
+        self.assertTrue(gm.new_edge_icon(frame("grand_mine_jump2_before.png"), frame("grand_mine_jump2_after.png")))
 
     def test_tracker_widget(self):
         self.assertTrue(still.run("resource_hunt_arrived.png", lambda c: hit(c, "GrandMines_StopTracking")))

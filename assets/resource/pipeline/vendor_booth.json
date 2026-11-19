@@ -39,42 +39,42 @@
     "VendorBooth_Vault_Stellatie": {
         "action": "Custom",
         "custom_action": "VendorBooth",
-        "custom_action_param": { "buy": 0 }
+        "custom_action_param": { "vault_stellatie": 0 }
     },
     "VendorBooth_Vault_DestinyFruit": {
         "action": "Custom",
         "custom_action": "VendorBooth",
-        "custom_action_param": { "buy": 0 }
+        "custom_action_param": { "vault_destiny_fruit": 0 }
     },
     "VendorBooth_Vault_Row2Left": {
         "action": "Custom",
         "custom_action": "VendorBooth",
-        "custom_action_param": { "buy": 0 }
+        "custom_action_param": { "vault_row2_left": 0 }
     },
     "VendorBooth_Vault_Row2Middle": {
         "action": "Custom",
         "custom_action": "VendorBooth",
-        "custom_action_param": { "buy": 0 }
+        "custom_action_param": { "vault_row2_middle": 0 }
     },
     "VendorBooth_Vault_RefinedOre": {
         "action": "Custom",
         "custom_action": "VendorBooth",
-        "custom_action_param": { "buy": 0 }
+        "custom_action_param": { "vault_refined_ore": 0 }
     },
     "VendorBooth_Vault_Row3Left": {
         "action": "Custom",
         "custom_action": "VendorBooth",
-        "custom_action_param": { "buy": 0 }
+        "custom_action_param": { "vault_row3_left": 0 }
     },
     "VendorBooth_Vault_Row3Middle": {
         "action": "Custom",
         "custom_action": "VendorBooth",
-        "custom_action_param": { "buy": 0 }
+        "custom_action_param": { "vault_row3_middle": 0 }
     },
     "VendorBooth_Vault_QuestScroll": {
         "action": "Custom",
         "custom_action": "VendorBooth",
-        "custom_action_param": { "buy": 0 }
+        "custom_action_param": { "vault_quest_scroll": 0 }
     },
 
     // ---------------------------------------------------------------

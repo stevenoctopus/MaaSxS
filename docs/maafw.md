@@ -19,7 +19,7 @@ the rest is from the [Pipeline Protocol](https://maafw.com/en/docs/3.1-PipelineP
 Read every result in Python with `context.run_recognition(node, image)` and
 `reco.filtered_results` (each has `box`, `score`, and `count` or `text`). The
 binding has no image file I/O: screenshots are BGR numpy arrays, and the
-agent saves PNGs with `grand_mines.save_png`.
+agent saves PNGs with `snapshots.save_png`.
 
 ## Flow
 

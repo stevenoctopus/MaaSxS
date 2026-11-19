@@ -252,10 +252,10 @@
             "pipeline_override": {
                 "MaterialRealms_Buy": {
                     "custom_action_param": {
-                        "ironvein": "{ironvein}",
-                        "gilded": "{gilded}",
-                        "dread": "{dread}",
-                        "dustfall": "{dustfall}"
+                        "buy_ironvein": "{ironvein}",
+                        "buy_gilded": "{gilded}",
+                        "buy_dread": "{dread}",
+                        "buy_dustfall": "{dustfall}"
                     }
                 }
             }
@@ -301,10 +301,10 @@
             "pipeline_override": {
                 "MaterialRealms_Use": {
                     "custom_action_param": {
-                        "ironvein": "{ironvein}",
-                        "gilded": "{gilded}",
-                        "dread": "{dread}",
-                        "dustfall": "{dustfall}"
+                        "use_ironvein": "{ironvein}",
+                        "use_gilded": "{gilded}",
+                        "use_dread": "{dread}",
+                        "use_dustfall": "{dustfall}"
                     }
                 }
             }
@@ -368,7 +368,7 @@
                 { "name": "Skip" },
                 {
                     "name": "Buy",
-                    "pipeline_override": { "VendorBooth_Vault_Stellatie": { "custom_action_param": { "buy": 1 } } }
+                    "pipeline_override": { "VendorBooth_Vault_Stellatie": { "custom_action_param": { "vault_stellatie": 1 } } }
                 }
             ],
             "default_case": "Skip"
@@ -381,7 +381,7 @@
                 {
                     "name": "Buy",
                     "description": "Both (limit 2).",
-                    "pipeline_override": { "VendorBooth_Vault_DestinyFruit": { "custom_action_param": { "buy": 1 } } }
+                    "pipeline_override": { "VendorBooth_Vault_DestinyFruit": { "custom_action_param": { "vault_destiny_fruit": 1 } } }
                 }
             ],
             "default_case": "Skip"
@@ -394,7 +394,7 @@
                 { "name": "Skip" },
                 {
                     "name": "Buy",
-                    "pipeline_override": { "VendorBooth_Vault_Row2Left": { "custom_action_param": { "buy": 1 } } }
+                    "pipeline_override": { "VendorBooth_Vault_Row2Left": { "custom_action_param": { "vault_row2_left": 1 } } }
                 }
             ],
             "default_case": "Skip"
@@ -407,7 +407,7 @@
                 { "name": "Skip" },
                 {
                     "name": "Buy",
-                    "pipeline_override": { "VendorBooth_Vault_Row2Middle": { "custom_action_param": { "buy": 1 } } }
+                    "pipeline_override": { "VendorBooth_Vault_Row2Middle": { "custom_action_param": { "vault_row2_middle": 1 } } }
                 }
             ],
             "default_case": "Skip"
@@ -419,7 +419,7 @@
                 { "name": "Skip" },
                 {
                     "name": "Buy",
-                    "pipeline_override": { "VendorBooth_Vault_RefinedOre": { "custom_action_param": { "buy": 1 } } }
+                    "pipeline_override": { "VendorBooth_Vault_RefinedOre": { "custom_action_param": { "vault_refined_ore": 1 } } }
                 }
             ],
             "default_case": "Skip"
@@ -432,7 +432,7 @@
                 { "name": "Skip" },
                 {
                     "name": "Buy",
-                    "pipeline_override": { "VendorBooth_Vault_Row3Left": { "custom_action_param": { "buy": 1 } } }
+                    "pipeline_override": { "VendorBooth_Vault_Row3Left": { "custom_action_param": { "vault_row3_left": 1 } } }
                 }
             ],
             "default_case": "Skip"
@@ -445,7 +445,7 @@
                 { "name": "Skip" },
                 {
                     "name": "Buy",
-                    "pipeline_override": { "VendorBooth_Vault_Row3Middle": { "custom_action_param": { "buy": 1 } } }
+                    "pipeline_override": { "VendorBooth_Vault_Row3Middle": { "custom_action_param": { "vault_row3_middle": 1 } } }
                 }
             ],
             "default_case": "Skip"
@@ -457,7 +457,7 @@
                 { "name": "Skip" },
                 {
                     "name": "Buy",
-                    "pipeline_override": { "VendorBooth_Vault_QuestScroll": { "custom_action_param": { "buy": 1 } } }
+                    "pipeline_override": { "VendorBooth_Vault_QuestScroll": { "custom_action_param": { "vault_quest_scroll": 1 } } }
                 }
             ],
             "default_case": "Skip"
@@ -508,7 +508,7 @@
                 { "name": "Mine" },
                 {
                     "name": "Skip",
-                    "pipeline_override": { "GrandMines_Iron": { "custom_action_param": { "mine": false } } }
+                    "pipeline_override": { "GrandMines_Iron": { "custom_action_param": { "claim_iron": false } } }
                 }
             ],
             "default_case": "Mine"
@@ -520,7 +520,7 @@
                 { "name": "Mine" },
                 {
                     "name": "Skip",
-                    "pipeline_override": { "GrandMines_Sand": { "custom_action_param": { "mine": false } } }
+                    "pipeline_override": { "GrandMines_Sand": { "custom_action_param": { "claim_sand": false } } }
                 }
             ],
             "default_case": "Mine"
@@ -532,7 +532,7 @@
                 { "name": "Mine" },
                 {
                     "name": "Skip",
-                    "pipeline_override": { "GrandMines_Rolla": { "custom_action_param": { "mine": false } } }
+                    "pipeline_override": { "GrandMines_Rolla": { "custom_action_param": { "claim_rolla": false } } }
                 }
             ],
             "default_case": "Mine"
